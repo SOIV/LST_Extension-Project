@@ -2,6 +2,136 @@
  * Live Stream Translator - Popup Script (with Sidebar Navigation)
  */
 
+/**
+ * i18n 메시지 가져오기
+ */
+function getMessage(key) {
+  return chrome.i18n.getMessage(key);
+}
+
+/**
+ * 페이지의 모든 텍스트를 i18n으로 업데이트
+ */
+function initI18n() {
+  // 네비게이션 레이블
+  document.querySelectorAll('[data-tab="language"] .nav-label')[0].textContent = getMessage('nav_language');
+  document.querySelectorAll('[data-tab="translation"] .nav-label')[0].textContent = getMessage('nav_translation');
+  document.querySelectorAll('[data-tab="display"] .nav-label')[0].textContent = getMessage('nav_display');
+  document.querySelectorAll('[data-tab="status"] .nav-label')[0].textContent = getMessage('nav_status');
+  document.querySelectorAll('[data-tab="about"] .nav-label')[0].textContent = getMessage('nav_about');
+
+  // 저장 버튼
+  document.getElementById('saveBtn').textContent = getMessage('btn_save');
+
+  // 탭 컨텐츠 - 언어 설정
+  document.querySelector('#tab-language h2').textContent = getMessage('heading_speechRecognition');
+  document.querySelector('label[for="sourceLang"]').textContent = getMessage('label_sourceLang');
+  document.querySelector('label[for="targetLang"]').textContent = getMessage('label_targetLang');
+
+  // 언어 옵션
+  document.querySelector('#sourceLang option[value="auto"]').textContent = getMessage('lang_auto');
+  document.querySelectorAll('#sourceLang option[value="ko"], #targetLang option[value="ko"]').forEach(el =>
+    el.textContent = getMessage('lang_ko')
+  );
+  document.querySelectorAll('#sourceLang option[value="en"], #targetLang option[value="en"]').forEach(el =>
+    el.textContent = getMessage('lang_en')
+  );
+  document.querySelectorAll('#sourceLang option[value="ja"], #targetLang option[value="ja"]').forEach(el =>
+    el.textContent = getMessage('lang_ja')
+  );
+  document.querySelectorAll('#sourceLang option[value="zh-CN"], #targetLang option[value="zh-CN"]').forEach(el =>
+    el.textContent = getMessage('lang_zhCN')
+  );
+  document.querySelectorAll('#sourceLang option[value="zh-TW"], #targetLang option[value="zh-TW"]').forEach(el =>
+    el.textContent = getMessage('lang_zhTW')
+  );
+  document.querySelectorAll('#sourceLang option[value="es"], #targetLang option[value="es"]').forEach(el =>
+    el.textContent = getMessage('lang_es')
+  );
+  document.querySelectorAll('#sourceLang option[value="fr"], #targetLang option[value="fr"]').forEach(el =>
+    el.textContent = getMessage('lang_fr')
+  );
+  document.querySelectorAll('#sourceLang option[value="de"], #targetLang option[value="de"]').forEach(el =>
+    el.textContent = getMessage('lang_de')
+  );
+  document.querySelectorAll('#sourceLang option[value="ru"], #targetLang option[value="ru"]').forEach(el =>
+    el.textContent = getMessage('lang_ru')
+  );
+
+  // 도움말 텍스트
+  document.querySelectorAll('#tab-language .form-help')[0].textContent = getMessage('help_sourceLang');
+  document.querySelectorAll('#tab-language .form-help')[1].textContent = getMessage('help_targetLang');
+
+  // 번역 엔진 탭
+  document.querySelector('#tab-translation h2').textContent = getMessage('heading_translationEngine');
+  document.querySelector('label[for="translationEngine"]').textContent = getMessage('label_engine');
+  document.querySelector('#translationEngine option[value="google"]').textContent = getMessage('engine_google');
+  document.querySelector('#translationEngine option[value="papago"]').textContent = getMessage('engine_papago');
+  document.querySelector('#translationEngine option[value="deepl"]').textContent = getMessage('engine_deepl');
+  document.querySelector('#tab-translation .form-help').textContent = getMessage('help_googleEngine');
+
+  // API 키 섹션
+  document.querySelector('#apiKeyGroup h2').textContent = getMessage('heading_apiKey');
+  document.querySelector('label[for="apiKey"]').textContent = getMessage('label_apiKey');
+  document.querySelector('label[for="apiSecret"]').textContent = getMessage('label_apiSecret');
+  document.getElementById('apiKey').placeholder = getMessage('placeholder_apiKey');
+  document.getElementById('apiSecret').placeholder = getMessage('placeholder_apiSecret');
+
+  document.querySelector('.info-box h3').textContent = getMessage('info_apiKeyTitle');
+
+  // 표시 옵션 탭
+  document.querySelector('#tab-display h2').textContent = getMessage('heading_subtitleDisplay');
+  document.querySelector('label[for="showOriginal"] span').textContent = getMessage('label_showOriginal');
+  document.querySelectorAll('#tab-display .form-help')[0].textContent = getMessage('help_showOriginal');
+  document.querySelector('label[for="overlayPosition"]').textContent = getMessage('label_overlayPosition');
+  document.querySelector('#overlayPosition option[value="top"]').textContent = getMessage('position_top');
+  document.querySelector('#overlayPosition option[value="middle"]').textContent = getMessage('position_middle');
+  document.querySelector('#overlayPosition option[value="bottom"]').textContent = getMessage('position_bottom');
+  document.querySelectorAll('#tab-display .form-help')[1].textContent = getMessage('help_overlayPosition');
+  document.querySelectorAll('#tab-display .form-group label')[2].childNodes[0].textContent = getMessage('label_overlaySize') + ' ';
+  document.querySelectorAll('#tab-display .form-help')[2].textContent = getMessage('help_overlaySize');
+  document.querySelector('label[for="enableCache"] span').textContent = getMessage('label_enableCache');
+  document.querySelectorAll('#tab-display .form-help')[3].textContent = getMessage('help_enableCache');
+
+  // 상태 탭
+  document.querySelector('#tab-status h2').textContent = getMessage('heading_systemStatus');
+  document.querySelectorAll('.status-label')[0].textContent = getMessage('status_webSpeechApi');
+  document.querySelectorAll('.status-label')[1].textContent = getMessage('status_translationCache');
+  document.getElementById('webSpeechStatus').textContent = getMessage('status_checking');
+  document.getElementById('clearCacheBtn').innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px;">
+      <polyline points="1 4 1 10 7 10"/>
+      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+    </svg>
+    ${getMessage('btn_clearCache')}
+  `;
+  document.getElementById('resetSettingsBtn').innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px; margin-right: 8px;">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+      <path d="M3 3v5h5"/>
+    </svg>
+    ${getMessage('btn_resetSettings')}
+  `;
+
+  // 정보 탭
+  document.querySelectorAll('#tab-about h2')[0].textContent = getMessage('extName');
+  document.querySelector('.about-description').textContent = getMessage('about_description');
+  document.querySelectorAll('.info-box h3')[1].textContent = getMessage('about_supportedPlatforms');
+  document.querySelectorAll('.info-box h3')[2].textContent = getMessage('about_howToUse');
+
+  const usageSteps = document.querySelectorAll('.usage-steps li');
+  usageSteps[0].textContent = getMessage('usage_step1');
+  usageSteps[1].textContent = getMessage('usage_step2');
+  usageSteps[2].textContent = getMessage('usage_step3');
+  usageSteps[3].textContent = getMessage('usage_step4');
+
+  document.querySelectorAll('.link-item span')[0].textContent = getMessage('link_github');
+  document.querySelectorAll('.link-item span')[1].textContent = getMessage('link_reportIssue');
+  document.querySelectorAll('.link-item span')[2].textContent = getMessage('link_help');
+
+  console.log('i18n initialized');
+}
+
 // DOM 요소
 const elements = {
   // 폼 요소
@@ -32,14 +162,17 @@ const elements = {
   pageTitle: document.getElementById('pageTitle')
 };
 
-// 탭 제목 매핑
-const tabTitles = {
-  'language': '언어 설정',
-  'translation': '번역 엔진',
-  'display': '표시 옵션',
-  'status': '상태',
-  'about': '정보'
-};
+// 탭 제목 매핑 (i18n 사용)
+function getTabTitle(tabName) {
+  const titleMap = {
+    'language': 'title_language',
+    'translation': 'title_translation',
+    'display': 'title_display',
+    'status': 'title_status',
+    'about': 'title_about'
+  };
+  return getMessage(titleMap[tabName]) || getMessage('title_language');
+}
 
 // 슬라이더 값과 퍼센트 매핑
 const sizeMap = ['50', '75', '100', '150', '200', '250', '300'];
@@ -63,6 +196,9 @@ function percentToSlider(percent) {
  * 초기화
  */
 async function init() {
+  // i18n 초기화
+  initI18n();
+
   // 설정 로드
   await loadSettings();
 
@@ -298,7 +434,7 @@ function switchTab(tabName) {
   }
 
   // 페이지 제목 업데이트
-  elements.pageTitle.textContent = tabTitles[tabName] || '설정';
+  elements.pageTitle.textContent = getTabTitle(tabName);
 
   console.log('Switched to tab:', tabName);
 }
