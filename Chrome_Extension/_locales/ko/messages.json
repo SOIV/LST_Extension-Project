@@ -1,0 +1,10 @@
+{
+  "extName": {
+    "message": "Live Stream Translator",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "실시간 스트리밍 플랫폼 통합 번역 시스템 - YouTube, Twitch, SOOP, 치지직, 니코니코동화 지원",
+    "description": "Extension description"
+  }
+}

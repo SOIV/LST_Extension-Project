@@ -1,0 +1,72 @@
+{
+  "manifest_version": 3,
+  "name": "Live Stream Translator",
+  "version": "1.0.0",
+  "description": "실시간 스트리밍 플랫폼 통합 번역 시스템 - YouTube, Twitch, SOOP, 치지직, 니코니코동화 지원",
+
+  "permissions": [
+    "tabCapture",
+    "activeTab",
+    "storage",
+    "offscreen",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://youtube.com/*",
+    "https://www.twitch.tv/*",
+    "https://play.sooplive.co.kr/*",
+    "https://chzzk.naver.com/*",
+    "https://www.nicovideo.jp/*",
+    "https://live.nicovideo.jp/*"
+  ],
+
+  "background": {
+    "service_worker": "scripts/background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://youtube.com/*",
+        "https://www.twitch.tv/*",
+        "https://play.sooplive.co.kr/*",
+        "https://chzzk.naver.com/*",
+        "https://www.nicovideo.jp/*",
+        "https://live.nicovideo.jp/*"
+      ],
+      "js": ["scripts/content-bundle.js"],
+      "css": ["styles/overlay.css"],
+      "run_at": "document_end"
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["offscreen.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "default_locale": "ko"
+}
