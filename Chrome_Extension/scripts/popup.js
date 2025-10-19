@@ -81,7 +81,7 @@ function initI18n() {
 
   // 표시 옵션 탭
   document.querySelector('#tab-display h2').textContent = getMessage('heading_subtitleDisplay');
-  document.querySelector('label[for="showOriginal"] span').textContent = getMessage('label_showOriginal');
+  document.querySelector('label.checkbox-label input#showOriginal + span').textContent = getMessage('label_showOriginal');
   document.querySelectorAll('#tab-display .form-help')[0].textContent = getMessage('help_showOriginal');
   document.querySelector('label[for="overlayPosition"]').textContent = getMessage('label_overlayPosition');
   document.querySelector('#overlayPosition option[value="top"]').textContent = getMessage('position_top');
@@ -90,7 +90,7 @@ function initI18n() {
   document.querySelectorAll('#tab-display .form-help')[1].textContent = getMessage('help_overlayPosition');
   document.querySelectorAll('#tab-display .form-group label')[2].childNodes[0].textContent = getMessage('label_overlaySize') + ' ';
   document.querySelectorAll('#tab-display .form-help')[2].textContent = getMessage('help_overlaySize');
-  document.querySelector('label[for="enableCache"] span').textContent = getMessage('label_enableCache');
+  document.querySelector('label.checkbox-label input#enableCache + span').textContent = getMessage('label_enableCache');
   document.querySelectorAll('#tab-display .form-help')[3].textContent = getMessage('help_enableCache');
 
   // 상태 탭
@@ -154,7 +154,6 @@ const elements = {
   clearCacheBtn: document.getElementById('clearCacheBtn'),
   resetSettingsBtn: document.getElementById('resetSettingsBtn'),
   saveBtn: document.getElementById('saveBtn'),
-  helpLink: document.getElementById('helpLink'),
 
   // 네비게이션
   navItems: document.querySelectorAll('.nav-item'),
@@ -456,44 +455,6 @@ function showToast(message, type = 'info') {
 }
 
 /**
- * 도움말 표시
- */
-function showHelp() {
-  const helpText = `
-=== Live Stream Translator 사용 방법 ===
-
-1. 지원 플랫폼
-   - YouTube / YouTube Live
-   - Twitch
-   - SOOP (구 아프리카TV)
-   - 치지직 (Chzzk)
-   - 니코니코동화
-
-2. 사용 방법
-   ① 스트리밍 페이지로 이동
-   ② Extension 아이콘 클릭
-   ③ 실시간 번역 자막 표시
-   ④ 중지하려면 아이콘 다시 클릭
-
-3. 번역 엔진
-   - Google: 무료, API 키 불필요
-   - Papago: 한국어 최적화, API 키 필요
-   - DeepL: 고품질, API 키 필요
-
-4. API 키 발급
-   - Papago: https://www.ncloud.com/
-   - DeepL: https://www.deepl.com/pro-api
-
-5. 문제 해결
-   - 음성 인식 안 됨: 페이지 새로고침
-   - 번역 안 됨: API 키 확인
-   - 자막 안 보임: 오버레이 위치 변경
-  `.trim();
-
-  alert(helpText);
-}
-
-/**
  * 이벤트 리스너 설정
  */
 function setupEventListeners() {
@@ -555,12 +516,6 @@ function setupEventListeners() {
         설정 초기화
       `;
     }
-  });
-
-  // 도움말 링크
-  elements.helpLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    showHelp();
   });
 
   // 키보드 단축키 (Ctrl+S / Cmd+S)
