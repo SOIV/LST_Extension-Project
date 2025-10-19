@@ -39,10 +39,24 @@ Live Stream Translator는 YouTube, Twitch, SOOP, 치지직, 니코니코동화 �
 
 ### 설치 방법
 
+### 🏪 Chrome 웹 스토어 (예정)
+
+> 📅 **Chrome 웹 스토어 업로드 예정**: 더 편리한 설치와 업데이트를 위해 Chrome 웹 스토어 등록을 준비 중입니다.
+
+### 📦 릴리즈에서 다운로드 (권장)
+
+1. [Releases 페이지](https://github.com/SOIV/LST_Extension-Project/releases)에서 최신 버전 다운로드
+2. 다운로드한 ZIP 파일을 원하는 폴더에 압축 해제
+3. Chrome 브라우저에서 `chrome://extensions/` 접속
+4. 우측 상단의 "개발자 모드" 토글 활성화
+5. "압축해제된 확장 프로그램을 로드합니다." 클릭
+6. 압축 해제한 폴더 선택
+7. 확장 프로그램이 설치되고 YouTube에서 사용 가능
+
 #### 개발자 모드 (권장)
 ```bash
 # 1. 저장소 클론
-git clone https://github.com/yourusername/LST_Extension-Project.git
+git clone https://github.com/SOIV/LST_Extension-Project.git
 cd LST_Extension-Project/Chrome_Extension
 
 # 2. Chrome 확장 프로그램 페이지 열기
@@ -169,9 +183,15 @@ GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배
 
 ## 📮 문의
 
-- GitHub Issues: [이슈 페이지]
+- GitHub Issues: [issues](https://github.com/SOIV/LST_Extension-Project/issues)
 - Email: biz@soiv-studio.xyz
 
 ## 🙏 감사의 말
+
+이 프로젝트는 다음 오픈소스 프로젝트들의 영감을 받았습니다:
+- Chrome Audio Capture Extension
+- [Speech Translator Chrome Extension](https://chromewebstore.google.com/detail/jodfjmaiakpnmeddgpeflpafebmlhppn?utm_source=item-share-cb)
+- Web Speech API Examples
+- OBS Studio
 
 이 프로젝트는 전 세계 스트리밍 커뮤니티의 언어 장벽을 허무는 데 기여하고자 만들어졌습니다.

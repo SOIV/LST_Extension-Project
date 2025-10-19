@@ -36,8 +36,8 @@
 ### 개발자 모드로 설치
 1. 이 저장소를 클론하거나 다운로드
    ```bash
-   git clone https://github.com/yourusername/live-stream-translator.git
-   cd live-stream-translator/Chrome_Extension
+   git clone https://github.com/SOIV/LST_Extension-Project.git
+   cd LST_Extension-Project/Chrome_Extension
    ```
 
 2. Chrome 브라우저에서 `chrome://extensions/` 접속
@@ -202,7 +202,7 @@ GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배
 
 ## 📮 문의
 
-- GitHub Issues: [링크]
+- GitHub Issues: [issues](https://github.com/SOIV/LST_Extension-Project/issues)
 - Email: biz@soiv-studio.xyz
 
 ## 🙏 감사의 말
@@ -212,4 +212,3 @@ GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배
 - [Speech Translator Chrome Extension](https://chromewebstore.google.com/detail/jodfjmaiakpnmeddgpeflpafebmlhppn?utm_source=item-share-cb)
 - Web Speech API Examples
 - OBS Studio
-
