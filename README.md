@@ -53,22 +53,6 @@ Live Stream Translator는 YouTube, Twitch, SOOP, 치지직, 니코니코동화 �
 6. 압축 해제한 폴더 선택
 7. 확장 프로그램이 설치되고 YouTube에서 사용 가능
 
-#### 개발자 모드 (권장)
-```bash
-# 1. 저장소 클론
-git clone https://github.com/SOIV/LST_Extension-Project.git
-cd LST_Extension-Project/Chrome_Extension
-
-# 2. Chrome 확장 프로그램 페이지 열기
-# chrome://extensions/ 접속
-
-# 3. "개발자 모드" 활성화 (우측 상단 토글)
-
-# 4. "압축해제된 확장 프로그램을 로드합니다" 클릭
-
-# 5. Chrome_Extension 폴더 선택
-```
-
 ### 사용 방법
 1. 지원하는 스트리밍 사이트 방문
 2. 라이브 방송 시청
