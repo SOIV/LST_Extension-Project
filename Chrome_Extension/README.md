@@ -53,9 +53,10 @@
 ### 기본 사용
 
 1. 지원하는 스트리밍 플랫폼의 라이브 방송 페이지로 이동
-2. Extension 아이콘 클릭 (자동으로 캡처 시작)
+2. Extension 아이콘 클릭
+3. 변역할 언어 선택 후 상단에 있는 시작 버튼을 클릭
 3. 실시간 번역 자막이 비디오 위에 표시됨
-4. 중지하려면 Extension 아이콘을 다시 클릭
+4. 중지하려면 Extension 아이콘을 다시 클릭후 상단에 있는 중지 버튼을 클릭
 
 ### 설정
 
@@ -178,37 +179,7 @@ Extension이 요청하는 권한:
 - **offscreen**: Manifest V3 제약 우회를 위한 Offscreen Document
 - **host_permissions**: 지원하는 스트리밍 플랫폼에서만 작동
 
-## 🤝 기여
-
-버그 리포트, 기능 제안, Pull Request를 환영합니다!
-
-1. Fork this repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## 📄 라이선스
 
-GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배포됩니다.
-
-주요 내용:
-- 소스 코드를 자유롭게 사용, 수정, 배포 가능
-- 수정된 버전을 배포할 때는 동일한 GPL-3.0 라이선스 적용 필수
-- 소스 코드 공개 의무
-- 상업적 사용 가능
-
+GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배포됩니다.<br>
 자세한 내용은 [LICENSE](../LICENSE) 파일을 참조하세요.
-
-## 📮 문의
-
-- GitHub Issues: [issues](https://github.com/SOIV/LST_Extension-Project/issues)
-- Email: biz@soiv-studio.xyz
-
-## 🙏 감사의 말
-
-이 프로젝트는 다음 오픈소스 프로젝트들의 영감을 받았습니다:
-- Chrome Audio Capture Extension
-- [Speech Translator Chrome Extension](https://chromewebstore.google.com/detail/jodfjmaiakpnmeddgpeflpafebmlhppn?utm_source=item-share-cb)
-- Web Speech API Examples
-- OBS Studio

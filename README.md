@@ -145,14 +145,7 @@ LST_Extension-Project/
 
 ## 📜 라이선스
 
-GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배포됩니다.
-
-주요 내용:
-- 소스 코드를 자유롭게 사용, 수정, 배포 가능
-- 수정된 버전을 배포할 때는 동일한 GPL-3.0 라이선스 적용 필수
-- 소스 코드 공개 의무
-- 상업적 사용 가능
-
+GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배포됩니다.<br>
 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
 ## 🤝 기여
@@ -173,8 +166,8 @@ GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배
 ## 🙏 감사의 말
 
 이 프로젝트는 다음 오픈소스 프로젝트들의 영감을 받았습니다:
-- Chrome Audio Capture Extension
 - [Speech Translator Chrome Extension](https://chromewebstore.google.com/detail/jodfjmaiakpnmeddgpeflpafebmlhppn?utm_source=item-share-cb)
+- Chrome Audio Capture Extension
 - Web Speech API Examples
 - OBS Studio
 
