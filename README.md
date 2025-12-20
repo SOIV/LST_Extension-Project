@@ -103,6 +103,7 @@ GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배
 ## 📮 문의
 
 - GitHub Issues: [issues](https://github.com/SOIV/LST_Extension-Project/issues)
+- Discord Community and Support: https://discord.gg/tVnhbaB9yY
 - Email: biz@soiv-studio.xyz
 
 ## 🙏 감사의 말
