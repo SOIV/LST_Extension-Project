@@ -10,7 +10,10 @@
 프로젝트 계획 및 설계는 [LST-PJ_V3](docs/LST-PJ_V3)에서 확인바랍니다.<br>
 기존에 잠시 제작했던 확장 프로그램 코드는 초기화 후 재작성 될 예정입니다.
 
-Live Stream Translator는 YouTube, Twitch, SOOP, 치지직, 니코니코동화 등의 스트리밍 플랫폼에서 실시간으로 음성을 인식하고 번역하여 자막으로 표시해주는 Chrome 확장 프로그램입니다.
+Live Stream Translator는 YouTube, Twitch, 니코니코동화(ニコニコ動画) 등의 스트리밍 플랫폼에서 실시간으로 음성을 인식하고 번역하여 자막으로 표시해주는 Chrome 확장 프로그램입니다.
+
+프로젝트 내 운영 및 개발을 진행하는 종류는 총 2가지 입니다.<br>
+이 프로젝트의 메인이 되는 LST(Live Stream Translator), 확장하여 커뮤니티를 활용하여 운영하는 커뮤니티 CC 플렛폼으로 총 2가지입니다.
 
 ## ✨ 주요 기능
 
@@ -19,7 +22,8 @@ Live Stream Translator는 YouTube, Twitch, SOOP, 치지직, 니코니코동화 �
 - Twitch
 - SOOP (구 아프리카TV)
 - 치지직 (Chzzk)
-- 니코니코동화
+- 니코니코동화(ニコニコ動画)
+- ASOBI CHANNEL
 
 ## 🚀 빠른 시작
 
