@@ -20,10 +20,12 @@ Live Stream Translator는 YouTube, Twitch, 니코니코동화(ニコニコ動画
 ### 🌍 다중 플랫폼 지원
 - YouTube / YouTube Live
 - Twitch
-- SOOP (구 아프리카TV)
-- 치지직 (Chzzk)
 - 니코니코동화(ニコニコ動画)
 - ASOBI CHANNEL
+- SOOP (구 아프리카TV)
+  - 한국어에서 외국어 변역 한정
+- 치지직(Chzzk)
+  - 한국어에서 외국어 변역 한정
 
 ## 🚀 빠른 시작
 
