@@ -1,1 +1,1 @@
-# Live Stream Translator - WEB
+# Live Stream Translator - WEB platform
