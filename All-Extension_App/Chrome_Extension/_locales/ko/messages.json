@@ -298,5 +298,113 @@
   "link_help": {
     "message": "도움말",
     "description": "Help link text"
+  },
+  "nav_subtitle": {
+    "message": "자막",
+    "description": "Navigation label for community subtitle"
+  },
+  "nav_community": {
+    "message": "커뮤니티",
+    "description": "Navigation label for community subtitle"
+  },
+  "nav_realtime": {
+    "message": "실시간",
+    "description": "Navigation label for real-time subtitle"
+  },
+  "title_community": {
+    "message": "커뮤니티 자막",
+    "description": "Page title for community subtitle"
+  },
+  "title_realtime": {
+    "message": "실시간 자막",
+    "description": "Page title for real-time subtitle"
+  },
+  "inner_subtitle": {
+    "message": "자막",
+    "description": "Inner tab: subtitle"
+  },
+  "inner_status": {
+    "message": "상태",
+    "description": "Inner tab: status"
+  },
+  "inner_language": {
+    "message": "언어",
+    "description": "Inner tab: language"
+  },
+  "inner_translation": {
+    "message": "번역",
+    "description": "Inner tab: translation"
+  },
+  "inner_rtStatus": {
+    "message": "상태",
+    "description": "Inner tab: realtime status"
+  },
+  "lang_auto_first": {
+    "message": "자동 (첫 번째 자막)",
+    "description": "Auto language option for community subtitle"
+  },
+  "title_subtitle": {
+    "message": "커뮤니티 자막",
+    "description": "Page title for community subtitle tab"
+  },
+  "heading_subtitleControl": {
+    "message": "자막 제어",
+    "description": "Heading for subtitle control section"
+  },
+  "label_subtitleToggle": {
+    "message": "자막 표시",
+    "description": "Label for subtitle toggle"
+  },
+  "help_subtitleToggle": {
+    "message": "커뮤니티 자막 오버레이를 켜거나 끕니다",
+    "description": "Help text for subtitle toggle"
+  },
+  "label_subtitleLang": {
+    "message": "표시 언어",
+    "description": "Label for subtitle language dropdown"
+  },
+  "help_subtitleLang": {
+    "message": "표시할 자막 언어를 선택하세요",
+    "description": "Help text for subtitle language"
+  },
+  "heading_subtitleStatus": {
+    "message": "현재 영상 자막",
+    "description": "Heading for current video subtitle status"
+  },
+  "subtitle_loading": {
+    "message": "확인 중...",
+    "description": "Subtitle status loading"
+  },
+  "subtitle_available": {
+    "message": "자막 있음",
+    "description": "Subtitle available status"
+  },
+  "subtitle_unavailable": {
+    "message": "자막 없음",
+    "description": "Subtitle unavailable status"
+  },
+  "subtitle_unavailable_sub": {
+    "message": "이 영상의 커뮤니티 자막이 없습니다",
+    "description": "Subtitle unavailable sub text"
+  },
+  "subtitle_not_youtube": {
+    "message": "YouTube 영상이 아닙니다",
+    "description": "Not a YouTube video status"
+  },
+  "locked_title": {
+    "message": "준비 중",
+    "description": "Locked feature title"
+  },
+  "locked_message": {
+    "message": "실시간 자막 기능은 Phase 6에서 활성화됩니다",
+    "description": "Locked feature message"
+  },
+  "toast_saved": {
+    "message": "설정이 저장되었습니다.",
+    "description": "Settings saved toast"
+  },
+  "toast_save_error": {
+    "message": "설정 저장에 실패했습니다.",
+    "description": "Settings save error toast"
   }
 }

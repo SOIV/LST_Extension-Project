@@ -298,5 +298,113 @@
   "link_help": {
     "message": "Help",
     "description": "Help link text"
+  },
+  "nav_subtitle": {
+    "message": "Subtitle",
+    "description": "Navigation label for community subtitle"
+  },
+  "nav_community": {
+    "message": "Community",
+    "description": "Navigation label for community subtitle"
+  },
+  "nav_realtime": {
+    "message": "Real-time",
+    "description": "Navigation label for real-time subtitle"
+  },
+  "title_community": {
+    "message": "Community Subtitle",
+    "description": "Page title for community subtitle"
+  },
+  "title_realtime": {
+    "message": "Real-time Subtitle",
+    "description": "Page title for real-time subtitle"
+  },
+  "inner_subtitle": {
+    "message": "Subtitle",
+    "description": "Inner tab: subtitle"
+  },
+  "inner_status": {
+    "message": "Status",
+    "description": "Inner tab: status"
+  },
+  "inner_language": {
+    "message": "Language",
+    "description": "Inner tab: language"
+  },
+  "inner_translation": {
+    "message": "Translation",
+    "description": "Inner tab: translation"
+  },
+  "inner_rtStatus": {
+    "message": "Status",
+    "description": "Inner tab: realtime status"
+  },
+  "lang_auto_first": {
+    "message": "Auto (First Available)",
+    "description": "Auto language option for community subtitle"
+  },
+  "title_subtitle": {
+    "message": "Community Subtitle",
+    "description": "Page title for community subtitle tab"
+  },
+  "heading_subtitleControl": {
+    "message": "Subtitle Control",
+    "description": "Heading for subtitle control section"
+  },
+  "label_subtitleToggle": {
+    "message": "Show Subtitles",
+    "description": "Label for subtitle toggle"
+  },
+  "help_subtitleToggle": {
+    "message": "Toggle the community subtitle overlay on or off",
+    "description": "Help text for subtitle toggle"
+  },
+  "label_subtitleLang": {
+    "message": "Display Language",
+    "description": "Label for subtitle language dropdown"
+  },
+  "help_subtitleLang": {
+    "message": "Select the language of subtitles to display",
+    "description": "Help text for subtitle language"
+  },
+  "heading_subtitleStatus": {
+    "message": "Current Video Subtitles",
+    "description": "Heading for current video subtitle status"
+  },
+  "subtitle_loading": {
+    "message": "Checking...",
+    "description": "Subtitle status loading"
+  },
+  "subtitle_available": {
+    "message": "Subtitles Available",
+    "description": "Subtitle available status"
+  },
+  "subtitle_unavailable": {
+    "message": "No Subtitles",
+    "description": "Subtitle unavailable status"
+  },
+  "subtitle_unavailable_sub": {
+    "message": "No community subtitles for this video",
+    "description": "Subtitle unavailable sub text"
+  },
+  "subtitle_not_youtube": {
+    "message": "Not a YouTube video",
+    "description": "Not a YouTube video status"
+  },
+  "locked_title": {
+    "message": "Coming Soon",
+    "description": "Locked feature title"
+  },
+  "locked_message": {
+    "message": "Real-time subtitle features will be available in Phase 6",
+    "description": "Locked feature message"
+  },
+  "toast_saved": {
+    "message": "Settings saved.",
+    "description": "Settings saved toast"
+  },
+  "toast_save_error": {
+    "message": "Failed to save settings.",
+    "description": "Settings save error toast"
   }
 }
