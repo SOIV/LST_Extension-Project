@@ -19,7 +19,8 @@
     "https://play.sooplive.co.kr/*",
     "https://chzzk.naver.com/*",
     "https://www.nicovideo.jp/*",
-    "https://live.nicovideo.jp/*"
+    "https://live.nicovideo.jp/*",
+    "https://lst-extension-project.vercel.app/*"
   ],
 
   "background": {
@@ -38,7 +39,13 @@
         "https://www.nicovideo.jp/*",
         "https://live.nicovideo.jp/*"
       ],
-      "js": ["scripts/content-bundle.js"],
+      "js": [
+        "scripts/content-bundle.js",
+        "scripts/subtitle-parser.js",
+        "scripts/subtitle-renderer.js",
+        "scripts/subtitle-loader.js",
+        "scripts/lst-init.js"
+      ],
       "css": ["styles/overlay.css"],
       "run_at": "document_end"
     }
