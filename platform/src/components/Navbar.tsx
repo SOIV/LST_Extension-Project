@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -23,8 +22,9 @@ export default function Navbar() {
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
+    // window.location으로 풀 리로드해야 서버 세션 쿠키가 완전히 초기화됨
+    // router.push는 미들웨어가 아직 유효 세션으로 판단해 /login → / 루프 발생
+    window.location.href = "/login";
   }
 
   // 로그인 페이지에서는 Navbar 숨김
