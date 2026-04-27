@@ -24,7 +24,7 @@ export default function Navbar() {
     await supabase.auth.signOut();
     // window.location으로 풀 리로드해야 서버 세션 쿠키가 완전히 초기화됨
     // router.push는 미들웨어가 아직 유효 세션으로 판단해 /login → / 루프 발생
-    window.location.href = "/login";
+    window.location.href = "/";
   }
 
   // 로그인 페이지에서는 Navbar 숨김
