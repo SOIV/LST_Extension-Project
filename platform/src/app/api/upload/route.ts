@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         video_id: videoRow.id,
         language_code: languageCode,
         creator_id: user.id,
-        status: "pending",
+        status: "approved",
       })
       .select("id")
       .single();
