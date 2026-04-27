@@ -1,123 +1,138 @@
-# Live Stream Translator(LST) Extension Project
+# Live Stream Translator (LST) Project
 
-실시간 스트리밍 플랫폼을 위한 통합 번역 시스템
+실시간 스트리밍을 위한 커뮤니티 자막 플랫폼 + Chrome 확장 프로그램
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://www.google.com/chrome/)
+[![Platform](https://img.shields.io/badge/Platform-Live-brightgreen.svg)](https://lst-pj.soiv-studio.xyz)
 
-## 📖 프로젝트 개요
+**언어 / Language / 言語:** 한국어 | [English](README.en.md) | [日本語](README.ja.md)
 
-프로젝트 계획 및 설계는 [LST-PJ_V3](docs/LST-PJ_V3)에서 확인바랍니다.<br>
-기존에 잠시 제작했던 확장 프로그램 코드는 초기화 후 재작성 될 예정입니다.
+---
 
-Live Stream Translator는 YouTube, Twitch, 니코니코동화(ニコニコ動画) 등의 스트리밍 플랫폼에서 실시간으로 음성을 인식하고 번역하여 자막으로 표시해주는 Chrome 확장 프로그램입니다.
+## 📖 개요
 
-프로젝트 내 운영 및 개발을 진행하는 종류는 총 2가지 입니다.<br>
-이 프로젝트의 메인이 되는 LST(Live Stream Translator), 확장하여 커뮤니티를 활용하여 운영하는 커뮤니티 CC 플렛폼으로 총 2가지입니다.
+LST는 YouTube 등 스트리밍 플랫폼의 언어 장벽을 허물기 위한 프로젝트입니다.
+
+- **커뮤니티 자막 플랫폼** — 누구나 자막을 업로드·편집하고, 크리에이터가 승인하면 익스텐션에서 자동으로 표시
+- **Chrome 확장 프로그램** — 유튜브 영상에 커뮤니티 자막을 오버레이로 표시 (실시간 STT 번역은 추후 지원 예정)
+
+> 플랫폼 바로가기: **[lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)**
+
+---
 
 ## ✨ 주요 기능
 
-### 🌍 다중 플랫폼 지원
-- YouTube / YouTube Live
-- Twitch
-- 니코니코동화(ニコニコ動画)
-- ASOBI CHANNEL
-- SOOP (구 아프리카TV)
-  - 한국어에서 외국어 변역 한정
-- 치지직(Chzzk)
-  - 한국어에서 외국어 변역 한정
+### 커뮤니티 자막 플랫폼
+- Google 계정으로 로그인
+- YouTube URL로 자막 업로드 (SRT / VTT)
+- 웹 기반 자막 편집기 (타임라인 뷰 / 스크립트 뷰)
+- YouTube 플레이어 연동 — 큐 클릭 시 해당 시간으로 seek
+- 리비전 히스토리 (버전 관리)
 
-## 🚀 빠른 시작
+### Chrome 확장 프로그램
+- 유튜브 영상 재생 시 커뮤니티 자막 자동 로드
+- 자막 표시 위치·크기·색상 설정
+- SPA 네비게이션 감지 (YouTube 내 페이지 이동 지원)
 
-### 설치 방법
+### 지원 플랫폼
+| 플랫폼 | 커뮤니티 자막 | 실시간 STT |
+|---|---|---|
+| YouTube / YouTube Live | ✅ | 🔜 예정 |
+| Twitch | 🔜 예정 | 🔜 예정 |
+| ニコニコ動画 | 🔜 예정 | 🔜 예정 |
+| SOOP / Chzzk | 🔜 예정 | 🔜 예정 |
 
-### 🏪 Chrome 웹 스토어 (예정)
-
-> 📅 **Chrome 웹 스토어 업로드 예정**: 더 편리한 설치와 업데이트를 위해 Chrome 웹 스토어 등록을 준비 중입니다.
-
-### 사용 방법
-1. 지원하는 스트리밍 사이트 방문
-2. 라이브 방송 시청
-3. 확장 프로그램 아이콘 클릭
-4. 실시간 번역 자막 표시
+---
 
 ## 📂 프로젝트 구조
 
 ```
 LST_Extension-Project/
-├── Chrome_Extension/         # Chrome 확장 프로그램
-│   ├── manifest.json        # Extension 설정
-│   ├── popup.html          # 설정 UI (사이드바 네비게이션)
-│   ├── icons/              # 확장 프로그램 아이콘
-│   ├── _locales/           # 다국어 지원
-│   ├── scripts/
-│   │   └── utils/
-│   └── styles/
-└── README.md               # 이 파일
+├── All-Extension_App/
+│   └── Chrome_Extension/    # Chrome 확장 프로그램 (Manifest V3)
+│       ├── manifest.json
+│       ├── popup.html
+│       ├── scripts/         # 자막 파서·렌더러·로더
+│       ├── styles/
+│       └── _locales/        # 한국어 / English
+├── platform/                # 커뮤니티 자막 플랫폼 (Next.js)
+│   └── src/app/
+│       ├── api/             # REST API (자막 조회·업로드·리비전)
+│       ├── subtitles/       # 영상별 자막 목록 + 웹 편집기
+│       ├── upload/          # 자막 업로드
+│       └── profile/         # 프로필 관리
+├── Desktop_App/             # 데스크탑 앱 (개발 예정)
+└── docs/                    # 설계 문서
 ```
+
+---
 
 ## 🛠️ 기술 스택
 
-- **Manifest V3**: 최신 Chrome Extension API
-- **Web Speech API**: 실시간 음성 인식
-- **chrome.tabCapture**: 탭 오디오 캡처
-- **Web Audio API**: AudioContext 기반 오디오 처리
-- **Chrome Storage API**: 동기/비동기 설정 저장
-- **CSS3**:
-  - Flexbox/Grid 레이아웃
-  - CSS Variables
-  - Gradient 슬라이더
-  - 다크모드 (`prefers-color-scheme`)
+### 플랫폼
+| 분류 | 기술 |
+|---|---|
+| 프레임워크 | Next.js (App Router) |
+| 인증 | Supabase Auth (Google OAuth) |
+| 데이터베이스 | Supabase (PostgreSQL + RLS) |
+| 파일 스토리지 | Cloudflare R2 |
+| 배포 | Vercel |
+| 스타일 | Tailwind CSS |
 
-## 🔑 번역 엔진 설정
+### 확장 프로그램
+| 분류 | 기술 |
+|---|---|
+| API | Chrome Extension Manifest V3 |
+| 자막 파싱 | 자체 SRT / VTT 파서 |
+| 렌더링 | requestAnimationFrame 기반 오버레이 |
+| 설정 저장 | chrome.storage.sync |
 
-### Google Translate (기본)
-- API 키 불필요
-- 무료 사용 가능
-- 100개 이상 언어 지원
+---
 
-### Papago
-1. [네이버 클라우드 플랫폼](https://www.ncloud.com/) 가입
-2. Papago Translation API 생성
-3. Client ID와 Client Secret 발급
-4. 확장 프로그램 설정에 입력
+## 🚀 확장 프로그램 설치 (개발 버전)
 
-### DeepL
-1. [DeepL API](https://www.deepl.com/pro-api) 가입
-2. API 키 발급
-3. 확장 프로그램 설정에 입력
+Chrome 웹 스토어 등록 전까지 개발자 모드로 설치할 수 있습니다.
 
-## 🐛 문제 해결
+1. 이 저장소를 클론하거나 ZIP으로 다운로드
+2. Chrome 주소창에 `chrome://extensions` 입력
+3. 우측 상단 **개발자 모드** 활성화
+4. **압축 해제된 확장 프로그램 로드** 클릭
+5. `All-Extension_App/Chrome_Extension` 폴더 선택
 
-### 프로젝트 초기화 예정
+> 📅 Chrome 웹 스토어 등록은 추후 진행 예정입니다.
 
-## 📜 라이선스
-
-GPL-3.0 License - 이 프로젝트는 GNU General Public License v3.0 하에 배포됩니다.<br>
-자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+---
 
 ## 🤝 기여
 
-버그 리포트, 기능 제안, Pull Request 환영합니다!
+버그 리포트, 기능 제안, 자막 기여 모두 환영합니다.
 
-1. Fork this repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+```bash
+# 1. Fork 후 클론
+git clone https://github.com/YOUR_USERNAME/LST_Extension-Project.git
+
+# 2. 브랜치 생성
+git checkout -b feature/your-feature
+
+# 3. 변경 후 커밋
+git commit -m "feat: 기능 설명"
+
+# 4. Push & Pull Request
+git push origin feature/your-feature
+```
+
+---
+
+## 📜 라이선스
+
+GPL-3.0 License — 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+---
 
 ## 📮 문의
 
-- GitHub Issues: [issues](https://github.com/SOIV/LST_Extension-Project/issues)
-- Discord Community and Support: https://discord.gg/tVnhbaB9yY
-- Email: biz@soiv-studio.xyz
-
-## 🙏 감사의 말
-
-이 프로젝트는 다음 오픈소스 프로젝트들의 영감을 받았습니다:
-- [Speech Translator Chrome Extension](https://chromewebstore.google.com/detail/jodfjmaiakpnmeddgpeflpafebmlhppn?utm_source=item-share-cb)
-- [MORT](https://github.com/killkimno/MORT)
-- Chrome Audio Capture Extension
-- Web Speech API Examples
-
-이 프로젝트는 전 세계 스트리밍 커뮤니티의 언어 장벽을 허무는 데 기여하고자 만들어졌습니다.
+- **플랫폼**: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
+- **GitHub Issues**: [issues](https://github.com/SOIV/LST_Extension-Project/issues)
+- **Discord**: [discord.gg/tVnhbaB9yY](https://discord.gg/tVnhbaB9yY)
+- **Email**: biz@soiv-studio.xyz
