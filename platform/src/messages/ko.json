@@ -1,0 +1,78 @@
+{
+  "Navbar": {
+    "upload": "업로드",
+    "profile": "프로필",
+    "logout": "로그아웃",
+    "login": "로그인"
+  },
+  "LoginPage": {
+    "loginError": "로그인 중 오류가 발생했습니다. 다시 시도해 주세요.",
+    "continueWithGoogle": "Google로 계속하기",
+    "termsText1": "계속하면",
+    "termsOfService": "이용약관",
+    "termsText2": "및",
+    "privacyPolicy": "개인정보처리방침",
+    "termsText3": "에 동의하는 것으로 간주됩니다."
+  },
+  "UploadPage": {
+    "title": "자막 업로드",
+    "description": "SRT 또는 VTT 형식의 자막 파일을 업로드하세요.",
+    "labelYoutubeUrl": "YouTube URL 또는 영상 ID",
+    "labelLanguage": "자막 언어",
+    "labelFile": "자막 파일",
+    "clickToSelect": "클릭하여 파일 선택",
+    "labelMessage": "메시지",
+    "optional": "(선택)",
+    "placeholderMessage": "변경 사항 설명...",
+    "errorUpload": "업로드 중 오류가 발생했습니다.",
+    "uploading": "업로드 중...",
+    "upload": "업로드"
+  },
+  "ProfilePage": {
+    "title": "프로필",
+    "labelUsername": "닉네임",
+    "placeholderUsername": "표시될 이름",
+    "labelHandle": "핸들",
+    "handleHint": "소문자, 숫자, 밑줄(_)만 사용 가능",
+    "errorHandleTaken": "이미 사용 중인 핸들입니다.",
+    "errorSave": "저장 중 오류가 발생했습니다.",
+    "successSave": "저장되었습니다.",
+    "saving": "저장 중...",
+    "save": "저장"
+  },
+  "SubtitlePage": {
+    "communitySubtitles": "커뮤니티 자막",
+    "uploadSubtitle": "+ 자막 업로드",
+    "noSubtitles": "아직 등록된 자막이 없습니다.",
+    "uploadFirst": "첫 번째 자막을 업로드해보세요",
+    "statusDraft": "초안",
+    "statusPending": "검토 중",
+    "statusApproved": "승인됨",
+    "statusRejected": "거절됨",
+    "edit": "편집",
+    "revisionHistory": "리비전 히스토리",
+    "current": "현재"
+  },
+  "EditorPage": {
+    "back": "← 뒤로",
+    "editTitle": "{language} 편집",
+    "messagePlaceholder": "변경 메시지...",
+    "messagePlaceholderMobile": "변경 메시지 (선택)...",
+    "saving": "저장 중...",
+    "saved": "저장됨 ✓",
+    "save": "저장",
+    "successSaved": "저장됐습니다. 자막 목록으로 이동합니다...",
+    "errorSave": "저장 중 오류가 발생했습니다.",
+    "errorNetwork": "네트워크 오류가 발생했습니다.",
+    "tabTimeline": "타임라인",
+    "tabScript": "스크립트",
+    "noCues": "자막 큐가 없습니다.",
+    "addFirstCue": "+ 첫 번째 큐 추가",
+    "addCue": "+ 큐 추가",
+    "seekToTime": "이 시간으로 이동",
+    "ariaStartTime": "시작 시간",
+    "ariaEndTime": "종료 시간",
+    "ariaSubtitleText": "자막 텍스트",
+    "ariaDeleteCue": "큐 삭제"
+  }
+}

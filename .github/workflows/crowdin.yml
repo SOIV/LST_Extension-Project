@@ -1,0 +1,69 @@
+name: Crowdin Sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # 익스텐션 원본(ko) 번역 파일이 바뀔 때만 실행
+      - 'All-Extension_App/Chrome_Extension/_locales/ko/messages.json'
+      # 플랫폼 원본(ko) 번역 파일이 바뀔 때만 실행
+      - 'platform/src/messages/ko.json'
+
+  # 매주 월요일 오전 9시(KST) = UTC 0시에 번역 내려받기
+  schedule:
+    - cron: '0 0 * * 1'
+
+  # 수동 실행도 가능하게
+  workflow_dispatch:
+
+jobs:
+  # ── 소스 파일 업로드 (push 때만) ──────────────────────────────────────────
+  upload-sources:
+    name: Upload source files to Crowdin
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload to Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: true
+          upload_translations: false
+          crowdin_branch_name: main
+        env:
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+  # ── 번역 내려받기 + PR 생성 (스케줄 or 수동) ──────────────────────────────
+  download-translations:
+    name: Download translations and open PR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download from Crowdin and create PR
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: false
+          upload_translations: true
+          download_translations: true
+          # 번역 PR 자동 생성
+          create_pull_request: true
+          pull_request_title: '🌐 New translations from Crowdin'
+          pull_request_body: |
+            This PR was automatically created by the Crowdin GitHub Action.
+            It contains the latest community translations.
+          pull_request_base_branch_name: main
+          localization_branch_name: crowdin-translations
+          crowdin_branch_name: main
+          # 번역이 80% 이상 완성된 것만 내려받기
+          download_language: all
+          skip_untranslated_strings: true
+        env:
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

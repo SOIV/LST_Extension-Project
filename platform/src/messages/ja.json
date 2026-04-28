@@ -1,0 +1,78 @@
+{
+  "Navbar": {
+    "upload": "アップロード",
+    "profile": "プロフィール",
+    "logout": "ログアウト",
+    "login": "ログイン"
+  },
+  "LoginPage": {
+    "loginError": "ログイン中にエラーが発生しました。もう一度お試しください。",
+    "continueWithGoogle": "Googleで続ける",
+    "termsText1": "続けることで、",
+    "termsOfService": "利用規約",
+    "termsText2": "および",
+    "privacyPolicy": "プライバシーポリシー",
+    "termsText3": "に同意したものとみなされます。"
+  },
+  "UploadPage": {
+    "title": "字幕アップロード",
+    "description": "SRTまたはVTT形式の字幕ファイルをアップロードしてください。",
+    "labelYoutubeUrl": "YouTube URLまたは動画ID",
+    "labelLanguage": "字幕言語",
+    "labelFile": "字幕ファイル",
+    "clickToSelect": "クリックしてファイルを選択",
+    "labelMessage": "メッセージ",
+    "optional": "（任意）",
+    "placeholderMessage": "変更内容を説明...",
+    "errorUpload": "アップロード中にエラーが発生しました。",
+    "uploading": "アップロード中...",
+    "upload": "アップロード"
+  },
+  "ProfilePage": {
+    "title": "プロフィール",
+    "labelUsername": "ニックネーム",
+    "placeholderUsername": "表示名",
+    "labelHandle": "ハンドル",
+    "handleHint": "小文字、数字、アンダースコア（_）のみ使用可能",
+    "errorHandleTaken": "このハンドルはすでに使用されています。",
+    "errorSave": "保存中にエラーが発生しました。",
+    "successSave": "保存しました。",
+    "saving": "保存中...",
+    "save": "保存"
+  },
+  "SubtitlePage": {
+    "communitySubtitles": "コミュニティ字幕",
+    "uploadSubtitle": "+ 字幕アップロード",
+    "noSubtitles": "まだ字幕がありません。",
+    "uploadFirst": "最初の字幕をアップロードしてみましょう",
+    "statusDraft": "下書き",
+    "statusPending": "審査中",
+    "statusApproved": "承認済み",
+    "statusRejected": "却下",
+    "edit": "編集",
+    "revisionHistory": "リビジョン履歴",
+    "current": "現在"
+  },
+  "EditorPage": {
+    "back": "← 戻る",
+    "editTitle": "{language} を編集",
+    "messagePlaceholder": "変更メッセージ...",
+    "messagePlaceholderMobile": "変更メッセージ（任意）...",
+    "saving": "保存中...",
+    "saved": "保存済み ✓",
+    "save": "保存",
+    "successSaved": "保存しました。字幕リストに移動します...",
+    "errorSave": "保存中にエラーが発生しました。",
+    "errorNetwork": "ネットワークエラーが発生しました。",
+    "tabTimeline": "タイムライン",
+    "tabScript": "スクリプト",
+    "noCues": "字幕キューがありません。",
+    "addFirstCue": "+ 最初のキューを追加",
+    "addCue": "+ キューを追加",
+    "seekToTime": "この時間に移動",
+    "ariaStartTime": "開始時間",
+    "ariaEndTime": "終了時間",
+    "ariaSubtitleText": "字幕テキスト",
+    "ariaDeleteCue": "キューを削除"
+  }
+}

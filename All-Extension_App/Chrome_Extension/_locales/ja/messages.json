@@ -1,0 +1,410 @@
+{
+  "extName": {
+    "message": "Live Stream Translator",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "リアルタイムストリーミングプラットフォームの統合翻訳システム - YouTube、Twitch、SOOP、Chzzk、Niconicoに対応",
+    "description": "Extension description"
+  },
+  "nav_language": {
+    "message": "言語",
+    "description": "Navigation label for language settings"
+  },
+  "nav_translation": {
+    "message": "翻訳",
+    "description": "Navigation label for translation settings"
+  },
+  "nav_display": {
+    "message": "表示",
+    "description": "Navigation label for display settings"
+  },
+  "nav_status": {
+    "message": "ステータス",
+    "description": "Navigation label for status page"
+  },
+  "nav_about": {
+    "message": "について",
+    "description": "Navigation label for about page"
+  },
+  "btn_save": {
+    "message": "保存",
+    "description": "Save button text"
+  },
+  "title_language": {
+    "message": "言語設定",
+    "description": "Page title for language settings"
+  },
+  "title_translation": {
+    "message": "翻訳設定",
+    "description": "Page title for translation settings"
+  },
+  "title_display": {
+    "message": "表示設定",
+    "description": "Page title for display settings"
+  },
+  "title_status": {
+    "message": "システムステータス",
+    "description": "Page title for status page"
+  },
+  "title_about": {
+    "message": "について",
+    "description": "Page title for about page"
+  },
+  "heading_speechRecognition": {
+    "message": "音声認識言語",
+    "description": "Heading for speech recognition section"
+  },
+  "label_sourceLang": {
+    "message": "ソース言語",
+    "description": "Label for source language dropdown"
+  },
+  "label_targetLang": {
+    "message": "ターゲット言語",
+    "description": "Label for target language dropdown"
+  },
+  "lang_auto": {
+    "message": "自動検出",
+    "description": "Auto detect language option"
+  },
+  "lang_ko": {
+    "message": "韓国語",
+    "description": "Korean language option"
+  },
+  "lang_en": {
+    "message": "英語",
+    "description": "English language option"
+  },
+  "lang_ja": {
+    "message": "日本語",
+    "description": "Japanese language option"
+  },
+  "lang_zhCN": {
+    "message": "中国語（簡体字）",
+    "description": "Chinese Simplified language option"
+  },
+  "lang_zhTW": {
+    "message": "中国語（繁体字）",
+    "description": "Chinese Traditional language option"
+  },
+  "lang_es": {
+    "message": "スペイン語",
+    "description": "Spanish language option"
+  },
+  "lang_fr": {
+    "message": "フランス語",
+    "description": "French language option"
+  },
+  "lang_de": {
+    "message": "ドイツ語",
+    "description": "German language option"
+  },
+  "lang_ru": {
+    "message": "ロシア語",
+    "description": "Russian language option"
+  },
+  "help_sourceLang": {
+    "message": "ストリーミング音声の言語を選択してください",
+    "description": "Help text for source language"
+  },
+  "help_targetLang": {
+    "message": "字幕に表示する言語を選択してください",
+    "description": "Help text for target language"
+  },
+  "heading_translationEngine": {
+    "message": "翻訳エンジンの選択",
+    "description": "Heading for translation engine section"
+  },
+  "label_engine": {
+    "message": "エンジン",
+    "description": "Label for translation engine dropdown"
+  },
+  "engine_google": {
+    "message": "Google翻訳（無料）",
+    "description": "Google Translate option"
+  },
+  "engine_papago": {
+    "message": "Papago（APIキー必要）",
+    "description": "Papago option"
+  },
+  "engine_deepl": {
+    "message": "DeepL（APIキー必要）",
+    "description": "DeepL option"
+  },
+  "help_googleEngine": {
+    "message": "Google翻訳は追加設定なしですぐに利用できます",
+    "description": "Help text for Google Translate"
+  },
+  "heading_apiKey": {
+    "message": "APIキーの設定",
+    "description": "Heading for API key section"
+  },
+  "label_apiKey": {
+    "message": "APIキー",
+    "description": "Label for API key input"
+  },
+  "label_apiSecret": {
+    "message": "APIシークレット（Papago）",
+    "description": "Label for API secret input"
+  },
+  "placeholder_apiKey": {
+    "message": "APIキーを入力してください",
+    "description": "Placeholder for API key input"
+  },
+  "placeholder_apiSecret": {
+    "message": "APIシークレットを入力してください",
+    "description": "Placeholder for API secret input"
+  },
+  "info_apiKeyTitle": {
+    "message": "APIキーの取得方法",
+    "description": "Title for API key info box"
+  },
+  "info_googleAppsScript": {
+    "message": "Google Apps Script:",
+    "description": "Google Apps Script label"
+  },
+  "info_googleAppsScriptDesc": {
+    "message": "Apps ScriptのデプロイURLを入力してください",
+    "description": "Google Apps Script description"
+  },
+  "info_papago": {
+    "message": "Papago:",
+    "description": "Papago label"
+  },
+  "info_papagoDesc": {
+    "message": "Naver Cloud Platform（ncloud.com）から取得",
+    "description": "Papago description"
+  },
+  "info_deepl": {
+    "message": "DeepL:",
+    "description": "DeepL label"
+  },
+  "info_deeplDesc": {
+    "message": "DeepL APIページ（deepl.com/pro-api）から取得",
+    "description": "DeepL description"
+  },
+  "heading_subtitleDisplay": {
+    "message": "字幕表示設定",
+    "description": "Heading for subtitle display section"
+  },
+  "label_showOriginal": {
+    "message": "原文と翻訳テキストの両方を表示",
+    "description": "Label for show original checkbox"
+  },
+  "help_showOriginal": {
+    "message": "原文と翻訳語の両方を表示します",
+    "description": "Help text for show original"
+  },
+  "label_overlayPosition": {
+    "message": "字幕の位置",
+    "description": "Label for overlay position dropdown"
+  },
+  "position_top": {
+    "message": "上",
+    "description": "Top position option"
+  },
+  "position_middle": {
+    "message": "中央",
+    "description": "Middle position option"
+  },
+  "position_bottom": {
+    "message": "下（推奨）",
+    "description": "Bottom position option"
+  },
+  "help_overlayPosition": {
+    "message": "ビデオプレーヤーでの字幕の表示位置",
+    "description": "Help text for overlay position"
+  },
+  "label_overlaySize": {
+    "message": "字幕サイズ：",
+    "description": "Label for overlay size slider"
+  },
+  "help_overlaySize": {
+    "message": "字幕テキストのサイズを調整",
+    "description": "Help text for overlay size"
+  },
+  "label_enableCache": {
+    "message": "翻訳キャッシュを有効にする",
+    "description": "Label for enable cache checkbox"
+  },
+  "help_enableCache": {
+    "message": "同じ文章の再翻訳を防ぎ、API使用量を節約します",
+    "description": "Help text for enable cache"
+  },
+  "heading_systemStatus": {
+    "message": "システムステータス",
+    "description": "Heading for system status section"
+  },
+  "status_webSpeechApi": {
+    "message": "Web Speech API",
+    "description": "Label for Web Speech API status"
+  },
+  "status_translationCache": {
+    "message": "翻訳キャッシュ",
+    "description": "Label for translation cache status"
+  },
+  "status_checking": {
+    "message": "確認中...",
+    "description": "Checking status text"
+  },
+  "status_cacheItems": {
+    "message": "件",
+    "description": "Cache items unit"
+  },
+  "btn_clearCache": {
+    "message": "キャッシュをクリア",
+    "description": "Clear cache button text"
+  },
+  "btn_resetSettings": {
+    "message": "設定をリセット",
+    "description": "Reset settings button text"
+  },
+  "about_description": {
+    "message": "リアルタイムストリーミングプラットフォームの統合翻訳システム",
+    "description": "About page description"
+  },
+  "about_supportedPlatforms": {
+    "message": "対応プラットフォーム",
+    "description": "Supported platforms heading"
+  },
+  "about_howToUse": {
+    "message": "使い方",
+    "description": "How to use heading"
+  },
+  "usage_step1": {
+    "message": "対応ストリーミングサイトにアクセス",
+    "description": "Usage step 1"
+  },
+  "usage_step2": {
+    "message": "ライブ配信ページを開く",
+    "description": "Usage step 2"
+  },
+  "usage_step3": {
+    "message": "拡張機能アイコンをクリック",
+    "description": "Usage step 3"
+  },
+  "usage_step4": {
+    "message": "リアルタイム翻訳字幕が表示されます",
+    "description": "Usage step 4"
+  },
+  "link_github": {
+    "message": "GitHub",
+    "description": "GitHub link text"
+  },
+  "link_reportIssue": {
+    "message": "問題を報告",
+    "description": "Report issue link text"
+  },
+  "link_help": {
+    "message": "ヘルプ",
+    "description": "Help link text"
+  },
+  "nav_subtitle": {
+    "message": "字幕",
+    "description": "Navigation label for community subtitle"
+  },
+  "nav_community": {
+    "message": "コミュニティ",
+    "description": "Navigation label for community subtitle"
+  },
+  "nav_realtime": {
+    "message": "リアルタイム",
+    "description": "Navigation label for real-time subtitle"
+  },
+  "title_community": {
+    "message": "コミュニティ字幕",
+    "description": "Page title for community subtitle"
+  },
+  "title_realtime": {
+    "message": "リアルタイム字幕",
+    "description": "Page title for real-time subtitle"
+  },
+  "inner_subtitle": {
+    "message": "字幕",
+    "description": "Inner tab: subtitle"
+  },
+  "inner_status": {
+    "message": "ステータス",
+    "description": "Inner tab: status"
+  },
+  "inner_language": {
+    "message": "言語",
+    "description": "Inner tab: language"
+  },
+  "inner_translation": {
+    "message": "翻訳",
+    "description": "Inner tab: translation"
+  },
+  "inner_rtStatus": {
+    "message": "ステータス",
+    "description": "Inner tab: realtime status"
+  },
+  "lang_auto_first": {
+    "message": "自動（最初に利用可能なもの）",
+    "description": "Auto language option for community subtitle"
+  },
+  "title_subtitle": {
+    "message": "コミュニティ字幕",
+    "description": "Page title for community subtitle tab"
+  },
+  "heading_subtitleControl": {
+    "message": "字幕コントロール",
+    "description": "Heading for subtitle control section"
+  },
+  "label_subtitleToggle": {
+    "message": "字幕を表示",
+    "description": "Label for subtitle toggle"
+  },
+  "help_subtitleToggle": {
+    "message": "コミュニティ字幕オーバーレイのオン/オフを切り替え",
+    "description": "Help text for subtitle toggle"
+  },
+  "label_subtitleLang": {
+    "message": "表示言語",
+    "description": "Label for subtitle language dropdown"
+  },
+  "help_subtitleLang": {
+    "message": "表示する字幕の言語を選択してください",
+    "description": "Help text for subtitle language"
+  },
+  "heading_subtitleStatus": {
+    "message": "現在の動画字幕",
+    "description": "Heading for current video subtitle status"
+  },
+  "subtitle_loading": {
+    "message": "確認中...",
+    "description": "Subtitle status loading"
+  },
+  "subtitle_available": {
+    "message": "字幕あり",
+    "description": "Subtitle available status"
+  },
+  "subtitle_unavailable": {
+    "message": "字幕なし",
+    "description": "Subtitle unavailable status"
+  },
+  "subtitle_unavailable_sub": {
+    "message": "この動画のコミュニティ字幕はありません",
+    "description": "Subtitle unavailable sub text"
+  },
+  "subtitle_not_youtube": {
+    "message": "YouTube動画ではありません",
+    "description": "Not a YouTube video status"
+  },
+  "locked_title": {
+    "message": "近日公開",
+    "description": "Locked feature title"
+  },
+  "locked_message": {
+    "message": "リアルタイム字幕機能はPhase 6で利用可能になります",
+    "description": "Locked feature message"
+  },
+  "toast_saved": {
+    "message": "設定を保存しました。",
+    "description": "Settings saved toast"
+  },
+  "toast_save_error": {
+    "message": "設定の保存に失敗しました。",
+    "description": "Settings save error toast"
+  }
+}

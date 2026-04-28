@@ -1,13 +1,33 @@
+import createIntlMiddleware from "next-intl/middleware";
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
+import { routing } from "./i18n/routing";
 
-// 로그인 없이 접근 가능한 경로
+const intlMiddleware = createIntlMiddleware(routing);
+
 const PUBLIC_PATHS = ["/", "/login", "/auth/callback", "/api/subtitles"];
 
+function pathnameWithoutLocale(pathname: string): string {
+  const locale = routing.locales.find(
+    (l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`
+  );
+  if (!locale) return pathname;
+  return pathname.slice(locale.length + 1) || "/";
+}
+
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: { headers: request.headers },
-  });
+  const { pathname } = request.nextUrl;
+
+  // Run i18n middleware first
+  const i18nResponse = intlMiddleware(request);
+
+  // If i18n produced a redirect (locale detection), return it immediately
+  if (i18nResponse.headers.get("location")) {
+    return i18nResponse;
+  }
+
+  // Set up Supabase auth check
+  let response = NextResponse.next({ request: { headers: request.headers } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,29 +50,36 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // 세션 갱신 (중요: getUser()를 호출해야 세션이 갱신됨)
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
+  const stripped = pathnameWithoutLocale(pathname);
+  const locale =
+    routing.locales.find((l) => pathname.startsWith(`/${l}`)) ??
+    routing.defaultLocale;
 
-  // 공개 경로 또는 API 경로는 통과
   const isPublic =
-    PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/")) ||
-    pathname.startsWith("/api/");
+    PUBLIC_PATHS.some(
+      (p) => stripped === p || stripped.startsWith(p + "/")
+    ) || pathname.startsWith("/api/");
 
-  // 로그인 필요한 경로에 비로그인 접근 시 리다이렉트
   if (!user && !isPublic) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL(`/${locale}/login`, request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 이미 로그인 상태에서 /login 접근 시 홈으로
-  if (user && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (user && stripped === "/login") {
+    return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
+
+  // Merge i18n headers into response
+  i18nResponse.headers.forEach((value, key) => {
+    if (!response.headers.has(key)) {
+      response.headers.set(key, value);
+    }
+  });
 
   return response;
 }

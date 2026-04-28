@@ -1,0 +1,78 @@
+{
+  "Navbar": {
+    "upload": "Upload",
+    "profile": "Profile",
+    "logout": "Sign Out",
+    "login": "Sign In"
+  },
+  "LoginPage": {
+    "loginError": "An error occurred during sign in. Please try again.",
+    "continueWithGoogle": "Continue with Google",
+    "termsText1": "By continuing, you agree to our",
+    "termsOfService": "Terms of Service",
+    "termsText2": "and",
+    "privacyPolicy": "Privacy Policy",
+    "termsText3": "."
+  },
+  "UploadPage": {
+    "title": "Upload Subtitle",
+    "description": "Upload a subtitle file in SRT or VTT format.",
+    "labelYoutubeUrl": "YouTube URL or Video ID",
+    "labelLanguage": "Subtitle Language",
+    "labelFile": "Subtitle File",
+    "clickToSelect": "Click to select file",
+    "labelMessage": "Message",
+    "optional": "(optional)",
+    "placeholderMessage": "Describe your changes...",
+    "errorUpload": "An error occurred during upload.",
+    "uploading": "Uploading...",
+    "upload": "Upload"
+  },
+  "ProfilePage": {
+    "title": "Profile",
+    "labelUsername": "Display Name",
+    "placeholderUsername": "Your display name",
+    "labelHandle": "Handle",
+    "handleHint": "Lowercase letters, numbers, and underscores only",
+    "errorHandleTaken": "This handle is already taken.",
+    "errorSave": "An error occurred while saving.",
+    "successSave": "Saved successfully.",
+    "saving": "Saving...",
+    "save": "Save"
+  },
+  "SubtitlePage": {
+    "communitySubtitles": "Community Subtitles",
+    "uploadSubtitle": "+ Upload Subtitle",
+    "noSubtitles": "No subtitles yet.",
+    "uploadFirst": "Be the first to upload a subtitle",
+    "statusDraft": "Draft",
+    "statusPending": "Under Review",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "edit": "Edit",
+    "revisionHistory": "Revision History",
+    "current": "Current"
+  },
+  "EditorPage": {
+    "back": "← Back",
+    "editTitle": "Edit {language}",
+    "messagePlaceholder": "Change message...",
+    "messagePlaceholderMobile": "Change message (optional)...",
+    "saving": "Saving...",
+    "saved": "Saved ✓",
+    "save": "Save",
+    "successSaved": "Saved. Redirecting to subtitle list...",
+    "errorSave": "An error occurred while saving.",
+    "errorNetwork": "A network error occurred.",
+    "tabTimeline": "Timeline",
+    "tabScript": "Script",
+    "noCues": "No subtitle cues.",
+    "addFirstCue": "+ Add first cue",
+    "addCue": "+ Add cue",
+    "seekToTime": "Seek to this time",
+    "ariaStartTime": "Start time",
+    "ariaEndTime": "End time",
+    "ariaSubtitleText": "Subtitle text",
+    "ariaDeleteCue": "Delete cue"
+  }
+}

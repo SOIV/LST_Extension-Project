@@ -1,0 +1,410 @@
+{
+  "extName": {
+    "message": "Live Stream Translator",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "실시간 스트리밍 플랫폼 통합 번역 시스템 - YouTube, Twitch, SOOP, 치지직, 니코니코동화 지원",
+    "description": "Extension description"
+  },
+  "nav_language": {
+    "message": "언어",
+    "description": "Navigation label for language settings"
+  },
+  "nav_translation": {
+    "message": "번역",
+    "description": "Navigation label for translation settings"
+  },
+  "nav_display": {
+    "message": "표시",
+    "description": "Navigation label for display settings"
+  },
+  "nav_status": {
+    "message": "상태",
+    "description": "Navigation label for status page"
+  },
+  "nav_about": {
+    "message": "정보",
+    "description": "Navigation label for about page"
+  },
+  "btn_save": {
+    "message": "저장",
+    "description": "Save button text"
+  },
+  "title_language": {
+    "message": "언어 설정",
+    "description": "Page title for language settings"
+  },
+  "title_translation": {
+    "message": "번역 엔진",
+    "description": "Page title for translation settings"
+  },
+  "title_display": {
+    "message": "표시 옵션",
+    "description": "Page title for display settings"
+  },
+  "title_status": {
+    "message": "상태",
+    "description": "Page title for status page"
+  },
+  "title_about": {
+    "message": "정보",
+    "description": "Page title for about page"
+  },
+  "heading_speechRecognition": {
+    "message": "음성 인식 언어",
+    "description": "Heading for speech recognition section"
+  },
+  "label_sourceLang": {
+    "message": "원본 언어",
+    "description": "Label for source language dropdown"
+  },
+  "label_targetLang": {
+    "message": "번역 언어",
+    "description": "Label for target language dropdown"
+  },
+  "lang_auto": {
+    "message": "자동 감지",
+    "description": "Auto detect language option"
+  },
+  "lang_ko": {
+    "message": "한국어",
+    "description": "Korean language option"
+  },
+  "lang_en": {
+    "message": "영어",
+    "description": "English language option"
+  },
+  "lang_ja": {
+    "message": "일본어",
+    "description": "Japanese language option"
+  },
+  "lang_zhCN": {
+    "message": "중국어 (간체)",
+    "description": "Chinese Simplified language option"
+  },
+  "lang_zhTW": {
+    "message": "중국어 (번체)",
+    "description": "Chinese Traditional language option"
+  },
+  "lang_es": {
+    "message": "스페인어",
+    "description": "Spanish language option"
+  },
+  "lang_fr": {
+    "message": "프랑스어",
+    "description": "French language option"
+  },
+  "lang_de": {
+    "message": "독일어",
+    "description": "German language option"
+  },
+  "lang_ru": {
+    "message": "러시아어",
+    "description": "Russian language option"
+  },
+  "help_sourceLang": {
+    "message": "스트리밍 오디오의 언어를 선택하세요",
+    "description": "Help text for source language"
+  },
+  "help_targetLang": {
+    "message": "자막으로 표시할 언어를 선택하세요",
+    "description": "Help text for target language"
+  },
+  "heading_translationEngine": {
+    "message": "번역 엔진 선택",
+    "description": "Heading for translation engine section"
+  },
+  "label_engine": {
+    "message": "엔진",
+    "description": "Label for translation engine dropdown"
+  },
+  "engine_google": {
+    "message": "Google Translate (무료)",
+    "description": "Google Translate option"
+  },
+  "engine_papago": {
+    "message": "Papago (API 키 필요)",
+    "description": "Papago option"
+  },
+  "engine_deepl": {
+    "message": "DeepL (API 키 필요)",
+    "description": "DeepL option"
+  },
+  "help_googleEngine": {
+    "message": "Google Translate는 별도 설정 없이 바로 사용 가능",
+    "description": "Help text for Google Translate"
+  },
+  "heading_apiKey": {
+    "message": "API 키 설정",
+    "description": "Heading for API key section"
+  },
+  "label_apiKey": {
+    "message": "API 키",
+    "description": "Label for API key input"
+  },
+  "label_apiSecret": {
+    "message": "API Secret (Papago)",
+    "description": "Label for API secret input"
+  },
+  "placeholder_apiKey": {
+    "message": "API 키를 입력하세요",
+    "description": "Placeholder for API key input"
+  },
+  "placeholder_apiSecret": {
+    "message": "API Secret을 입력하세요",
+    "description": "Placeholder for API secret input"
+  },
+  "info_apiKeyTitle": {
+    "message": "API 키 발급 방법",
+    "description": "Title for API key info box"
+  },
+  "info_googleAppsScript": {
+    "message": "Google Apps Script:",
+    "description": "Google Apps Script label"
+  },
+  "info_googleAppsScriptDesc": {
+    "message": "Apps Script 배포 URL을 입력하세요",
+    "description": "Google Apps Script description"
+  },
+  "info_papago": {
+    "message": "Papago:",
+    "description": "Papago label"
+  },
+  "info_papagoDesc": {
+    "message": "네이버 클라우드 플랫폼 (ncloud.com)에서 발급",
+    "description": "Papago description"
+  },
+  "info_deepl": {
+    "message": "DeepL:",
+    "description": "DeepL label"
+  },
+  "info_deeplDesc": {
+    "message": "DeepL API 페이지 (deepl.com/pro-api)에서 발급",
+    "description": "DeepL description"
+  },
+  "heading_subtitleDisplay": {
+    "message": "자막 표시 설정",
+    "description": "Heading for subtitle display section"
+  },
+  "label_showOriginal": {
+    "message": "원문과 번역문 함께 표시",
+    "description": "Label for show original checkbox"
+  },
+  "help_showOriginal": {
+    "message": "원본 언어와 번역된 언어를 모두 표시합니다",
+    "description": "Help text for show original"
+  },
+  "label_overlayPosition": {
+    "message": "자막 위치",
+    "description": "Label for overlay position dropdown"
+  },
+  "position_top": {
+    "message": "상단",
+    "description": "Top position option"
+  },
+  "position_middle": {
+    "message": "중앙",
+    "description": "Middle position option"
+  },
+  "position_bottom": {
+    "message": "하단 (권장)",
+    "description": "Bottom position option"
+  },
+  "help_overlayPosition": {
+    "message": "비디오 플레이어에서 자막이 표시될 위치",
+    "description": "Help text for overlay position"
+  },
+  "label_overlaySize": {
+    "message": "자막 크기:",
+    "description": "Label for overlay size slider"
+  },
+  "help_overlaySize": {
+    "message": "자막 텍스트의 크기를 조정합니다",
+    "description": "Help text for overlay size"
+  },
+  "label_enableCache": {
+    "message": "번역 캐싱 활성화",
+    "description": "Label for enable cache checkbox"
+  },
+  "help_enableCache": {
+    "message": "동일한 문장의 재번역을 방지하여 API 사용량을 절약합니다",
+    "description": "Help text for enable cache"
+  },
+  "heading_systemStatus": {
+    "message": "시스템 상태",
+    "description": "Heading for system status section"
+  },
+  "status_webSpeechApi": {
+    "message": "Web Speech API",
+    "description": "Label for Web Speech API status"
+  },
+  "status_translationCache": {
+    "message": "번역 캐시",
+    "description": "Label for translation cache status"
+  },
+  "status_checking": {
+    "message": "확인 중...",
+    "description": "Checking status text"
+  },
+  "status_cacheItems": {
+    "message": "개 항목",
+    "description": "Cache items unit"
+  },
+  "btn_clearCache": {
+    "message": "캐시 지우기",
+    "description": "Clear cache button text"
+  },
+  "btn_resetSettings": {
+    "message": "설정 초기화",
+    "description": "Reset settings button text"
+  },
+  "about_description": {
+    "message": "실시간 스트리밍 플랫폼을 위한 통합 번역 시스템",
+    "description": "About page description"
+  },
+  "about_supportedPlatforms": {
+    "message": "지원 플랫폼",
+    "description": "Supported platforms heading"
+  },
+  "about_howToUse": {
+    "message": "사용 방법",
+    "description": "How to use heading"
+  },
+  "usage_step1": {
+    "message": "지원하는 스트리밍 사이트로 이동",
+    "description": "Usage step 1"
+  },
+  "usage_step2": {
+    "message": "라이브 방송 페이지 열기",
+    "description": "Usage step 2"
+  },
+  "usage_step3": {
+    "message": "Extension 아이콘 클릭",
+    "description": "Usage step 3"
+  },
+  "usage_step4": {
+    "message": "실시간 번역 자막 표시",
+    "description": "Usage step 4"
+  },
+  "link_github": {
+    "message": "GitHub",
+    "description": "GitHub link text"
+  },
+  "link_reportIssue": {
+    "message": "문제 보고",
+    "description": "Report issue link text"
+  },
+  "link_help": {
+    "message": "도움말",
+    "description": "Help link text"
+  },
+  "nav_subtitle": {
+    "message": "자막",
+    "description": "Navigation label for community subtitle"
+  },
+  "nav_community": {
+    "message": "커뮤니티",
+    "description": "Navigation label for community subtitle"
+  },
+  "nav_realtime": {
+    "message": "실시간",
+    "description": "Navigation label for real-time subtitle"
+  },
+  "title_community": {
+    "message": "커뮤니티 자막",
+    "description": "Page title for community subtitle"
+  },
+  "title_realtime": {
+    "message": "실시간 자막",
+    "description": "Page title for real-time subtitle"
+  },
+  "inner_subtitle": {
+    "message": "자막",
+    "description": "Inner tab: subtitle"
+  },
+  "inner_status": {
+    "message": "상태",
+    "description": "Inner tab: status"
+  },
+  "inner_language": {
+    "message": "언어",
+    "description": "Inner tab: language"
+  },
+  "inner_translation": {
+    "message": "번역",
+    "description": "Inner tab: translation"
+  },
+  "inner_rtStatus": {
+    "message": "상태",
+    "description": "Inner tab: realtime status"
+  },
+  "lang_auto_first": {
+    "message": "자동 (첫 번째 자막)",
+    "description": "Auto language option for community subtitle"
+  },
+  "title_subtitle": {
+    "message": "커뮤니티 자막",
+    "description": "Page title for community subtitle tab"
+  },
+  "heading_subtitleControl": {
+    "message": "자막 제어",
+    "description": "Heading for subtitle control section"
+  },
+  "label_subtitleToggle": {
+    "message": "자막 표시",
+    "description": "Label for subtitle toggle"
+  },
+  "help_subtitleToggle": {
+    "message": "커뮤니티 자막 오버레이를 켜거나 끕니다",
+    "description": "Help text for subtitle toggle"
+  },
+  "label_subtitleLang": {
+    "message": "표시 언어",
+    "description": "Label for subtitle language dropdown"
+  },
+  "help_subtitleLang": {
+    "message": "표시할 자막 언어를 선택하세요",
+    "description": "Help text for subtitle language"
+  },
+  "heading_subtitleStatus": {
+    "message": "현재 영상 자막",
+    "description": "Heading for current video subtitle status"
+  },
+  "subtitle_loading": {
+    "message": "확인 중...",
+    "description": "Subtitle status loading"
+  },
+  "subtitle_available": {
+    "message": "자막 있음",
+    "description": "Subtitle available status"
+  },
+  "subtitle_unavailable": {
+    "message": "자막 없음",
+    "description": "Subtitle unavailable status"
+  },
+  "subtitle_unavailable_sub": {
+    "message": "이 영상의 커뮤니티 자막이 없습니다",
+    "description": "Subtitle unavailable sub text"
+  },
+  "subtitle_not_youtube": {
+    "message": "YouTube 영상이 아닙니다",
+    "description": "Not a YouTube video status"
+  },
+  "locked_title": {
+    "message": "준비 중",
+    "description": "Locked feature title"
+  },
+  "locked_message": {
+    "message": "실시간 자막 기능은 Phase 6에서 활성화됩니다",
+    "description": "Locked feature message"
+  },
+  "toast_saved": {
+    "message": "설정이 저장되었습니다.",
+    "description": "Settings saved toast"
+  },
+  "toast_save_error": {
+    "message": "설정 저장에 실패했습니다.",
+    "description": "Settings save error toast"
+  }
+}
