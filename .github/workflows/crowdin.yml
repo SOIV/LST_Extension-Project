@@ -63,8 +63,6 @@ jobs:
           pull_request_base_branch_name: main
           localization_branch_name: crowdin-translations
           crowdin_branch_name: main
-          # 번역이 80% 이상 완성된 것만 내려받기
-          download_language: all
           skip_untranslated_strings: true
         env:
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
