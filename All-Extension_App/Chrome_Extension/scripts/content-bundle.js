@@ -544,7 +544,7 @@ class LiveStreamTranslator {
     this.platformConfig = platformInfo.config;
 
     if (!this.platformConfig) {
-      console.warn('Unknown platform, translator disabled');
+      console.debug('LST: 지원하지 않는 페이지, 번역기 비활성화');
       return false;
     }
 
