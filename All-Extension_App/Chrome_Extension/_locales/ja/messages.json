@@ -1,8 +1,4 @@
 {
-  "extName": {
-    "message": "Live Stream Translator",
-    "description": "Extension name"
-  },
   "extDescription": {
     "message": "リアルタイムストリーミングプラットフォームの統合翻訳システム - YouTube、Twitch、SOOP、Chzzk、Niconicoに対応",
     "description": "Extension description"
@@ -159,25 +155,13 @@
     "message": "APIキーの取得方法",
     "description": "Title for API key info box"
   },
-  "info_googleAppsScript": {
-    "message": "Google Apps Script:",
-    "description": "Google Apps Script label"
-  },
   "info_googleAppsScriptDesc": {
     "message": "Apps ScriptのデプロイURLを入力してください",
     "description": "Google Apps Script description"
   },
-  "info_papago": {
-    "message": "Papago:",
-    "description": "Papago label"
-  },
   "info_papagoDesc": {
     "message": "Naver Cloud Platform（ncloud.com）から取得",
     "description": "Papago description"
-  },
-  "info_deepl": {
-    "message": "DeepL:",
-    "description": "DeepL label"
   },
   "info_deeplDesc": {
     "message": "DeepL APIページ（deepl.com/pro-api）から取得",
@@ -235,10 +219,6 @@
     "message": "システムステータス",
     "description": "Heading for system status section"
   },
-  "status_webSpeechApi": {
-    "message": "Web Speech API",
-    "description": "Label for Web Speech API status"
-  },
   "status_translationCache": {
     "message": "翻訳キャッシュ",
     "description": "Label for translation cache status"
@@ -286,10 +266,6 @@
   "usage_step4": {
     "message": "リアルタイム翻訳字幕が表示されます",
     "description": "Usage step 4"
-  },
-  "link_github": {
-    "message": "GitHub",
-    "description": "GitHub link text"
   },
   "link_reportIssue": {
     "message": "問題を報告",

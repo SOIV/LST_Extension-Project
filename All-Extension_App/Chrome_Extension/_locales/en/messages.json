@@ -1,8 +1,4 @@
 {
-  "extName": {
-    "message": "Live Stream Translator",
-    "description": "Extension name"
-  },
   "extDescription": {
     "message": "Integrated translation system for real-time streaming platforms - Supports YouTube, Twitch, SOOP, Chzzk, and Niconico",
     "description": "Extension description"
@@ -143,10 +139,6 @@
     "message": "API Key",
     "description": "Label for API key input"
   },
-  "label_apiSecret": {
-    "message": "API Secret (Papago)",
-    "description": "Label for API secret input"
-  },
   "placeholder_apiKey": {
     "message": "Enter your API key",
     "description": "Placeholder for API key input"
@@ -159,25 +151,13 @@
     "message": "How to Get API Keys",
     "description": "Title for API key info box"
   },
-  "info_googleAppsScript": {
-    "message": "Google Apps Script:",
-    "description": "Google Apps Script label"
-  },
   "info_googleAppsScriptDesc": {
     "message": "Enter your Apps Script deployment URL",
     "description": "Google Apps Script description"
   },
-  "info_papago": {
-    "message": "Papago:",
-    "description": "Papago label"
-  },
   "info_papagoDesc": {
     "message": "Get from Naver Cloud Platform (ncloud.com)",
     "description": "Papago description"
-  },
-  "info_deepl": {
-    "message": "DeepL:",
-    "description": "DeepL label"
   },
   "info_deeplDesc": {
     "message": "Get from DeepL API page (deepl.com/pro-api)",
@@ -235,10 +215,6 @@
     "message": "System Status",
     "description": "Heading for system status section"
   },
-  "status_webSpeechApi": {
-    "message": "Web Speech API",
-    "description": "Label for Web Speech API status"
-  },
   "status_translationCache": {
     "message": "Translation Cache",
     "description": "Label for translation cache status"
@@ -286,10 +262,6 @@
   "usage_step4": {
     "message": "Real-time translation subtitles will be displayed",
     "description": "Usage step 4"
-  },
-  "link_github": {
-    "message": "GitHub",
-    "description": "GitHub link text"
   },
   "link_reportIssue": {
     "message": "Report Issue",
