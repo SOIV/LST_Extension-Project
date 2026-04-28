@@ -5,7 +5,6 @@ files:
   # Chrome/Firefox Extension locales
   - source: /All-Extension_App/Chrome_Extension/_locales/ko/messages.json
     translation: /All-Extension_App/Chrome_Extension/_locales/%two_letters_code%/messages.json
-    type: chrome_json
 
   # Platform (Next.js) messages
   - source: /platform/src/messages/ko.json
