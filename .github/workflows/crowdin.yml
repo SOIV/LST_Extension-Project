@@ -16,6 +16,9 @@ on:
   # 수동 실행도 가능하게
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ── 소스 파일 업로드 (push 때만) ──────────────────────────────────────────
   upload-sources:
