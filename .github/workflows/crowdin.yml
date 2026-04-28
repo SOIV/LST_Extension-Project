@@ -66,7 +66,6 @@ jobs:
           pull_request_base_branch_name: main
           localization_branch_name: crowdin-translations
           crowdin_branch_name: main
-          skip_untranslated_strings: true
         env:
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
