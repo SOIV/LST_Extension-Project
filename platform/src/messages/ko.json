@@ -3,7 +3,8 @@
     "upload": "업로드",
     "profile": "프로필",
     "logout": "로그아웃",
-    "login": "로그인"
+    "login": "로그인",
+    "searchPlaceholder": "동영상 제목, 채널명 또는 YouTube URL"
   },
   "LoginPage": {
     "loginError": "로그인 중 오류가 발생했습니다. 다시 시도해 주세요.",
@@ -17,7 +18,7 @@
   "UploadPage": {
     "title": "자막 업로드",
     "description": "SRT 또는 VTT 형식의 자막 파일을 업로드하세요.",
-    "labelYoutubeUrl": "YouTube URL 또는 영상 ID",
+    "labelYoutubeUrl": "YouTube URL 또는 동영상 ID",
     "labelLanguage": "자막 언어",
     "labelFile": "자막 파일",
     "clickToSelect": "클릭하여 파일 선택",
@@ -41,6 +42,11 @@
     "save": "저장"
   },
   "SubtitlePage": {
+    "creatorNotConnected": "이 채널의 크리에이터가 아직 LST와 연동하지 않았습니다.",
+    "creatorNotConnectedDesc": "크리에이터가 채널을 연동하면 커뮤니티 자막 작업에 참여할 수 있습니다.",
+    "requestConnection": "크리에이터에게 연동을 요청해보세요",
+    "copyShareLink": "공유 링크 복사",
+    "copied": "복사됨!",
     "communitySubtitles": "커뮤니티 자막",
     "uploadSubtitle": "+ 자막 업로드",
     "noSubtitles": "아직 등록된 자막이 없습니다.",
@@ -52,6 +58,46 @@
     "edit": "편집",
     "revisionHistory": "리비전 히스토리",
     "current": "현재"
+  },
+  "SearchPage": {
+    "title": "검색",
+    "placeholder": "동영상 제목, 채널명 또는 YouTube URL",
+    "searchButton": "검색",
+    "resultsFor": "\"{query}\" 검색 결과",
+    "channels": "채널",
+    "videos": "동영상",
+    "noResults": "검색 결과가 없습니다.",
+    "noQuery": "검색어를 입력하세요.",
+    "subscribers": "{count} 구독자",
+    "views": "{count}회",
+    "subtitleAvailable": "자막 있음",
+    "subtitlePending": "검토 중",
+    "subtitleDraft": "작업 중",
+    "viewSubtitles": "자막 보기",
+    "viewChannel": "채널 보기",
+    "apiNotConfigured": "YouTube API 키가 설정되지 않았습니다.",
+    "errorFetch": "검색 중 오류가 발생했습니다."
+  },
+  "ChannelPage": {
+    "tabVideos": "동영상",
+    "tabShorts": "Shorts",
+    "tabLive": "라이브",
+    "subscribers": "구독자 {count}명",
+    "videoCount": "동영상 {count}개",
+    "noVideos": "등록된 동영상이 없습니다.",
+    "noShorts": "등록된 Shorts가 없습니다.",
+    "noLive": "등록된 라이브 방송이 없습니다.",
+    "loadingMore": "불러오는 중...",
+    "allLoaded": "모든 영상을 불러왔습니다",
+    "viewSubtitles": "자막 보기",
+    "subtitleAvailable": "자막 있음",
+    "subtitlePending": "검토 중",
+    "subtitleDraft": "작업 중",
+    "connectedBadge": "LST 연동됨",
+    "notConnectedBadge": "미연동",
+    "notConnectedDesc": "크리에이터가 채널을 연동하면 커뮤니티 자막 작업을 시작할 수 있습니다.",
+    "apiNotConfigured": "YouTube API 키가 설정되지 않았습니다.",
+    "errorFetch": "채널 정보를 불러오는 중 오류가 발생했습니다."
   },
   "EditorPage": {
     "back": "← 뒤로",

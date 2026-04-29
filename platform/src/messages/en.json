@@ -3,7 +3,8 @@
     "upload": "Upload",
     "profile": "Profile",
     "logout": "Sign Out",
-    "login": "Sign In"
+    "login": "Sign In",
+    "searchPlaceholder": "Video title, channel name, or YouTube URL"
   },
   "LoginPage": {
     "loginError": "An error occurred during sign in. Please try again.",
@@ -41,6 +42,11 @@
     "save": "Save"
   },
   "SubtitlePage": {
+    "creatorNotConnected": "This channel's creator hasn't connected with LST yet.",
+    "creatorNotConnectedDesc": "Once the creator connects their channel, you'll be able to participate in community subtitle work.",
+    "requestConnection": "Ask the creator to connect",
+    "copyShareLink": "Copy share link",
+    "copied": "Copied!",
     "communitySubtitles": "Community Subtitles",
     "uploadSubtitle": "+ Upload Subtitle",
     "noSubtitles": "No subtitles yet.",
@@ -52,6 +58,46 @@
     "edit": "Edit",
     "revisionHistory": "Revision History",
     "current": "Current"
+  },
+  "SearchPage": {
+    "title": "Search",
+    "placeholder": "Video title, channel name, or YouTube URL",
+    "searchButton": "Search",
+    "resultsFor": "Results for \"{query}\"",
+    "channels": "Channels",
+    "videos": "Videos",
+    "noResults": "No results found.",
+    "noQuery": "Enter a search term.",
+    "subscribers": "{count} subscribers",
+    "views": "{count} views",
+    "subtitleAvailable": "Subtitles available",
+    "subtitlePending": "Under review",
+    "subtitleDraft": "In progress",
+    "viewSubtitles": "View subtitles",
+    "viewChannel": "View channel",
+    "apiNotConfigured": "YouTube API key is not configured.",
+    "errorFetch": "An error occurred while searching."
+  },
+  "ChannelPage": {
+    "tabVideos": "Videos",
+    "tabShorts": "Shorts",
+    "tabLive": "Live",
+    "subscribers": "{count} subscribers",
+    "videoCount": "{count} videos",
+    "noVideos": "No videos found.",
+    "noShorts": "No Shorts found.",
+    "noLive": "No live streams found.",
+    "loadingMore": "Loading...",
+    "allLoaded": "All videos loaded",
+    "viewSubtitles": "View subtitles",
+    "subtitleAvailable": "Subtitles available",
+    "subtitlePending": "Under review",
+    "subtitleDraft": "In progress",
+    "connectedBadge": "LST Connected",
+    "notConnectedBadge": "Not connected",
+    "notConnectedDesc": "Once the creator connects their channel, community subtitle work can begin.",
+    "apiNotConfigured": "YouTube API key is not configured.",
+    "errorFetch": "Failed to load channel information."
   },
   "EditorPage": {
     "back": "← Back",

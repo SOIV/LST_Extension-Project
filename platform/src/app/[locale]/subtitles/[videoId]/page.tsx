@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { getVideoById, type YoutubeVideo } from "@/lib/youtube";
+import CopyLinkButton from "@/components/CopyLinkButton";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   ko: "한국어", en: "English", ja: "日本語",
@@ -9,12 +11,104 @@ const LANGUAGE_NAMES: Record<string, string> = {
   es: "Español", fr: "Français", de: "Deutsch", ru: "Русский",
 };
 
+// ─── 크리에이터 미연동 페이지 ──────────────────────────────────────────────────
+
+function CreatorNotConnected({
+  videoId,
+  ytVideo,
+  t,
+  shareUrl,
+}: {
+  videoId: string;
+  ytVideo: YoutubeVideo | null;
+  t: Awaited<ReturnType<typeof getTranslations<"SubtitlePage">>>;
+  shareUrl: string;
+}) {
+  return (
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-10 px-4">
+      <div className="max-w-3xl mx-auto flex flex-col gap-6">
+
+        {/* 영상 플레이어 */}
+        <div className="flex flex-col gap-3">
+          <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}`}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+          {ytVideo && (
+            <div>
+              <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 line-clamp-2">
+                {ytVideo.title}
+              </h1>
+              {ytVideo.channelTitle && (
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  {ytVideo.channelTitle}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 크리에이터 미연동 안내 */}
+        <div className="flex flex-col items-center gap-4 py-10 px-6 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+
+          {/* 아이콘 */}
+          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-zinc-400 dark:text-zinc-500"
+            >
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <p className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
+              {t("creatorNotConnected")}
+            </p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">
+              {t("creatorNotConnectedDesc")}
+            </p>
+          </div>
+
+          {/* 공유 링크 복사 */}
+          <div className="flex flex-col items-center gap-2 pt-1">
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">
+              {t("requestConnection")}
+            </p>
+            <CopyLinkButton
+              url={shareUrl}
+              labelCopy={t("copyShareLink")}
+              labelCopied={t("copied")}
+            />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ─── 메인 페이지 ───────────────────────────────────────────────────────────────
+
 export default async function SubtitlePage({
   params,
 }: {
   params: Promise<{ locale: string; videoId: string }>;
 }) {
-  const { videoId } = await params;
+  const { videoId, locale } = await params;
   const supabase = await createClient();
   const t = await getTranslations("SubtitlePage");
 
@@ -38,7 +132,36 @@ export default async function SubtitlePage({
     .eq("youtube_video_id", videoId)
     .single();
 
-  if (!video) notFound();
+  // DB에 없는 영상 → 크리에이터 미연동 페이지
+  if (!video) {
+    // YouTube API로 영상 정보 보조 조회 (선택적)
+    let ytVideo: YoutubeVideo | null = null;
+    if (process.env.YOUTUBE_API_KEY) {
+      try {
+        ytVideo = await getVideoById(videoId);
+      } catch {
+        // API 실패해도 페이지는 보여줌
+      }
+    }
+
+    // YouTube에도 없는 videoId → 진짜 404
+    if (!ytVideo && !process.env.YOUTUBE_API_KEY) {
+      // API 키가 없으면 판별 불가 → 미연동 페이지로 fallback
+    } else if (!ytVideo) {
+      notFound();
+    }
+
+    const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/${locale}/subtitles/${videoId}`;
+
+    return (
+      <CreatorNotConnected
+        videoId={videoId}
+        ytVideo={ytVideo}
+        t={t}
+        shareUrl={shareUrl}
+      />
+    );
+  }
 
   const { data: tracks } = await supabase
     .from("subtitle_tracks")

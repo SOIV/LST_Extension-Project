@@ -5,7 +5,7 @@ import { routing } from "./i18n/routing";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-const PUBLIC_PATHS = ["/", "/login", "/auth/callback", "/api/subtitles"];
+const PUBLIC_PATHS = ["/", "/login", "/auth/callback", "/api/subtitles", "/search", "/channel", "/subtitles"];
 
 function pathnameWithoutLocale(pathname: string): string {
   const locale = routing.locales.find(
@@ -15,7 +15,7 @@ function pathnameWithoutLocale(pathname: string): string {
   return pathname.slice(locale.length + 1) || "/";
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Run i18n middleware first
@@ -89,3 +89,6 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
+
+// Next.js 16 호환: proxy 가 기본 export로도 인식되도록
+export default proxy;

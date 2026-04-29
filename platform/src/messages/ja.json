@@ -3,7 +3,8 @@
     "upload": "アップロード",
     "profile": "プロフィール",
     "logout": "ログアウト",
-    "login": "ログイン"
+    "login": "ログイン",
+    "searchPlaceholder": "動画タイトル、チャンネル名またはYouTube URL"
   },
   "LoginPage": {
     "loginError": "ログイン中にエラーが発生しました。もう一度お試しください。",
@@ -41,6 +42,11 @@
     "save": "保存"
   },
   "SubtitlePage": {
+    "creatorNotConnected": "このチャンネルのクリエイターはまだLSTと連携していません。",
+    "creatorNotConnectedDesc": "クリエイターがチャンネルを連携すると、コミュニティ字幕作業に参加できます。",
+    "requestConnection": "クリエイターに連携をリクエストしましょう",
+    "copyShareLink": "共有リンクをコピー",
+    "copied": "コピーしました！",
     "communitySubtitles": "コミュニティ字幕",
     "uploadSubtitle": "+ 字幕アップロード",
     "noSubtitles": "まだ字幕がありません。",
@@ -52,6 +58,46 @@
     "edit": "編集",
     "revisionHistory": "リビジョン履歴",
     "current": "現在"
+  },
+  "SearchPage": {
+    "title": "検索",
+    "placeholder": "動画タイトル、チャンネル名またはYouTube URL",
+    "searchButton": "検索",
+    "resultsFor": "「{query}」の検索結果",
+    "channels": "チャンネル",
+    "videos": "動画",
+    "noResults": "検索結果が見つかりません。",
+    "noQuery": "検索キーワードを入力してください。",
+    "subscribers": "チャンネル登録者数 {count}人",
+    "views": "{count}回視聴",
+    "subtitleAvailable": "字幕あり",
+    "subtitlePending": "審査中",
+    "subtitleDraft": "作業中",
+    "viewSubtitles": "字幕を見る",
+    "viewChannel": "チャンネルを見る",
+    "apiNotConfigured": "YouTube APIキーが設定されていません。",
+    "errorFetch": "検索中にエラーが発生しました。"
+  },
+  "ChannelPage": {
+    "tabVideos": "動画",
+    "tabShorts": "Shorts",
+    "tabLive": "ライブ",
+    "subscribers": "チャンネル登録者数 {count}人",
+    "videoCount": "動画{count}本",
+    "noVideos": "動画が見つかりません。",
+    "noShorts": "Shortsが見つかりません。",
+    "noLive": "ライブ配信が見つかりません。",
+    "loadingMore": "読み込み中...",
+    "allLoaded": "すべての動画を読み込みました",
+    "viewSubtitles": "字幕を見る",
+    "subtitleAvailable": "字幕あり",
+    "subtitlePending": "審査中",
+    "subtitleDraft": "作業中",
+    "connectedBadge": "LST連携済み",
+    "notConnectedBadge": "未連携",
+    "notConnectedDesc": "クリエイターがチャンネルを連携すると、コミュニティ字幕作業を開始できます。",
+    "apiNotConfigured": "YouTube APIキーが設定されていません。",
+    "errorFetch": "チャンネル情報の読み込み中にエラーが発生しました。"
   },
   "EditorPage": {
     "back": "← 戻る",
