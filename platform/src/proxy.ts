@@ -86,8 +86,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // auth/ 경로는 locale 처리 없이 직접 통과 (Supabase OAuth 콜백)
-    "/((?!_next/static|_next/image|favicon.ico|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // auth/, api/ 경로는 locale 처리 없이 직접 통과
+    "/((?!_next/static|_next/image|favicon.ico|api/|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
 
