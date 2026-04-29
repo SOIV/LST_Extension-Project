@@ -55,7 +55,7 @@ export default function Navbar() {
         </Link>
 
         {/* 검색바 */}
-        <form onSubmit={handleSearch} className="flex-1 min-w-0">
+        <form onSubmit={handleSearch} className="flex-1 min-w-0 max-w-sm">
           <div className="relative">
             <input
               ref={inputRef}
