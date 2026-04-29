@@ -2,3 +2,4 @@ Releases
 .claude
 docs/local/*
 !docs/local/.gitkeep
+.codex
