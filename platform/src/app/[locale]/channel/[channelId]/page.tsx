@@ -236,6 +236,7 @@ export default async function ChannelPage({
           </div>
         ) : (
           <ChannelVideoGrid
+            key={tab}
             channelId={channelId}
             tab={tab}
             initialVideos={result.videos}
