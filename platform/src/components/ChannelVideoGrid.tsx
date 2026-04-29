@@ -118,6 +118,7 @@ export function ChannelVideoGrid({
     useState<Record<string, string>>(initialSubtitleStatuses);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialNextPageToken !== null);
+  const [loadError, setLoadError] = useState(false);
 
   // ─ Refs: observer 콜백 내부에서 최신 값 참조 (stale closure 방지)
   const nextPageTokenRef = useRef<string | null>(initialNextPageToken);
@@ -153,6 +154,7 @@ export function ChannelVideoGrid({
       // ref 먼저 업데이트 (다음 Observer 발동 시 즉시 반영)
       nextPageTokenRef.current = data.nextPageToken ?? null;
       setHasMore(data.nextPageToken !== null);
+      setLoadError(false);
 
       setVideos((prev) => {
         const seen = new Set(prev.map((v) => v.videoId));
@@ -160,7 +162,7 @@ export function ChannelVideoGrid({
       });
       setSubtitleStatuses((prev) => ({ ...prev, ...data.subtitleStatuses }));
     } catch {
-      // 조용히 실패 — 다음 스크롤 시 재시도 가능
+      setLoadError(true);
     } finally {
       loadingRef.current = false;
       setLoading(false);
@@ -198,10 +200,9 @@ export function ChannelVideoGrid({
       </div>
 
       {/* 센티넬: 스크롤 감지 + 상태 표시 */}
-      <div ref={sentinelRef} className="py-8 flex justify-center">
+      <div ref={sentinelRef} className="py-8 flex flex-col items-center gap-3">
         {loading && (
           <div className="flex items-center gap-2 text-sm text-zinc-400 dark:text-zinc-500">
-            {/* 스피너 */}
             <svg
               className="animate-spin w-4 h-4"
               xmlns="http://www.w3.org/2000/svg"
@@ -225,6 +226,17 @@ export function ChannelVideoGrid({
             {t("loadingMore")}
           </div>
         )}
+
+        {/* 에러 또는 Observer 미발동 시 수동 버튼 fallback */}
+        {!loading && hasMore && loadError && (
+          <button
+            onClick={() => { setLoadError(false); loadMore(); }}
+            className="px-4 py-2 text-sm rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+          >
+            {t("loadMoreBtn")}
+          </button>
+        )}
+
         {!loading && !hasMore && videos.length > 0 && (
           <span className="text-xs text-zinc-300 dark:text-zinc-700">
             — {t("allLoaded")} —

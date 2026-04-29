@@ -270,8 +270,8 @@ export async function getVideoById(videoId: string): Promise<YoutubeVideo | null
  * oEmbed API로 Shorts 세로 비율 일괄 검증
  * - API 키 불필요, 할당량 소모 없음
  * - /shorts/VIDEO_ID URL 형식으로 요청 → height > width면 진짜 Shorts
- * - 요청 실패 시 null 반환 → 호출부에서 fallback 처리
- * - 모든 ID를 병렬 요청하므로 latency 최소화
+ * - 요청 실패 또는 타임아웃 시 null 반환 → 호출부에서 fallback 처리
+ * - 모든 ID를 병렬 요청 + 1.5초 타임아웃으로 Vercel 10초 제한 방어
  */
 async function checkShortsAspectRatio(
   videoIds: string[]
@@ -281,12 +281,24 @@ async function checkShortsAspectRatio(
   const results = await Promise.allSettled(
     videoIds.map(async (id) => {
       const oembed = `https://www.youtube.com/oembed?url=https://www.youtube.com/shorts/${id}&format=json`;
-      const res = await fetch(oembed, {
-        next: { revalidate: 3600 },
-      });
-      if (!res.ok) return { id, isVertical: null };
-      const data = (await res.json()) as { width: number; height: number };
-      return { id, isVertical: data.height > data.width };
+
+      // 1.5초 타임아웃 — 느린 응답이 함수 전체를 죽이지 않도록
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 1500);
+
+      try {
+        const res = await fetch(oembed, {
+          signal: controller.signal,
+          next: { revalidate: 3600 },
+        });
+        if (!res.ok) return { id, isVertical: null };
+        const data = (await res.json()) as { width: number; height: number };
+        return { id, isVertical: data.height > data.width };
+      } catch {
+        return { id, isVertical: null };
+      } finally {
+        clearTimeout(timer);
+      }
     })
   );
 
@@ -294,9 +306,6 @@ async function checkShortsAspectRatio(
   for (const r of results) {
     if (r.status === "fulfilled") {
       map.set(r.value.id, r.value.isVertical);
-    } else {
-      // Promise 자체가 reject된 경우 (네트워크 오류 등)
-      // → 해당 ID는 null로 처리 (fallback)
     }
   }
   return map;
@@ -427,27 +436,32 @@ export async function getChannelShorts(
     { videoDuration: "short", pageToken }
   );
 
-  // 2단계: videos.list (1pt) + oEmbed (무료) — 병렬 실행으로 latency 최소화
-  const [detail, aspectRatio] = await Promise.all([
-    getVideosDetail(items.map((v) => v.videoId)),
-    checkShortsAspectRatio(items.map((v) => v.videoId)),
-  ]);
+  // 2단계: videos.list로 duration + caption 조회 (1pt)
+  const detail = await getVideosDetail(items.map((v) => v.videoId));
 
-  // 3단계: duration ≤ 60s AND (세로 비율 확인 OR oEmbed 실패 시 fallback)
-  const videos = items
+  // duration ≤ 60s 1차 필터
+  const durationPassed = items
     .map((v) => ({
       ...v,
       hasCaption: detail.get(v.videoId)?.hasCaption ?? false,
     }))
-    .filter((v) => {
-      const durationSec = detail.get(v.videoId)?.durationSec ?? 999;
-      if (durationSec > 60) return false; // duration 조건 불충족 → 탈락
+    .filter((v) => (detail.get(v.videoId)?.durationSec ?? 999) <= 60);
 
+  // 3단계: oEmbed — 45~60초 경계 케이스에만 적용 (< 45초는 Shorts 확실)
+  // → 대부분 0~5개만 체크하므로 latency 최소화
+  const borderline = durationPassed.filter(
+    (v) => (detail.get(v.videoId)?.durationSec ?? 0) >= 45
+  );
+  const aspectRatio = await checkShortsAspectRatio(
+    borderline.map((v) => v.videoId)
+  );
+
+  const videos = durationPassed
+    .filter((v) => {
+      const sec = detail.get(v.videoId)?.durationSec ?? 0;
+      if (sec < 45) return true; // 45초 미만 → Shorts 확실, oEmbed 불필요
       const isVertical = aspectRatio.get(v.videoId);
-      // null = oEmbed 실패 → duration만 믿고 포함 (false negative 방지)
-      // true = 세로 비율 확인됨 → 포함
-      // false = 가로 영상으로 확인됨 → 탈락 (short clip이지 Shorts가 아님)
-      return isVertical !== false;
+      return isVertical !== false; // null(타임아웃) → duration 기준으로 포함
     })
     .slice(0, maxResults);
 

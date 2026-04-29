@@ -89,6 +89,7 @@
     "noLive": "등록된 라이브 방송이 없습니다.",
     "loadingMore": "불러오는 중...",
     "allLoaded": "모든 영상을 불러왔습니다",
+    "loadMoreBtn": "더 보기",
     "viewSubtitles": "자막 보기",
     "subtitleAvailable": "자막 있음",
     "subtitlePending": "검토 중",
