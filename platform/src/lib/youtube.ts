@@ -26,6 +26,7 @@ export type YoutubeVideo = {
   thumbnail: string;
   publishedAt: string;
   description: string;
+  liveBroadcastContent?: "none" | "live" | "upcoming";
   viewCount?: string;
   duration?: string; // ISO 8601 e.g. "PT1H2M3S"
   hasCaption?: boolean; // contentDetails.caption
@@ -131,6 +132,12 @@ function snippetToVideo(item: Record<string, unknown>): YoutubeVideo | null {
     thumbnail: thumbs.medium?.url ?? thumbs.default?.url ?? "",
     publishedAt: (s?.publishedAt as string) ?? "",
     description: (s?.description as string) ?? "",
+    liveBroadcastContent:
+      ((s?.liveBroadcastContent as string) === "live" ||
+      (s?.liveBroadcastContent as string) === "upcoming" ||
+      (s?.liveBroadcastContent as string) === "none")
+        ? (s?.liveBroadcastContent as "none" | "live" | "upcoming")
+        : undefined,
   };
 }
 
@@ -391,9 +398,8 @@ export async function getChannelById(
  * 동영상 탭 — 라이브 · Shorts(세로 9:16) 제외한 일반 영상
  *
  * 필터 단계:
- * 1. videos.list contentDetails + liveStreamingDetails → 라이브 제외
- * 2. durationSec ≤ 60 → 거의 확실한 Shorts 제외
- * 3. 60~180초 구간 → oEmbed 세로 비율 확인 후 Shorts 제외
+ * 1. search.snippet.liveBroadcastContent + videos.liveStreamingDetails 조합으로 라이브/예정 항목 제외
+ * 2. durationSec ≤ 180 구간 → oEmbed 세로 비율 확인 후 Shorts 제외
  *    (응답 실패/타임아웃 시 null → 포함 처리로 안전 fallback)
  *
  * search.list(100pt) + videos.list(1pt)
@@ -403,6 +409,7 @@ export async function getChannelRegularVideos(
   maxResults = 30,
   pageToken?: string
 ): Promise<ChannelVideosResult> {
+  // 필터링 후에도 충분한 결과를 확보하기 위해 여유분 추가
   const { items, nextPageToken } = await fetchChannelRaw(
     channelId,
     maxResults + 15,
@@ -416,12 +423,15 @@ export async function getChannelRegularVideos(
   const candidates: Candidate[] = items
     .map((v) => {
       const d = detail.get(v.videoId);
+      const broadcast = v.liveBroadcastContent;
+      const isActiveOrUpcoming =
+        broadcast === "live" || broadcast === "upcoming";
       return {
         ...v,
         duration: formatDuration(d?.durationIso ?? ""),
         hasCaption: d?.hasCaption ?? false,
         _sec: d?.durationSec ?? 0,
-        _live: d?.isLiveStream ?? false,
+        _live: (d?.isLiveStream ?? false) || isActiveOrUpcoming,
       };
     })
     .filter((v) => {
@@ -431,7 +441,11 @@ export async function getChannelRegularVideos(
       }
       return true;
     })
-    .map(({ _live: _, ...rest }) => rest as Candidate);
+    .map((v) => {
+      const { _live, ...rest } = v;
+      void _live;
+      return rest as Candidate;
+    });
 
   // 2단계: 180초 이하 전체 → oEmbed로 세로 비율 확인
   const shortCandidates = candidates.filter((v) => v._sec <= 180);
@@ -455,7 +469,11 @@ export async function getChannelRegularVideos(
       return true;
     })
     .slice(0, maxResults)
-    .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
+    .map((v) => {
+      const { _sec, ...rest } = v;
+      void _sec;
+      return rest as YoutubeVideo;
+    });
 
   console.log(`[videos] final=${videos.length}`);
   return { videos, nextPageToken };
@@ -479,7 +497,7 @@ export async function getChannelShorts(
   maxResults = 30,
   pageToken?: string
 ): Promise<ChannelVideosResult> {
-  // 1단계: search.list (100pt)
+  // 1단계: search.list (100pt) — 필터 후 여유분 확보
   const { items, nextPageToken } = await fetchChannelRaw(
     channelId,
     maxResults + 15,
@@ -527,7 +545,11 @@ export async function getChannelShorts(
       return true;
     })
     .slice(0, maxResults)
-    .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
+    .map((v) => {
+      const { _sec, ...rest } = v;
+      void _sec;
+      return rest as YoutubeVideo;
+    });
 
   console.log(`[shorts] final=${videos.length}`);
   return { videos, nextPageToken };
