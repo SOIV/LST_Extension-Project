@@ -74,6 +74,11 @@ function VideoCard({
             No image
           </div>
         )}
+        {video.duration && (
+          <span className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1 py-0.5 rounded font-mono leading-none select-none">
+            {video.duration}
+          </span>
+        )}
       </div>
       <div className="p-3 flex flex-col gap-1.5 flex-1">
         <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 line-clamp-2 group-hover:underline underline-offset-2">

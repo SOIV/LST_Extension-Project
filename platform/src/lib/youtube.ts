@@ -312,21 +312,26 @@ async function checkShortsAspectRatio(
 }
 
 /**
- * 영상 ID 목록의 재생 시간(초)과 자막 유무를 일괄 조회
+ * 영상 ID 목록의 재생 시간 · 자막 유무 · 라이브 여부를 일괄 조회
  * videos.list 사용 — 50개당 1 quota point (search보다 100배 저렴)
  */
 export async function getVideosDetail(
   videoIds: string[]
-): Promise<Map<string, { durationSec: number; hasCaption: boolean }>> {
+): Promise<
+  Map<string, { durationSec: number; hasCaption: boolean; isLiveStream: boolean; durationIso: string }>
+> {
   if (videoIds.length === 0) return new Map();
 
-  const map = new Map<string, { durationSec: number; hasCaption: boolean }>();
+  const map = new Map<
+    string,
+    { durationSec: number; hasCaption: boolean; isLiveStream: boolean; durationIso: string }
+  >();
   const CHUNK = 50;
 
   for (let i = 0; i < videoIds.length; i += CHUNK) {
     const chunk = videoIds.slice(i, i + CHUNK);
     const params = new URLSearchParams({
-      part: "contentDetails",
+      part: "contentDetails,liveStreamingDetails",
       id: chunk.join(","),
       key: apiKey(),
     });
@@ -338,11 +343,13 @@ export async function getVideosDetail(
 
     const data = await res.json();
     for (const item of data.items ?? []) {
+      const iso = (item.contentDetails?.duration as string) ?? "";
+      const live = item.liveStreamingDetails as Record<string, unknown> | undefined;
       map.set(item.id as string, {
-        durationSec: isoDurationToSec(
-          (item.contentDetails?.duration as string) ?? ""
-        ),
+        durationSec: isoDurationToSec(iso),
         hasCaption: item.contentDetails?.caption === "true",
+        isLiveStream: !!live?.actualStartTime,
+        durationIso: iso,
       });
     }
   }
@@ -381,7 +388,14 @@ export async function getChannelById(
 // ─── 채널 탭별 동영상 목록 ────────────────────────────────────────────────────
 
 /**
- * 동영상 탭 — 60초 초과 영상 (Shorts 제외)
+ * 동영상 탭 — 라이브 · Shorts(세로 9:16) 제외한 일반 영상
+ *
+ * 필터 단계:
+ * 1. videos.list contentDetails + liveStreamingDetails → 라이브 제외
+ * 2. durationSec ≤ 60 → 거의 확실한 Shorts 제외
+ * 3. 60~180초 구간 → oEmbed 세로 비율 확인 후 Shorts 제외
+ *    (응답 실패/타임아웃 시 null → 포함 처리로 안전 fallback)
+ *
  * search.list(100pt) + videos.list(1pt)
  */
 export async function getChannelRegularVideos(
@@ -389,7 +403,6 @@ export async function getChannelRegularVideos(
   maxResults = 30,
   pageToken?: string
 ): Promise<ChannelVideosResult> {
-  // Shorts 필터 후 충분한 결과를 위해 여유분 확보
   const { items, nextPageToken } = await fetchChannelRaw(
     channelId,
     maxResults + 15,
@@ -398,19 +411,36 @@ export async function getChannelRegularVideos(
 
   const detail = await getVideosDetail(items.map((v) => v.videoId));
 
-  const videos = items
-    .map((v) => ({
-      ...v,
-      duration: formatDuration(
-        (() => {
-          const sec = detail.get(v.videoId)?.durationSec ?? 0;
-          return `PT${Math.floor(sec / 3600)}H${Math.floor((sec % 3600) / 60)}M${sec % 60}S`;
-        })()
-      ),
-      hasCaption: detail.get(v.videoId)?.hasCaption ?? false,
-    }))
-    .filter((v) => (detail.get(v.videoId)?.durationSec ?? 999) > 60)
-    .slice(0, maxResults);
+  // 1·2단계: 라이브 · 60초 이하 제외
+  type Candidate = YoutubeVideo & { _sec: number };
+  const candidates: Candidate[] = items
+    .map((v) => {
+      const d = detail.get(v.videoId);
+      return {
+        ...v,
+        duration: formatDuration(d?.durationIso ?? ""),
+        hasCaption: d?.hasCaption ?? false,
+        _sec: d?.durationSec ?? 0,
+        _live: d?.isLiveStream ?? false,
+      };
+    })
+    .filter((v) => !v._live && v._sec > 60)
+    .map(({ _live: _, ...rest }) => rest as Candidate);
+
+  // 3단계: 60~180초 구간 → oEmbed Shorts 판별
+  const borderline = candidates.filter((v) => v._sec <= 180);
+  const aspectRatio = await checkShortsAspectRatio(borderline.map((v) => v.videoId));
+
+  const videos: YoutubeVideo[] = candidates
+    .filter((v) => {
+      if (v._sec <= 180) {
+        const isVertical = aspectRatio.get(v.videoId);
+        return isVertical !== true; // vertical 확실 → Shorts → 제외
+      }
+      return true; // 180초 초과 → Shorts 아님
+    })
+    .slice(0, maxResults)
+    .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
 
   return { videos, nextPageToken };
 }
@@ -441,29 +471,32 @@ export async function getChannelShorts(
 
   // duration ≤ 60s 1차 필터
   const durationPassed = items
-    .map((v) => ({
-      ...v,
-      hasCaption: detail.get(v.videoId)?.hasCaption ?? false,
-    }))
-    .filter((v) => (detail.get(v.videoId)?.durationSec ?? 999) <= 60);
+    .map((v) => {
+      const d = detail.get(v.videoId);
+      return {
+        ...v,
+        duration: formatDuration(d?.durationIso ?? ""),
+        hasCaption: d?.hasCaption ?? false,
+        _sec: d?.durationSec ?? 0,
+      };
+    })
+    .filter((v) => v._sec <= 60);
 
   // 3단계: oEmbed — 45~60초 경계 케이스에만 적용 (< 45초는 Shorts 확실)
   // → 대부분 0~5개만 체크하므로 latency 최소화
-  const borderline = durationPassed.filter(
-    (v) => (detail.get(v.videoId)?.durationSec ?? 0) >= 45
-  );
+  const borderline = durationPassed.filter((v) => v._sec >= 45);
   const aspectRatio = await checkShortsAspectRatio(
     borderline.map((v) => v.videoId)
   );
 
-  const videos = durationPassed
+  const videos: YoutubeVideo[] = durationPassed
     .filter((v) => {
-      const sec = detail.get(v.videoId)?.durationSec ?? 0;
-      if (sec < 45) return true; // 45초 미만 → Shorts 확실, oEmbed 불필요
+      if (v._sec < 45) return true; // 45초 미만 → Shorts 확실, oEmbed 불필요
       const isVertical = aspectRatio.get(v.videoId);
       return isVertical !== false; // null(타임아웃) → duration 기준으로 포함
     })
-    .slice(0, maxResults);
+    .slice(0, maxResults)
+    .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
 
   return { videos, nextPageToken };
 }
@@ -471,7 +504,7 @@ export async function getChannelShorts(
 /**
  * 라이브 탭 — 종료된 라이브 방송 VOD
  * eventType=completed
- * search.list(100pt)
+ * search.list(100pt) + videos.list(1pt)
  */
 export async function getChannelLiveVideos(
   channelId: string,
@@ -484,7 +517,18 @@ export async function getChannelLiveVideos(
     { eventType: "completed", pageToken }
   );
 
-  return { videos: items, nextPageToken };
+  const detail = await getVideosDetail(items.map((v) => v.videoId));
+
+  const videos: YoutubeVideo[] = items.map((v) => {
+    const d = detail.get(v.videoId);
+    return {
+      ...v,
+      duration: formatDuration(d?.durationIso ?? ""),
+      hasCaption: d?.hasCaption ?? false,
+    };
+  });
+
+  return { videos, nextPageToken };
 }
 
 /** @ 핸들로 채널 ID 조회 (1 quota point) */
