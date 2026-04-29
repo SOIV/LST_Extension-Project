@@ -447,13 +447,17 @@ export async function getChannelRegularVideos(
 }
 
 /**
- * Shorts 탭 — 3단계 필터로 정밀 판별
+ * Shorts 탭 — oEmbed 세로 비율 기반 판별
+ *
+ * YouTube Shorts는 현재 최대 3분(180초)까지 허용.
+ * 길이만으로 판별하면 60~180초 Shorts가 누락되므로
+ * 180초 이하 전체를 oEmbed로 확인.
  *
  * 1단계: search.list + videoDuration=short  → 4분 미만 후보 수집  (100 quota pt)
- * 2단계: videos.list contentDetails         → duration ≤ 60초 필터  (1 quota pt)
- * 3단계: oEmbed /shorts/ URL               → 세로 비율(height>width) 최종 확인 (무료)
- *
- * oEmbed 실패(네트워크 오류 등) 시 null → duration 기준만으로 포함 (안전 fallback)
+ * 2단계: videos.list contentDetails         → duration + caption 조회  (1 quota pt)
+ * 3단계: oEmbed /shorts/ URL               → 180초 이하 전체 세로 비율 확인 (무료)
+ *   · 세로(true) 또는 판별 불가(null) → Shorts로 포함
+ *   · 가로(false) 확실 → 제외 (동영상 탭 영상)
  */
 export async function getChannelShorts(
   channelId: string,
@@ -470,8 +474,8 @@ export async function getChannelShorts(
   // 2단계: videos.list로 duration + caption 조회 (1pt)
   const detail = await getVideosDetail(items.map((v) => v.videoId));
 
-  // duration ≤ 60s 1차 필터
-  const durationPassed = items
+  // 180초 이하 후보 (Shorts 최대 길이)
+  const candidates = items
     .map((v) => {
       const d = detail.get(v.videoId);
       return {
@@ -481,20 +485,15 @@ export async function getChannelShorts(
         _sec: d?.durationSec ?? 0,
       };
     })
-    .filter((v) => v._sec <= 60);
+    .filter((v) => v._sec <= 180);
 
-  // 3단계: oEmbed — 45~60초 경계 케이스에만 적용 (< 45초는 Shorts 확실)
-  // → 대부분 0~5개만 체크하므로 latency 최소화
-  const borderline = durationPassed.filter((v) => v._sec >= 45);
-  const aspectRatio = await checkShortsAspectRatio(
-    borderline.map((v) => v.videoId)
-  );
+  // 3단계: oEmbed — 180초 이하 전체 세로 비율 확인 (병렬 요청)
+  const aspectRatio = await checkShortsAspectRatio(candidates.map((v) => v.videoId));
 
-  const videos: YoutubeVideo[] = durationPassed
+  const videos: YoutubeVideo[] = candidates
     .filter((v) => {
-      if (v._sec < 45) return true; // 45초 미만 → Shorts 확실, oEmbed 불필요
       const isVertical = aspectRatio.get(v.videoId);
-      return isVertical !== false; // null(타임아웃) → duration 기준으로 포함
+      return isVertical !== false; // 가로 확실 → 제외 / 세로·null → 포함
     })
     .slice(0, maxResults)
     .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
