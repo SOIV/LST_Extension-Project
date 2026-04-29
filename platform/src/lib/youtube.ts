@@ -411,7 +411,7 @@ export async function getChannelRegularVideos(
 
   const detail = await getVideosDetail(items.map((v) => v.videoId));
 
-  // 1·2단계: 라이브 · 60초 이하 제외
+  // 1단계: 라이브 제외
   type Candidate = YoutubeVideo & { _sec: number };
   const candidates: Candidate[] = items
     .map((v) => {
@@ -424,20 +424,21 @@ export async function getChannelRegularVideos(
         _live: d?.isLiveStream ?? false,
       };
     })
-    .filter((v) => !v._live && v._sec > 60)
+    .filter((v) => !v._live)
     .map(({ _live: _, ...rest }) => rest as Candidate);
 
-  // 3단계: 60~180초 구간 → oEmbed Shorts 판별
-  const borderline = candidates.filter((v) => v._sec <= 180);
-  const aspectRatio = await checkShortsAspectRatio(borderline.map((v) => v.videoId));
+  // 2단계: 180초 이하 전체 → oEmbed로 세로 비율 확인
+  // (길이가 짧아도 가로 영상은 동영상 탭에 포함해야 함)
+  const shortCandidates = candidates.filter((v) => v._sec <= 180);
+  const aspectRatio = await checkShortsAspectRatio(shortCandidates.map((v) => v.videoId));
 
   const videos: YoutubeVideo[] = candidates
     .filter((v) => {
       if (v._sec <= 180) {
         const isVertical = aspectRatio.get(v.videoId);
-        return isVertical !== true; // vertical 확실 → Shorts → 제외
+        return isVertical !== true; // 세로 확실 → Shorts → 제외 / null(실패) → 포함
       }
-      return true; // 180초 초과 → Shorts 아님
+      return true; // 180초 초과 → Shorts 불가
     })
     .slice(0, maxResults)
     .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
