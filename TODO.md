@@ -7,3 +7,6 @@
 - [ ] Status API 확장
   - [ ] DB Status API
   - [ ] Storage Status API
+- [ ] 핸들 관련
+  - [ ] 소문자 뿐만 아니라 대문자도 가능하도록
+  - [ ] 한국어, 일본어 등 다국어 지원 핸들은 상황에 따라 지원
