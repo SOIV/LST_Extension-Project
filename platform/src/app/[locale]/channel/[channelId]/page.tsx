@@ -227,6 +227,18 @@ export default async function ChannelPage({
           </TabLink>
         </div>
 
+        {/* 동영상 탭 상시 공지 */}
+        {tab === "videos" && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800/60 text-xs text-zinc-500 dark:text-zinc-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="8" />
+              <line x1="12" y1="12" x2="12" y2="16" />
+            </svg>
+            {t("liveVodNotice")}
+          </div>
+        )}
+
         {/* 영상 그리드 */}
         {result.videos.length === 0 ? (
           <div className="flex items-center justify-center py-16 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">

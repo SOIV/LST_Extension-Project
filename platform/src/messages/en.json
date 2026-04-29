@@ -97,6 +97,7 @@
     "connectedBadge": "LST Connected",
     "notConnectedBadge": "Not connected",
     "notConnectedDesc": "Once the creator connects their channel, community subtitle work can begin.",
+    "liveVodNotice": "Live stream replays may also appear in this tab.",
     "apiNotConfigured": "YouTube API key is not configured.",
     "errorFetch": "Failed to load channel information."
   },

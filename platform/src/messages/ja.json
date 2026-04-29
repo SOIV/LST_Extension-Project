@@ -97,6 +97,7 @@
     "connectedBadge": "LST連携済み",
     "notConnectedBadge": "未連携",
     "notConnectedDesc": "クリエイターがチャンネルを連携すると、コミュニティ字幕作業を開始できます。",
+    "liveVodNotice": "ライブ配信のアーカイブも表示される場合があります。",
     "apiNotConfigured": "YouTube APIキーが設定されていません。",
     "errorFetch": "チャンネル情報の読み込み中にエラーが発生しました。"
   },
