@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { User } from "@supabase/supabase-js";
 
@@ -14,6 +15,7 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const supabase = createClient();
@@ -23,6 +25,11 @@ export default function Navbar() {
     });
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const q = searchParams.get("q") ?? "";
+    setSearchQuery(q);
+  }, [searchParams]);
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -35,7 +42,6 @@ export default function Navbar() {
     const q = searchQuery.trim();
     if (!q) return;
     router.push(`/search?q=${encodeURIComponent(q)}`);
-    setSearchQuery("");
     inputRef.current?.blur();
   }
 
