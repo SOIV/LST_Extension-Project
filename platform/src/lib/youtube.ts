@@ -142,14 +142,75 @@ function snippetToVideo(item: Record<string, unknown>): YoutubeVideo | null {
 }
 
 /**
+ * 채널 업로드 플레이리스트에서 영상 목록 조회
+ * - playlistItems.list — 1 quota point / 호출 (search.list 대비 100배 저렴)
+ * - 채널 업로드 플레이리스트 ID: channelId UC... → UU...
+ * - 현재 방송 중인 라이브는 업로드 완료 전이므로 목록에 없거나 제한적으로 포함
+ */
+async function fetchUploadsPlaylist(
+  channelId: string,
+  maxResults: number,
+  pageToken?: string
+): Promise<{ items: YoutubeVideo[]; nextPageToken: string | null }> {
+  const playlistId = "UU" + channelId.slice(2);
+  const params = new URLSearchParams({
+    part: "snippet",
+    playlistId,
+    maxResults: String(Math.min(maxResults, 50)),
+    key: apiKey(),
+  });
+  if (pageToken) params.set("pageToken", pageToken);
+
+  const res = await fetch(`${BASE}/playlistItems?${params}`, {
+    next: { revalidate: 300 },
+  });
+  if (!res.ok) return { items: [], nextPageToken: null };
+
+  const data = await res.json();
+  const items: YoutubeVideo[] = (data.items ?? [])
+    .map((item: Record<string, unknown>) => {
+      const s = item.snippet as Record<string, unknown>;
+      const ri = s?.resourceId as Record<string, string>;
+      const videoId = ri?.videoId;
+      if (!videoId) return null;
+
+      const thumbs = (s?.thumbnails as Record<string, { url: string }>) ?? {};
+      const title = (s?.title as string) ?? "";
+      // 삭제/비공개 영상 제거
+      if (title === "Deleted video" || title === "Private video") return null;
+
+      return {
+        videoId,
+        title,
+        channelId: (s?.videoOwnerChannelId as string) ?? channelId,
+        channelTitle: (s?.videoOwnerChannelTitle as string) ?? "",
+        thumbnail:
+          thumbs.medium?.url ??
+          thumbs.high?.url ??
+          thumbs.default?.url ??
+          "",
+        publishedAt: (s?.publishedAt as string) ?? "",
+        description: (s?.description as string) ?? "",
+      } satisfies YoutubeVideo;
+    })
+    .filter(Boolean) as YoutubeVideo[];
+
+  return {
+    items,
+    nextPageToken: (data.nextPageToken as string) ?? null,
+  };
+}
+
+/**
  * 채널 영상 search.list 내부 헬퍼 (nextPageToken 포함 반환)
  * - 100 quota points / 호출
+ * - Shorts 탭 · 라이브 탭에서 사용 (eventType / videoDuration 필터 필요)
  */
 async function fetchChannelRaw(
   channelId: string,
   maxResults: number,
   options: {
-    eventType?: "completed" | "live";
+    eventType?: "completed" | "live" | "upcoming";
     videoDuration?: "short" | "medium" | "long";
     pageToken?: string;
   } = {}
@@ -319,26 +380,36 @@ async function checkShortsAspectRatio(
 }
 
 /**
- * 영상 ID 목록의 재생 시간 · 자막 유무 · 라이브 여부를 일괄 조회
+ * 영상 ID 목록의 재생 시간 · 자막 유무 · 방송 상태를 일괄 조회
  * videos.list 사용 — 50개당 1 quota point (search보다 100배 저렴)
+ * snippet 포함: liveBroadcastContent ("none" | "live" | "upcoming") 획득
  */
 export async function getVideosDetail(
   videoIds: string[]
 ): Promise<
-  Map<string, { durationSec: number; hasCaption: boolean; isLiveStream: boolean; durationIso: string }>
+  Map<string, {
+    durationSec: number;
+    hasCaption: boolean;
+    isLiveStream: boolean;
+    durationIso: string;
+    liveBroadcastContent: "none" | "live" | "upcoming";
+  }>
 > {
   if (videoIds.length === 0) return new Map();
 
-  const map = new Map<
-    string,
-    { durationSec: number; hasCaption: boolean; isLiveStream: boolean; durationIso: string }
-  >();
+  const map = new Map<string, {
+    durationSec: number;
+    hasCaption: boolean;
+    isLiveStream: boolean;
+    durationIso: string;
+    liveBroadcastContent: "none" | "live" | "upcoming";
+  }>();
   const CHUNK = 50;
 
   for (let i = 0; i < videoIds.length; i += CHUNK) {
     const chunk = videoIds.slice(i, i + CHUNK);
     const params = new URLSearchParams({
-      part: "contentDetails,liveStreamingDetails",
+      part: "snippet,contentDetails,liveStreamingDetails",
       id: chunk.join(","),
       key: apiKey(),
     });
@@ -352,11 +423,15 @@ export async function getVideosDetail(
     for (const item of data.items ?? []) {
       const iso = (item.contentDetails?.duration as string) ?? "";
       const live = item.liveStreamingDetails as Record<string, unknown> | undefined;
+      const lbc = (item.snippet?.liveBroadcastContent as string) ?? "none";
       map.set(item.id as string, {
         durationSec: isoDurationToSec(iso),
         hasCaption: item.contentDetails?.caption === "true",
         isLiveStream: !!live?.actualStartTime,
         durationIso: iso,
+        liveBroadcastContent: (lbc === "live" || lbc === "upcoming")
+          ? lbc
+          : "none",
       });
     }
   }
@@ -395,35 +470,37 @@ export async function getChannelById(
 // ─── 채널 탭별 동영상 목록 ────────────────────────────────────────────────────
 
 /**
- * 동영상 탭 — 현재 스트리밍 중인 라이브 · Shorts(세로 9:16) 제외한 일반 영상
+ * 동영상 탭 — 채널 업로드 플레이리스트 기반, Shorts(세로 9:16) 제외
  *
- * liveBroadcastContent 기준:
- *   "none"     → 일반 업로드 / 완료된 라이브 VOD / 완료된 프리미어 → 포함
- *   "upcoming" → 프리미어 대기 중 → 포함 (YouTube 동영상 탭과 동일)
+ * playlistItems.list(1pt) 사용 — search.list(100pt) 대비 100배 절약.
+ * 업로드 플레이리스트(UU...)는 크리에이터가 업로드한 모든 영상을 날짜 역순으로 반환.
+ *
+ * liveBroadcastContent 기준 (videos.list snippet으로 확인):
  *   "live"     → 현재 스트리밍 중 → 제외
+ *   "upcoming" → 프리미어 대기 중 → 포함 (YouTube 동영상 탭과 동일)
+ *   "none"     → 일반 / 완료된 라이브&프리미어 → 포함
  *
- * 완료된 라이브 VOD는 포함됨 (YouTube 자체도 동영상 탭에 표시).
- * isLiveStream 체크 제거 — 프리미어도 actualStartTime이 남아 오탐 발생.
- *
- * search.list(100pt) + videos.list(1pt)
+ * playlistItems.list(1pt) + videos.list(1pt) + oEmbed(무료)
  */
 export async function getChannelRegularVideos(
   channelId: string,
   maxResults = 30,
   pageToken?: string
 ): Promise<ChannelVideosResult> {
-  // 필터링 후에도 충분한 결과를 확보하기 위해 여유분 추가
-  const { items, nextPageToken } = await fetchChannelRaw(
+  // 1단계: 업로드 플레이리스트 조회 (1pt) — 필터 대비 여유분 확보
+  const { items, nextPageToken } = await fetchUploadsPlaylist(
     channelId,
     maxResults + 15,
-    { pageToken }
+    pageToken
   );
 
+  // 2단계: videos.list로 duration · liveBroadcastContent · 자막 일괄 조회 (1pt)
   const detail = await getVideosDetail(items.map((v) => v.videoId));
 
-  // 1단계: 현재 스트리밍 중인 라이브만 제외 ("live" 한정)
-  //   "upcoming" — 프리미어 대기 중 → 동영상 탭에 포함
-  //   "none"     — 일반 영상 / 완료된 라이브&프리미어 → 동영상 탭에 포함
+  // 3단계: 현재 스트리밍 중인 라이브만 제외
+  //   "live"     → 현재 방송 중 → 제외
+  //   "upcoming" → 프리미어 대기 중 → 포함
+  //   "none"     → 일반 / 완료된 라이브 VOD / 완료된 프리미어 → 포함
   type Candidate = YoutubeVideo & { _sec: number };
   const candidates: Candidate[] = items
     .map((v) => {
@@ -433,18 +510,19 @@ export async function getChannelRegularVideos(
         duration: formatDuration(d?.durationIso ?? ""),
         hasCaption: d?.hasCaption ?? false,
         _sec: d?.durationSec ?? 0,
+        _lbc: d?.liveBroadcastContent ?? "none",
       };
     })
     .filter((v) => {
-      if (v.liveBroadcastContent === "live") {
+      if (v._lbc === "live") {
         console.log(`[videos][live-excluded] ${v.videoId} "${v.title}"`);
         return false;
       }
       return true;
     })
-    .map((v) => v as Candidate);
+    .map(({ _lbc: _, ...rest }) => rest as Candidate);
 
-  // 2단계: 180초 이하 전체 → oEmbed로 세로 비율 확인
+  // 4단계: 180초 이하 → oEmbed 세로 비율 확인 (Shorts 제외)
   const shortCandidates = candidates.filter((v) => v._sec <= 180);
   const aspectRatio = await checkShortsAspectRatio(shortCandidates.map((v) => v.videoId));
 
@@ -466,11 +544,7 @@ export async function getChannelRegularVideos(
       return true;
     })
     .slice(0, maxResults)
-    .map((v) => {
-      const { _sec, ...rest } = v;
-      void _sec;
-      return rest as YoutubeVideo;
-    });
+    .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
 
   console.log(`[videos] final=${videos.length}`);
   return { videos, nextPageToken };
@@ -553,33 +627,52 @@ export async function getChannelShorts(
 }
 
 /**
- * 라이브 탭 — 종료된 라이브 방송 VOD
- * eventType=completed
- * search.list(100pt) + videos.list(1pt)
+ * 라이브 탭 — 완료된 라이브 VOD + 예정된 스트림
+ *
+ * - completed : 종료된 라이브 방송 (페이지네이션 적용)
+ * - upcoming  : 예정된 스트림 — 첫 페이지에서만 조회 (보통 0~3개)
+ *
+ * search.list(100pt) × 최대 2회 + videos.list(1pt)
  */
 export async function getChannelLiveVideos(
   channelId: string,
   maxResults = 30,
   pageToken?: string
 ): Promise<ChannelVideosResult> {
-  const { items, nextPageToken } = await fetchChannelRaw(
-    channelId,
-    maxResults,
-    { eventType: "completed", pageToken }
-  );
+  // 완료된 라이브 + 예정 스트림 병렬 조회
+  // 예정 스트림은 첫 페이지에서만 조회 (pageToken 없을 때)
+  const [completedResult, upcomingResult] = await Promise.all([
+    fetchChannelRaw(channelId, maxResults, { eventType: "completed", pageToken }),
+    pageToken
+      ? Promise.resolve({ items: [] as YoutubeVideo[], nextPageToken: null })
+      : fetchChannelRaw(channelId, 10, { eventType: "upcoming" }),
+  ]);
 
-  const detail = await getVideosDetail(items.map((v) => v.videoId));
+  // upcoming을 앞에, completed를 뒤에 배치 + 중복 제거
+  const seen = new Set<string>();
+  const merged: YoutubeVideo[] = [];
+  for (const v of [...upcomingResult.items, ...completedResult.items]) {
+    if (!seen.has(v.videoId)) {
+      seen.add(v.videoId);
+      merged.push(v);
+    }
+  }
 
-  const videos: YoutubeVideo[] = items.map((v) => {
-    const d = detail.get(v.videoId);
-    return {
-      ...v,
-      duration: formatDuration(d?.durationIso ?? ""),
-      hasCaption: d?.hasCaption ?? false,
-    };
-  });
+  const detail = await getVideosDetail(merged.map((v) => v.videoId));
 
-  return { videos, nextPageToken };
+  const videos: YoutubeVideo[] = merged
+    .slice(0, maxResults)
+    .map((v) => {
+      const d = detail.get(v.videoId);
+      return {
+        ...v,
+        duration: formatDuration(d?.durationIso ?? ""),
+        hasCaption: d?.hasCaption ?? false,
+      };
+    });
+
+  // nextPageToken은 completed 기준 (upcoming은 항상 소수라 별도 페이지 불필요)
+  return { videos, nextPageToken: completedResult.nextPageToken };
 }
 
 /** @ 핸들로 채널 ID 조회 (1 quota point) */
