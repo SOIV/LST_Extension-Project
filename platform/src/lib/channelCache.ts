@@ -31,13 +31,15 @@ export async function getChannelVideosCached(
   channelId: string,
   tab: ChannelTab,
   maxResults = 24,
-  pageToken?: string
+  pageToken?: string,
+  /** 캐시를 무시하고 YouTube API 직접 호출 (디버깅용) */
+  bypassCache = false,
 ): Promise<ChannelVideosResult> {
   // page_token이 없는 첫 페이지는 빈 문자열 키로 저장
   const cachePageToken = pageToken ?? "";
 
   // ── 1. Supabase 캐시 조회 ────────────────────────────────────────────────
-  try {
+  if (!bypassCache) try {
     const supabase = await createClient();
     const { data } = await supabase
       .from("channel_video_cache")

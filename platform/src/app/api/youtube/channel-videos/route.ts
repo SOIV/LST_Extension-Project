@@ -39,6 +39,7 @@ async function getSubtitleStatuses(
  *   channelId  — YouTube 채널 ID (필수)
  *   tab        — "videos" | "shorts" | "live" (기본값: "videos")
  *   pageToken  — YouTube API 페이지 토큰 (없으면 첫 페이지)
+ *   bypass     — "1" 이면 캐시 무시하고 직접 YouTube API 호출 (디버깅용)
  *
  * 응답:
  *   { videos, nextPageToken, subtitleStatuses }
@@ -48,6 +49,7 @@ export async function GET(request: NextRequest) {
   const channelId = searchParams.get("channelId");
   const tab = searchParams.get("tab") ?? "videos";
   const pageToken = searchParams.get("pageToken") ?? undefined;
+  const bypassCache = searchParams.get("bypass") === "1";
 
   if (!channelId) {
     return Response.json({ error: "channelId is required" }, { status: 400 });
@@ -65,7 +67,8 @@ export async function GET(request: NextRequest) {
       channelId,
       tab as ChannelTab,
       24,
-      pageToken
+      pageToken,
+      bypassCache,
     );
 
     const subtitleStatuses = await getSubtitleStatuses(

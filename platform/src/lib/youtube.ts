@@ -424,25 +424,40 @@ export async function getChannelRegularVideos(
         _live: d?.isLiveStream ?? false,
       };
     })
-    .filter((v) => !v._live)
+    .filter((v) => {
+      if (v._live) {
+        console.log(`[videos][live-excluded] ${v.videoId} "${v.title}"`);
+        return false;
+      }
+      return true;
+    })
     .map(({ _live: _, ...rest }) => rest as Candidate);
 
   // 2단계: 180초 이하 전체 → oEmbed로 세로 비율 확인
-  // (길이가 짧아도 가로 영상은 동영상 탭에 포함해야 함)
   const shortCandidates = candidates.filter((v) => v._sec <= 180);
   const aspectRatio = await checkShortsAspectRatio(shortCandidates.map((v) => v.videoId));
+
+  console.log(`[videos] total=${items.length} afterLiveFilter=${candidates.length} oEmbedChecked=${shortCandidates.length}`);
+  shortCandidates.forEach((v) => {
+    const r = aspectRatio.get(v.videoId);
+    console.log(`[videos][oEmbed] ${v.videoId} ${v._sec}s isVertical=${r} "${v.title}"`);
+  });
 
   const videos: YoutubeVideo[] = candidates
     .filter((v) => {
       if (v._sec <= 180) {
         const isVertical = aspectRatio.get(v.videoId);
-        return isVertical !== true; // 세로 확실 → Shorts → 제외 / null(실패) → 포함
+        if (isVertical === true) {
+          console.log(`[videos][shorts-excluded] ${v.videoId} ${v._sec}s "${v.title}"`);
+          return false;
+        }
       }
-      return true; // 180초 초과 → Shorts 불가
+      return true;
     })
     .slice(0, maxResults)
     .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
 
+  console.log(`[videos] final=${videos.length}`);
   return { videos, nextPageToken };
 }
 
@@ -485,19 +500,36 @@ export async function getChannelShorts(
         _sec: d?.durationSec ?? 0,
       };
     })
-    .filter((v) => v._sec <= 180);
+    .filter((v) => {
+      if (v._sec > 180) {
+        console.log(`[shorts][duration-excluded] ${v.videoId} ${v._sec}s "${v.title}"`);
+        return false;
+      }
+      return true;
+    });
 
   // 3단계: oEmbed — 180초 이하 전체 세로 비율 확인 (병렬 요청)
   const aspectRatio = await checkShortsAspectRatio(candidates.map((v) => v.videoId));
 
+  console.log(`[shorts] total=${items.length} candidates=${candidates.length}`);
+  candidates.forEach((v) => {
+    const r = aspectRatio.get(v.videoId);
+    console.log(`[shorts][oEmbed] ${v.videoId} ${v._sec}s isVertical=${r} "${v.title}"`);
+  });
+
   const videos: YoutubeVideo[] = candidates
     .filter((v) => {
       const isVertical = aspectRatio.get(v.videoId);
-      return isVertical !== false; // 가로 확실 → 제외 / 세로·null → 포함
+      if (isVertical === false) {
+        console.log(`[shorts][landscape-excluded] ${v.videoId} ${v._sec}s "${v.title}"`);
+        return false;
+      }
+      return true;
     })
     .slice(0, maxResults)
     .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
 
+  console.log(`[shorts] final=${videos.length}`);
   return { videos, nextPageToken };
 }
 
