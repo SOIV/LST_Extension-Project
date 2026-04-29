@@ -5,6 +5,14 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { YoutubeVideo } from "@/lib/youtube";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface ApiResponse {
+  videos: YoutubeVideo[];
+  nextPageToken: string | null;
+  subtitleStatuses: Record<string, string>;
+}
+
 // ─── StatusBadge ──────────────────────────────────────────────────────────────
 
 function StatusBadge({
@@ -18,25 +26,20 @@ function StatusBadge({
   const configs: Record<string, { label: string; className: string }> = {
     approved: {
       label: labels.available,
-      className:
-        "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+      className: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
     },
     pending: {
       label: labels.pending,
-      className:
-        "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+      className: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
     },
     draft: {
       label: labels.draft,
-      className:
-        "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+      className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
     },
   };
   const cfg = configs[status] ?? configs.draft;
   return (
-    <span
-      className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.className}`}
-    >
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.className}`}>
       {cfg.label}
     </span>
   );
@@ -51,12 +54,7 @@ function VideoCard({
 }: {
   video: YoutubeVideo;
   subtitleStatus: string | undefined;
-  labels: {
-    viewSubtitles: string;
-    available: string;
-    pending: string;
-    draft: string;
-  };
+  labels: { viewSubtitles: string; available: string; pending: string; draft: string };
 }) {
   return (
     <Link
@@ -114,16 +112,17 @@ export function ChannelVideoGrid({
   const t = useTranslations("ChannelPage");
 
   const [videos, setVideos] = useState<YoutubeVideo[]>(initialVideos);
-  const [subtitleStatuses, setSubtitleStatuses] =
-    useState<Record<string, string>>(initialSubtitleStatuses);
+  const [subtitleStatuses, setSubtitleStatuses] = useState<Record<string, string>>(initialSubtitleStatuses);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialNextPageToken !== null);
-  const [loadError, setLoadError] = useState(false);
 
-  // ─ Refs: observer 콜백 내부에서 최신 값 참조 (stale closure 방지)
+  // ─ 스테일 클로저 방지용 ref
   const nextPageTokenRef = useRef<string | null>(initialNextPageToken);
   const loadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // ─ 프리페치: 다음 페이지를 미리 받아두는 Promise
+  const prefetchRef = useRef<Promise<ApiResponse | null> | null>(null);
 
   const labels = {
     viewSubtitles: t("viewSubtitles"),
@@ -132,7 +131,25 @@ export function ChannelVideoGrid({
     draft: t("subtitleDraft"),
   };
 
-  // loadMore: channelId / tab 이 바뀔 때만 새로 생성 (Observer 재연결 최소화)
+  // ── 다음 페이지 프리페치 ───────────────────────────────────────────────────
+  const prefetchNext = useCallback(
+    (pageToken: string) => {
+      const params = new URLSearchParams({ channelId, tab, pageToken });
+      prefetchRef.current = fetch(`/api/youtube/channel-videos?${params}`)
+        .then((res) => (res.ok ? (res.json() as Promise<ApiResponse>) : null))
+        .catch(() => null);
+    },
+    [channelId, tab]
+  );
+
+  // ── 컴포넌트 마운트 시 다음 페이지 즉시 프리페치 ─────────────────────────
+  useEffect(() => {
+    if (initialNextPageToken) {
+      prefetchNext(initialNextPageToken);
+    }
+  }, [initialNextPageToken, prefetchNext]);
+
+  // ── 페이지 로드 ───────────────────────────────────────────────────────────
   const loadMore = useCallback(async () => {
     if (loadingRef.current || !nextPageTokenRef.current) return;
 
@@ -140,36 +157,50 @@ export function ChannelVideoGrid({
     setLoading(true);
 
     try {
-      const params = new URLSearchParams({ channelId, tab });
-      params.set("pageToken", nextPageTokenRef.current);
-      const res = await fetch(`/api/youtube/channel-videos?${params}`);
-      if (!res.ok) return;
+      // 프리페치된 데이터가 있으면 즉시 사용, 없으면 직접 요청
+      let data: ApiResponse | null = null;
 
-      const data = (await res.json()) as {
-        videos: YoutubeVideo[];
-        nextPageToken: string | null;
-        subtitleStatuses: Record<string, string>;
-      };
+      if (prefetchRef.current) {
+        data = await prefetchRef.current;
+        prefetchRef.current = null;
+      }
 
-      // ref 먼저 업데이트 (다음 Observer 발동 시 즉시 반영)
+      if (!data) {
+        const params = new URLSearchParams({
+          channelId,
+          tab,
+          pageToken: nextPageTokenRef.current,
+        });
+        const res = await fetch(`/api/youtube/channel-videos?${params}`);
+        data = res.ok ? await res.json() : null;
+      }
+
+      if (!data) return;
+
+      // ref 먼저 업데이트
       nextPageTokenRef.current = data.nextPageToken ?? null;
       setHasMore(data.nextPageToken !== null);
-      setLoadError(false);
+
+      // 다음 다음 페이지 즉시 프리페치
+      if (data.nextPageToken) {
+        prefetchNext(data.nextPageToken);
+      }
 
       setVideos((prev) => {
         const seen = new Set(prev.map((v) => v.videoId));
-        return [...prev, ...data.videos.filter((v) => !seen.has(v.videoId))];
+        return [...prev, ...data!.videos.filter((v) => !seen.has(v.videoId))];
       });
-      setSubtitleStatuses((prev) => ({ ...prev, ...data.subtitleStatuses }));
+      setSubtitleStatuses((prev) => ({ ...prev, ...data!.subtitleStatuses }));
     } catch {
-      setLoadError(true);
+      // 프리페치 실패 → 다음 스크롤에서 직접 요청으로 재시도
+      prefetchRef.current = null;
     } finally {
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [channelId, tab]);
+  }, [channelId, tab, prefetchNext]);
 
-  // IntersectionObserver: loadMore가 안정적이므로 한 번만 연결됨
+  // ── IntersectionObserver — 하단 600px 전에 미리 발동 ─────────────────────
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
@@ -178,7 +209,7 @@ export function ChannelVideoGrid({
       (entries) => {
         if (entries[0].isIntersecting) loadMore();
       },
-      { rootMargin: "400px" } // 하단 400px 진입 시 미리 로딩
+      { rootMargin: "600px" }
     );
 
     observer.observe(el);
@@ -199,7 +230,7 @@ export function ChannelVideoGrid({
         ))}
       </div>
 
-      {/* 센티넬: 스크롤 감지 + 상태 표시 */}
+      {/* 센티넬 + 상태 표시 */}
       <div ref={sentinelRef} className="py-8 flex flex-col items-center gap-3">
         {loading && (
           <div className="flex items-center gap-2 text-sm text-zinc-400 dark:text-zinc-500">
@@ -209,28 +240,17 @@ export function ChannelVideoGrid({
               fill="none"
               viewBox="0 0 24 24"
             >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v8H4z"
-              />
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
             {t("loadingMore")}
           </div>
         )}
 
-        {/* 에러 또는 Observer 미발동 시 수동 버튼 fallback */}
-        {!loading && hasMore && loadError && (
+        {/* 항상 표시되는 더 보기 버튼 (Observer 보조 / 수동 트리거) */}
+        {!loading && hasMore && (
           <button
-            onClick={() => { setLoadError(false); loadMore(); }}
+            onClick={loadMore}
             className="px-4 py-2 text-sm rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
           >
             {t("loadMoreBtn")}
