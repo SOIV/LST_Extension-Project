@@ -395,12 +395,15 @@ export async function getChannelById(
 // ─── 채널 탭별 동영상 목록 ────────────────────────────────────────────────────
 
 /**
- * 동영상 탭 — 라이브 · Shorts(세로 9:16) 제외한 일반 영상
+ * 동영상 탭 — 현재 스트리밍 중인 라이브 · Shorts(세로 9:16) 제외한 일반 영상
  *
- * 필터 단계:
- * 1. search.snippet.liveBroadcastContent + videos.liveStreamingDetails 조합으로 라이브/예정 항목 제외
- * 2. durationSec ≤ 180 구간 → oEmbed 세로 비율 확인 후 Shorts 제외
- *    (응답 실패/타임아웃 시 null → 포함 처리로 안전 fallback)
+ * liveBroadcastContent 기준:
+ *   "none"     → 일반 업로드 / 완료된 라이브 VOD / 완료된 프리미어 → 포함
+ *   "upcoming" → 프리미어 대기 중 → 포함 (YouTube 동영상 탭과 동일)
+ *   "live"     → 현재 스트리밍 중 → 제외
+ *
+ * 완료된 라이브 VOD는 포함됨 (YouTube 자체도 동영상 탭에 표시).
+ * isLiveStream 체크 제거 — 프리미어도 actualStartTime이 남아 오탐 발생.
  *
  * search.list(100pt) + videos.list(1pt)
  */
@@ -418,34 +421,28 @@ export async function getChannelRegularVideos(
 
   const detail = await getVideosDetail(items.map((v) => v.videoId));
 
-  // 1단계: 라이브 제외
+  // 1단계: 현재 스트리밍 중인 라이브만 제외 ("live" 한정)
+  //   "upcoming" — 프리미어 대기 중 → 동영상 탭에 포함
+  //   "none"     — 일반 영상 / 완료된 라이브&프리미어 → 동영상 탭에 포함
   type Candidate = YoutubeVideo & { _sec: number };
   const candidates: Candidate[] = items
     .map((v) => {
       const d = detail.get(v.videoId);
-      const broadcast = v.liveBroadcastContent;
-      const isActiveOrUpcoming =
-        broadcast === "live" || broadcast === "upcoming";
       return {
         ...v,
         duration: formatDuration(d?.durationIso ?? ""),
         hasCaption: d?.hasCaption ?? false,
         _sec: d?.durationSec ?? 0,
-        _live: (d?.isLiveStream ?? false) || isActiveOrUpcoming,
       };
     })
     .filter((v) => {
-      if (v._live) {
+      if (v.liveBroadcastContent === "live") {
         console.log(`[videos][live-excluded] ${v.videoId} "${v.title}"`);
         return false;
       }
       return true;
     })
-    .map((v) => {
-      const { _live, ...rest } = v;
-      void _live;
-      return rest as Candidate;
-    });
+    .map((v) => v as Candidate);
 
   // 2단계: 180초 이하 전체 → oEmbed로 세로 비율 확인
   const shortCandidates = candidates.filter((v) => v._sec <= 180);
