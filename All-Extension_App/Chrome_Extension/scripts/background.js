@@ -56,15 +56,22 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
 // ─── 설치 / 업데이트 ──────────────────────────────────────────────────────────
 
-chrome.runtime.onInstalled.addListener(async (details) => {
-  if (details.reason === 'install') {
-    await chrome.storage.sync.set({
-      subtitleEnabled:  true,
-      subtitleLang:     'auto',
-      overlayPosition:  'bottom',
-      overlaySize:      '100',
-      enableCache:      true,
-    });
-    console.log('[LST] Installed — default settings applied');
+chrome.runtime.onInstalled.addListener(async () => {
+  // 없는 키만 기본값으로 채워줌 (기존 사용자 설정 보존)
+  const existing = await chrome.storage.sync.get(null);
+  const defaults = {
+    subtitleEnabled:  true,
+    subtitleLang:     'auto',
+    overlayPosition:  'bottom',
+    overlaySize:      '100',
+    enableCache:      true,
+  };
+  const missing = {};
+  for (const [k, v] of Object.entries(defaults)) {
+    if (!(k in existing)) missing[k] = v;
   }
+  if (Object.keys(missing).length > 0) {
+    await chrome.storage.sync.set(missing);
+  }
+  console.log('[LST] onInstalled — settings checked');
 });

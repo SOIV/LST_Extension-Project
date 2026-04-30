@@ -4,7 +4,7 @@
  */
 
 const SubtitleLoader = (() => {
-  const API_BASE = 'https://lst-extension-project.vercel.app/api';
+  const API_BASE = 'https://lst-pj.soiv-studio.xyz/api';
 
   let currentVideoId = null;
   let settings       = {};

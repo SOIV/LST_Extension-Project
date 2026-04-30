@@ -97,7 +97,7 @@ const SubtitleRenderer = (() => {
     const text = document.getElementById(TEXT_ID);
     if (!text) return;
 
-    if (!settings.subtitleEnabled) {
+    if (settings.subtitleEnabled === false) {
       text.style.display = 'none';
       return;
     }
