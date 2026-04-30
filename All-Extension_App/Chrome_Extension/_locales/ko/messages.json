@@ -406,5 +406,17 @@
   "toast_save_error": {
     "message": "설정 저장에 실패했습니다.",
     "description": "Settings save error toast"
+  },
+  "inner_common": {
+    "message": "공통",
+    "description": "Inner tab: common display settings"
+  },
+  "inner_realtimeDisplay": {
+    "message": "실시간",
+    "description": "Inner tab: realtime display settings"
+  },
+  "heading_realtimeDisplay": {
+    "message": "실시간 자막 표시",
+    "description": "Heading for realtime subtitle display section"
   }
 }

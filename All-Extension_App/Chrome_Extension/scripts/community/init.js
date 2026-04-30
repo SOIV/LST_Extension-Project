@@ -10,6 +10,8 @@
   function onStatusChange(status, languages) {
     subtitleStatus    = status;
     subtitleLanguages = languages || [];
+    // background에 상태 전달 → 배지 업데이트
+    chrome.runtime.sendMessage({ action: 'subtitleStatus', status }).catch(() => {});
   }
 
   // 설정 로드 후 초기화

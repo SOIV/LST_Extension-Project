@@ -406,5 +406,17 @@
   "toast_save_error": {
     "message": "設定の保存に失敗しました。",
     "description": "Settings save error toast"
+  },
+  "inner_common": {
+    "message": "共通",
+    "description": "Inner tab: common display settings"
+  },
+  "inner_realtimeDisplay": {
+    "message": "リアルタイム",
+    "description": "Inner tab: realtime display settings"
+  },
+  "heading_realtimeDisplay": {
+    "message": "リアルタイム字幕表示",
+    "description": "Heading for realtime subtitle display section"
   }
 }

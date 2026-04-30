@@ -5,46 +5,32 @@
   "description": "__MSG_extDescription__",
 
   "permissions": [
-    "tabCapture",
     "activeTab",
     "storage",
-    "offscreen",
     "scripting"
   ],
 
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://youtube.com/*",
-    "https://www.twitch.tv/*",
-    "https://play.sooplive.co.kr/*",
-    "https://chzzk.naver.com/*",
-    "https://www.nicovideo.jp/*",
-    "https://live.nicovideo.jp/*",
     "https://lst-extension-project.vercel.app/*"
   ],
 
   "background": {
-    "service_worker": "scripts/background.js",
-    "type": "module"
+    "service_worker": "scripts/background.js"
   },
 
   "content_scripts": [
     {
       "matches": [
         "https://www.youtube.com/*",
-        "https://youtube.com/*",
-        "https://www.twitch.tv/*",
-        "https://play.sooplive.co.kr/*",
-        "https://chzzk.naver.com/*",
-        "https://www.nicovideo.jp/*",
-        "https://live.nicovideo.jp/*"
+        "https://youtube.com/*"
       ],
       "js": [
-        "scripts/content-bundle.js",
-        "scripts/subtitle-parser.js",
-        "scripts/subtitle-renderer.js",
-        "scripts/subtitle-loader.js",
-        "scripts/lst-init.js"
+        "scripts/community/subtitle-parser.js",
+        "scripts/community/subtitle-renderer.js",
+        "scripts/community/subtitle-loader.js",
+        "scripts/community/init.js"
       ],
       "css": ["styles/overlay.css"],
       "run_at": "document_end"
@@ -67,13 +53,6 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-
-  "web_accessible_resources": [
-    {
-      "resources": ["offscreen.html"],
-      "matches": ["<all_urls>"]
-    }
-  ],
 
   "default_locale": "ko"
 }

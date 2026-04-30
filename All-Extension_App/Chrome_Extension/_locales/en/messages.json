@@ -406,5 +406,17 @@
   "toast_save_error": {
     "message": "Failed to save settings.",
     "description": "Settings save error toast"
+  },
+  "inner_common": {
+    "message": "Common",
+    "description": "Inner tab: common display settings"
+  },
+  "inner_realtimeDisplay": {
+    "message": "Real-time",
+    "description": "Inner tab: realtime display settings"
+  },
+  "heading_realtimeDisplay": {
+    "message": "Real-time Subtitle Display",
+    "description": "Heading for realtime subtitle display section"
   }
 }
