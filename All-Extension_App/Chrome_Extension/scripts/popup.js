@@ -30,7 +30,7 @@ function initI18n() {
   // 슬라이더 레이블은 텍스트로만 처리 (innerHTML 방식 유지)
   const sizeLabel = document.querySelector('label[for="overlaySize"]');
   if (sizeLabel) {
-    sizeLabel.childNodes[0].textContent = getMessage('label_overlaySize', '자막 크기') + ': ';
+    sizeLabel.childNodes[0].textContent = getMessage('label_overlaySize', '글꼴 크기') + ': ';
   }
 }
 
@@ -44,12 +44,26 @@ const elements = {
   subtitleStatusText: document.getElementById('subtitleStatusText'),
   subtitleStatusSub: document.getElementById('subtitleStatusSub'),
 
-  // 표시 탭
-  showOriginal: document.getElementById('showOriginal'),
+  // 표시 탭 - 공통
+  fontFamily:         document.getElementById('fontFamily'),
+  fontColor:          document.getElementById('fontColor'),
+  fontOpacity:        document.getElementById('fontOpacity'),
+  fontOpacityValue:   document.getElementById('fontOpacityValue'),
+  overlaySize:        document.getElementById('overlaySize'),
+  sizeValue:          document.getElementById('sizeValue'),
+  edgeStyle:          document.getElementById('edgeStyle'),
+  bgColor:            document.getElementById('bgColor'),
+  bgOpacity:          document.getElementById('bgOpacity'),
+  bgOpacityValue:     document.getElementById('bgOpacityValue'),
+  windowColor:        document.getElementById('windowColor'),
+  windowOpacity:      document.getElementById('windowOpacity'),
+  windowOpacityValue: document.getElementById('windowOpacityValue'),
+  resetDisplayBtn:    document.getElementById('resetDisplayBtn'),
+
+  // 표시 탭 - 실시간
+  showOriginal:    document.getElementById('showOriginal'),
   overlayPosition: document.getElementById('overlayPosition'),
-  overlaySize: document.getElementById('overlaySize'),
-  sizeValue: document.getElementById('sizeValue'),
-  enableCache: document.getElementById('enableCache'),
+  enableCache:     document.getElementById('enableCache'),
 
   // 공통
   saveBtn: document.getElementById('saveBtn'),
@@ -66,8 +80,11 @@ const TAB_TITLE_KEYS = {
   about: 'title_about',
 };
 
-// 슬라이더 값↔퍼센트 매핑
-const SIZE_MAP = ['50', '75', '100', '150', '200', '250', '300'];
+// 글꼴 크기 슬라이더 매핑 (YouTube 1:1)
+const SIZE_MAP = ['50', '75', '100', '150', '200', '300', '400'];
+
+// 불투명도 슬라이더 매핑
+const OPACITY_MAP = ['0', '25', '50', '75', '100'];
 
 function sliderToPercent(index) {
   return SIZE_MAP[index] || '100';
@@ -76,6 +93,15 @@ function sliderToPercent(index) {
 function percentToSlider(percent) {
   const index = SIZE_MAP.indexOf(String(percent));
   return index !== -1 ? index : 2;
+}
+
+function sliderToOpacity(index) {
+  return OPACITY_MAP[Number(index)] || '100';
+}
+
+function opacityToSlider(percent) {
+  const index = OPACITY_MAP.indexOf(String(percent));
+  return index !== -1 ? index : 4; // 기본값 100%
 }
 
 /**
@@ -115,6 +141,20 @@ function switchInnerTab(tabEl) {
   if (content) content.classList.add('active');
 }
 
+/** 기본 표시 설정값 (YouTube 1:1) */
+const DISPLAY_DEFAULTS = {
+  fontFamily:    'proportional-sans-serif',
+  fontColor:     'white',
+  fontOpacity:   '100',
+  overlaySize:   '100',
+  edgeStyle:     'drop-shadow',
+  bgColor:       'black',
+  bgOpacity:     '75',
+  windowColor:   'black',
+  windowOpacity: '0',
+  overlayPosition: 'bottom',
+};
+
 /**
  * 설정 로드
  */
@@ -129,15 +169,40 @@ async function loadSettings() {
         elements.subtitleLang.value = settings.subtitleLang || 'auto';
       }
 
-      // 표시 설정
-      if (elements.showOriginal) elements.showOriginal.checked = settings.showOriginal !== false;
-      if (elements.overlayPosition) elements.overlayPosition.value = settings.overlayPosition || 'bottom';
+      // 표시 - 공통
+      if (elements.fontFamily)  elements.fontFamily.value  = settings.fontFamily || DISPLAY_DEFAULTS.fontFamily;
+      if (elements.fontColor)   elements.fontColor.value   = settings.fontColor  || DISPLAY_DEFAULTS.fontColor;
+      if (elements.edgeStyle)   elements.edgeStyle.value   = settings.edgeStyle  || DISPLAY_DEFAULTS.edgeStyle;
+      if (elements.bgColor)     elements.bgColor.value     = settings.bgColor    || DISPLAY_DEFAULTS.bgColor;
+      if (elements.windowColor) elements.windowColor.value = settings.windowColor|| DISPLAY_DEFAULTS.windowColor;
+
+      // 불투명도 슬라이더
+      if (elements.fontOpacity) {
+        const idx = opacityToSlider(settings.fontOpacity ?? DISPLAY_DEFAULTS.fontOpacity);
+        elements.fontOpacity.value = idx;
+        if (elements.fontOpacityValue) elements.fontOpacityValue.textContent = OPACITY_MAP[idx] + '%';
+      }
+      if (elements.bgOpacity) {
+        const idx = opacityToSlider(settings.bgOpacity ?? DISPLAY_DEFAULTS.bgOpacity);
+        elements.bgOpacity.value = idx;
+        if (elements.bgOpacityValue) elements.bgOpacityValue.textContent = OPACITY_MAP[idx] + '%';
+      }
+      if (elements.windowOpacity) {
+        const idx = opacityToSlider(settings.windowOpacity ?? DISPLAY_DEFAULTS.windowOpacity);
+        elements.windowOpacity.value = idx;
+        if (elements.windowOpacityValue) elements.windowOpacityValue.textContent = OPACITY_MAP[idx] + '%';
+      }
+
       if (elements.overlaySize) {
-        const sizePercent = settings.overlaySize || '100';
+        const sizePercent = settings.overlaySize || DISPLAY_DEFAULTS.overlaySize;
         elements.overlaySize.value = percentToSlider(sizePercent);
         if (elements.sizeValue) elements.sizeValue.textContent = sizePercent + '%';
       }
-      if (elements.enableCache) elements.enableCache.checked = settings.enableCache !== false;
+
+      // 표시 - 실시간
+      if (elements.showOriginal)    elements.showOriginal.checked    = settings.showOriginal    !== false;
+      if (elements.overlayPosition) elements.overlayPosition.value   = settings.overlayPosition || DISPLAY_DEFAULTS.overlayPosition;
+      if (elements.enableCache)     elements.enableCache.checked     = settings.enableCache     !== false;
 
       resolve(settings);
     });
@@ -149,12 +214,23 @@ async function loadSettings() {
  */
 async function saveSettings() {
   const settings = {
+    // 커뮤니티
     subtitleEnabled: elements.subtitleEnabled?.checked ?? true,
-    subtitleLang: elements.subtitleLang?.value || 'auto',
-    showOriginal: elements.showOriginal?.checked ?? true,
-    overlayPosition: elements.overlayPosition?.value || 'bottom',
-    overlaySize: sliderToPercent(elements.overlaySize?.value ?? 2),
-    enableCache: elements.enableCache?.checked ?? true,
+    subtitleLang:    elements.subtitleLang?.value || 'auto',
+    // 표시 - 공통
+    fontFamily:    elements.fontFamily?.value    || DISPLAY_DEFAULTS.fontFamily,
+    fontColor:     elements.fontColor?.value  || DISPLAY_DEFAULTS.fontColor,
+    fontOpacity:   sliderToOpacity(elements.fontOpacity?.value   ?? 4),
+    overlaySize:   sliderToPercent(elements.overlaySize?.value   ?? 2),
+    edgeStyle:     elements.edgeStyle?.value  || DISPLAY_DEFAULTS.edgeStyle,
+    bgColor:       elements.bgColor?.value    || DISPLAY_DEFAULTS.bgColor,
+    bgOpacity:     sliderToOpacity(elements.bgOpacity?.value     ?? 3),
+    windowColor:   elements.windowColor?.value|| DISPLAY_DEFAULTS.windowColor,
+    windowOpacity: sliderToOpacity(elements.windowOpacity?.value ?? 0),
+    // 표시 - 실시간
+    showOriginal:    elements.showOriginal?.checked    ?? true,
+    overlayPosition: elements.overlayPosition?.value   || DISPLAY_DEFAULTS.overlayPosition,
+    enableCache:     elements.enableCache?.checked     ?? true,
   };
 
   return new Promise((resolve) => {
@@ -317,10 +393,53 @@ function setupEventListeners() {
     });
   });
 
-  // 슬라이더
+  // 크기 슬라이더
   elements.overlaySize?.addEventListener('input', () => {
     const percent = sliderToPercent(elements.overlaySize.value);
     if (elements.sizeValue) elements.sizeValue.textContent = percent + '%';
+  });
+
+  // 불투명도 슬라이더 3개
+  elements.fontOpacity?.addEventListener('input', () => {
+    if (elements.fontOpacityValue)
+      elements.fontOpacityValue.textContent = OPACITY_MAP[elements.fontOpacity.value] + '%';
+  });
+  elements.bgOpacity?.addEventListener('input', () => {
+    if (elements.bgOpacityValue)
+      elements.bgOpacityValue.textContent = OPACITY_MAP[elements.bgOpacity.value] + '%';
+  });
+  elements.windowOpacity?.addEventListener('input', () => {
+    if (elements.windowOpacityValue)
+      elements.windowOpacityValue.textContent = OPACITY_MAP[elements.windowOpacity.value] + '%';
+  });
+
+  // 표시 설정 재설정
+  elements.resetDisplayBtn?.addEventListener('click', () => {
+    if (elements.fontFamily) elements.fontFamily.value = DISPLAY_DEFAULTS.fontFamily;
+    if (elements.fontColor)  elements.fontColor.value  = DISPLAY_DEFAULTS.fontColor;
+    if (elements.edgeStyle)  elements.edgeStyle.value  = DISPLAY_DEFAULTS.edgeStyle;
+    if (elements.bgColor)    elements.bgColor.value    = DISPLAY_DEFAULTS.bgColor;
+    if (elements.windowColor)elements.windowColor.value= DISPLAY_DEFAULTS.windowColor;
+    if (elements.overlaySize) {
+      elements.overlaySize.value = percentToSlider(DISPLAY_DEFAULTS.overlaySize);
+      if (elements.sizeValue) elements.sizeValue.textContent = DISPLAY_DEFAULTS.overlaySize + '%';
+    }
+    if (elements.fontOpacity) {
+      const idx = opacityToSlider(DISPLAY_DEFAULTS.fontOpacity);
+      elements.fontOpacity.value = idx;
+      if (elements.fontOpacityValue) elements.fontOpacityValue.textContent = OPACITY_MAP[idx] + '%';
+    }
+    if (elements.bgOpacity) {
+      const idx = opacityToSlider(DISPLAY_DEFAULTS.bgOpacity);
+      elements.bgOpacity.value = idx;
+      if (elements.bgOpacityValue) elements.bgOpacityValue.textContent = OPACITY_MAP[idx] + '%';
+    }
+    if (elements.windowOpacity) {
+      const idx = opacityToSlider(DISPLAY_DEFAULTS.windowOpacity);
+      elements.windowOpacity.value = idx;
+      if (elements.windowOpacityValue) elements.windowOpacityValue.textContent = OPACITY_MAP[idx] + '%';
+    }
+    showToast(getMessage('toast_reset', '기본값으로 재설정되었습니다.'), 'info');
   });
 
   // 저장 버튼

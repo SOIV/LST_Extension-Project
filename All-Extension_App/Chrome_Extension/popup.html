@@ -270,17 +270,58 @@
           <div class="inner-content active" id="inner-display-common">
             <div class="settings-section">
               <h2 data-i18n="heading_subtitleDisplay">자막 표시 설정</h2>
+
+              <!-- 글꼴 모음 -->
               <div class="form-group">
-                <label for="overlayPosition" data-i18n="label_overlayPosition">자막 위치</label>
-                <select id="overlayPosition" class="form-control">
-                  <option value="top" data-i18n="position_top">상단</option>
-                  <option value="middle" data-i18n="position_middle">중앙</option>
-                  <option value="bottom" data-i18n="position_bottom">하단 (권장)</option>
+                <label for="fontFamily" data-i18n="label_fontFamily">글꼴 모음</label>
+                <select id="fontFamily" class="form-control">
+                  <option value="proportional-sans-serif">Proportional Sans-Serif</option>
+                  <option value="proportional-serif">Proportional Serif</option>
+                  <option value="monospace-serif">Monospace Serif</option>
+                  <option value="monospace-sans-serif">Monospace Sans-Serif</option>
+                  <option value="casual">Casual</option>
+                  <option value="cursive">Cursive</option>
+                  <option value="small-caps">Small Caps</option>
                 </select>
-                <p class="form-help" data-i18n="help_overlayPosition">비디오 플레이어에서 자막이 표시될 위치</p>
               </div>
+
+              <!-- 글꼴 색상 -->
               <div class="form-group">
-                <label for="overlaySize">자막 크기: <span id="sizeValue">100%</span></label>
+                <label for="fontColor" data-i18n="label_fontColor">글꼴 색상</label>
+                <select id="fontColor" class="form-control">
+                  <option value="white"   data-i18n="color_white">흰색</option>
+                  <option value="yellow"  data-i18n="color_yellow">노란색</option>
+                  <option value="green"   data-i18n="color_green">초록색</option>
+                  <option value="cyan"    data-i18n="color_cyan">청록색</option>
+                  <option value="blue"    data-i18n="color_blue">파란색</option>
+                  <option value="magenta" data-i18n="color_magenta">자홍색</option>
+                  <option value="red"     data-i18n="color_red">빨간색</option>
+                  <option value="black"   data-i18n="color_black">검은색</option>
+                </select>
+              </div>
+
+              <!-- 글꼴 불투명도 -->
+              <div class="form-group">
+                <label for="fontOpacity">글꼴 불투명도: <span id="fontOpacityValue">100%</span></label>
+                <div class="slider-container">
+                  <span class="slider-label">0%</span>
+                  <div class="slider-wrapper">
+                    <div class="slider-ticks">
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                    </div>
+                    <input type="range" id="fontOpacity" class="slider" min="0" max="4" step="1" value="4">
+                  </div>
+                  <span class="slider-label">100%</span>
+                </div>
+              </div>
+
+              <!-- 글꼴 크기 -->
+              <div class="form-group">
+                <label for="overlaySize">글꼴 크기: <span id="sizeValue">100%</span></label>
                 <div class="slider-container">
                   <span class="slider-label">50%</span>
                   <div class="slider-wrapper">
@@ -295,10 +336,92 @@
                     </div>
                     <input type="range" id="overlaySize" class="slider" min="0" max="6" step="1" value="2">
                   </div>
-                  <span class="slider-label">300%</span>
+                  <span class="slider-label">400%</span>
                 </div>
-                <p class="form-help" data-i18n="help_overlaySize">자막 텍스트의 크기를 조정합니다</p>
               </div>
+
+              <!-- 글자 테두리 스타일 -->
+              <div class="form-group">
+                <label for="edgeStyle" data-i18n="label_edgeStyle">글자 테두리 스타일</label>
+                <select id="edgeStyle" class="form-control">
+                  <option value="none"        data-i18n="edge_none">없음</option>
+                  <option value="raised"      data-i18n="edge_raised">양각</option>
+                  <option value="depressed"   data-i18n="edge_depressed">음각</option>
+                  <option value="uniform"     data-i18n="edge_uniform">균일</option>
+                  <option value="drop-shadow" data-i18n="edge_dropShadow">그림자</option>
+                </select>
+              </div>
+
+              <!-- 배경 색상 -->
+              <div class="form-group">
+                <label for="bgColor" data-i18n="label_bgColor">배경 색상</label>
+                <select id="bgColor" class="form-control">
+                  <option value="black"   data-i18n="color_black">검은색</option>
+                  <option value="white"   data-i18n="color_white">흰색</option>
+                  <option value="yellow"  data-i18n="color_yellow">노란색</option>
+                  <option value="green"   data-i18n="color_green">초록색</option>
+                  <option value="cyan"    data-i18n="color_cyan">청록색</option>
+                  <option value="blue"    data-i18n="color_blue">파란색</option>
+                  <option value="magenta" data-i18n="color_magenta">자홍색</option>
+                  <option value="red"     data-i18n="color_red">빨간색</option>
+                </select>
+              </div>
+
+              <!-- 배경 불투명도 -->
+              <div class="form-group">
+                <label for="bgOpacity">배경 불투명도: <span id="bgOpacityValue">75%</span></label>
+                <div class="slider-container">
+                  <span class="slider-label">0%</span>
+                  <div class="slider-wrapper">
+                    <div class="slider-ticks">
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                    </div>
+                    <input type="range" id="bgOpacity" class="slider" min="0" max="4" step="1" value="3">
+                  </div>
+                  <span class="slider-label">100%</span>
+                </div>
+              </div>
+
+              <!-- 창 색상 -->
+              <div class="form-group">
+                <label for="windowColor" data-i18n="label_windowColor">창 색상</label>
+                <select id="windowColor" class="form-control">
+                  <option value="black"   data-i18n="color_black">검은색</option>
+                  <option value="white"   data-i18n="color_white">흰색</option>
+                  <option value="yellow"  data-i18n="color_yellow">노란색</option>
+                  <option value="green"   data-i18n="color_green">초록색</option>
+                  <option value="cyan"    data-i18n="color_cyan">청록색</option>
+                  <option value="blue"    data-i18n="color_blue">파란색</option>
+                  <option value="magenta" data-i18n="color_magenta">자홍색</option>
+                  <option value="red"     data-i18n="color_red">빨간색</option>
+                </select>
+              </div>
+
+              <!-- 창 불투명도 -->
+              <div class="form-group">
+                <label for="windowOpacity">창 불투명도: <span id="windowOpacityValue">0%</span></label>
+                <div class="slider-container">
+                  <span class="slider-label">0%</span>
+                  <div class="slider-wrapper">
+                    <div class="slider-ticks">
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                      <span class="slider-tick"></span>
+                    </div>
+                    <input type="range" id="windowOpacity" class="slider" min="0" max="4" step="1" value="0">
+                  </div>
+                  <span class="slider-label">100%</span>
+                </div>
+              </div>
+
+              <!-- 재설정 -->
+              <button class="btn btn-secondary" id="resetDisplayBtn" data-i18n="btn_resetDisplay">재설정</button>
             </div>
           </div>
 
@@ -318,6 +441,17 @@
 
             <div class="settings-section settings-locked">
               <h2 data-i18n="heading_realtimeDisplay">실시간 자막 표시</h2>
+
+              <!-- 자막 위치 -->
+              <div class="form-group">
+                <label for="overlayPosition" data-i18n="label_overlayPosition">자막 위치</label>
+                <select id="overlayPosition" class="form-control" disabled>
+                  <option value="top"    data-i18n="position_top">상단</option>
+                  <option value="bottom" data-i18n="position_bottom">하단</option>
+                </select>
+                <p class="form-help" data-i18n="help_overlayPosition">실시간 자막이 표시될 위치</p>
+              </div>
+
               <div class="form-group">
                 <label class="checkbox-label">
                   <input type="checkbox" id="showOriginal" checked disabled>
@@ -341,7 +475,7 @@
              ============================ -->
         <div class="tab-content" id="tab-about">
           <div class="settings-section">
-            <h2 data-i18n="extName">Live Stream Translator</h2>
+            <h2 data-i18n="extName">Live Stream Translator(LST) Project for Extension</h2>
             <p class="about-description" data-i18n="about_description">실시간 스트리밍 플랫폼을 위한 통합 번역 시스템</p>
             <div class="info-box">
               <h3 data-i18n="about_supportedPlatforms">지원 플랫폼</h3>

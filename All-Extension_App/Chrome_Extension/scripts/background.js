@@ -62,9 +62,19 @@ chrome.runtime.onInstalled.addListener(async () => {
   const defaults = {
     subtitleEnabled:  true,
     subtitleLang:     'auto',
-    overlayPosition:  'bottom',
-    overlaySize:      '100',
     enableCache:      true,
+    // 표시 - 공통 (YouTube 1:1)
+    fontFamily:       'proportional-sans-serif',
+    fontColor:        'white',
+    fontOpacity:      '100',
+    overlaySize:      '100',
+    edgeStyle:        'drop-shadow',
+    bgColor:          'black',
+    bgOpacity:        '75',
+    windowColor:      'black',
+    windowOpacity:    '0',
+    // 표시 - 실시간
+    overlayPosition:  'bottom',
   };
   const missing = {};
   for (const [k, v] of Object.entries(defaults)) {

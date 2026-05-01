@@ -23,9 +23,14 @@ function extractVideoId(input: string): string | null {
 }
 
 /** 파일 확장자로 포맷 판별 */
-function detectFormat(filename: string, content: string): "srt" | "vtt" {
-  if (filename.endsWith(".vtt")) return "vtt";
+function detectFormat(filename: string, content: string): "srt" | "vtt" | "smi" | "ttml" {
+  const lower = filename.toLowerCase();
+  if (lower.endsWith(".vtt")) return "vtt";
+  if (lower.endsWith(".smi") || lower.endsWith(".sami")) return "smi";
+  if (lower.endsWith(".ttml") || lower.endsWith(".xml")) return "ttml";
   if (content.trimStart().startsWith("WEBVTT")) return "vtt";
+  if (/<SAMI/i.test(content.trimStart().slice(0, 300))) return "smi";
+  if (/<tt[\s>]/i.test(content.trimStart().slice(0, 500))) return "ttml";
   return "srt";
 }
 
@@ -128,7 +133,11 @@ export async function POST(request: NextRequest) {
 
   // 4. R2에 파일 업로드
   const storagePath = `subtitles/${videoId}/${languageCode}/${revisionNumber}.${format}`;
-  const contentType = format === "vtt" ? "text/vtt" : "text/plain";
+  const contentType =
+    format === "vtt"  ? "text/vtt" :
+    format === "smi"  ? "text/x-sami" :
+    format === "ttml" ? "application/ttml+xml" :
+    "text/plain";
 
   try {
     await uploadToR2(storagePath, content, contentType);

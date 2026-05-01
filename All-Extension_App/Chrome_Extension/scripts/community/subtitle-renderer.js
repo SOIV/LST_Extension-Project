@@ -12,10 +12,50 @@ const SubtitleRenderer = (() => {
   let rafId    = null;
   let videoEl  = null;
 
+  // ─── 스타일 맵 ──────────────────────────────────────────────
+
+  // 글꼴 크기 (YouTube 1:1)
   const SIZE_MAP = {
     '50': '11px', '75': '14px', '100': '18px',
-    '150': '22px', '200': '26px', '250': '30px', '300': '34px'
+    '150': '22px', '200': '26px', '300': '30px', '400': '36px'
   };
+
+  // 글꼴 패밀리
+  const FONT_FAMILY_MAP = {
+    'proportional-sans-serif': 'Arial, Helvetica, sans-serif',
+    'proportional-serif':      '"Times New Roman", Times, Georgia, serif',
+    'monospace-serif':         '"Courier New", Courier, monospace',
+    'monospace-sans-serif':    '"Lucida Console", Monaco, Consolas, monospace',
+    'casual':                  '"Comic Sans MS", Impact, fantasy',
+    'cursive':                 'Pacifico, "Arial Rounded MT Bold", cursive',
+    'small-caps':              'Arial, Helvetica, sans-serif',
+  };
+
+  // 색상 (이름 → HEX)
+  const COLOR_MAP = {
+    white:   '#ffffff', yellow:  '#ffff00', green:   '#00ff00',
+    cyan:    '#00ffff', blue:    '#0000ff', magenta: '#ff00ff',
+    red:     '#ff0000', black:   '#000000',
+  };
+
+  // 글자 테두리 스타일
+  const EDGE_STYLE_MAP = {
+    none:          'none',
+    raised:        '1px 1px 0 #000, 1px 0 0 #000, 0 1px 0 #000',
+    depressed:     '-1px -1px 0 #888, 0 -1px 0 #888, -1px 0 0 #888',
+    uniform:       '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000, 1px 0 0 #000',
+    'drop-shadow': '2px 2px 3px rgba(0,0,0,0.9), 1px 1px 2px rgba(0,0,0,0.9)',
+  };
+
+  /** 색상 이름 + 불투명도(0~100) → rgba() 문자열 */
+  function toRgba(colorKey, opacityStr) {
+    const hex   = COLOR_MAP[colorKey] || '#000000';
+    const r     = parseInt(hex.slice(1, 3), 16);
+    const g     = parseInt(hex.slice(3, 5), 16);
+    const b     = parseInt(hex.slice(5, 7), 16);
+    const alpha = parseInt(opacityStr ?? '100', 10) / 100;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
 
   /* ─── DOM 헬퍼 ─────────────────────────────────────────── */
 
@@ -50,11 +90,8 @@ const SubtitleRenderer = (() => {
     const text = document.createElement('div');
     text.id = TEXT_ID;
     Object.assign(text.style, {
-      background:   'rgba(0,0,0,0.75)',
-      color:        '#fff',
       padding:      '6px 16px',
       borderRadius: '4px',
-      fontSize:     '18px',
       lineHeight:   '1.5',
       textAlign:    'center',
       maxWidth:     '80%',
@@ -67,7 +104,9 @@ const SubtitleRenderer = (() => {
     return overlay;
   }
 
-  function applyPosition(overlay) {
+  /** 설정값을 overlay/text 엘리먼트에 즉시 반영 */
+  function applyStyles(overlay, text) {
+    // 위치
     const pos = settings.overlayPosition || 'bottom';
     overlay.style.top       = '';
     overlay.style.bottom    = '';
@@ -80,6 +119,31 @@ const SubtitleRenderer = (() => {
     } else {
       overlay.style.bottom = '10%';
     }
+
+    // 창 (overlay 배경)
+    overlay.style.background = toRgba(
+      settings.windowColor   || 'black',
+      settings.windowOpacity ?? '0'
+    );
+
+    // 글꼴 크기
+    text.style.fontSize = SIZE_MAP[settings.overlaySize || '100'] || '18px';
+
+    // 글꼴 패밀리 + Small Caps
+    const family = settings.fontFamily || 'proportional-sans-serif';
+    text.style.fontFamily  = FONT_FAMILY_MAP[family] || FONT_FAMILY_MAP['proportional-sans-serif'];
+    text.style.fontVariant = family === 'small-caps' ? 'small-caps' : '';
+
+    // 글꼴 색상
+    text.style.color       = toRgba(settings.fontColor || 'white', settings.fontOpacity ?? '100');
+
+    // 글자 테두리
+    text.style.textShadow  = EDGE_STYLE_MAP[settings.edgeStyle || 'drop-shadow'] || EDGE_STYLE_MAP['drop-shadow'];
+
+    // 배경 색상
+    text.style.background  = toRgba(settings.bgColor || 'black', settings.bgOpacity ?? '75');
+    text.style.padding     = '6px 16px';
+    text.style.borderRadius = '4px';
   }
 
   /* ─── 렌더 루프 ──────────────────────────────────────────── */
@@ -102,16 +166,15 @@ const SubtitleRenderer = (() => {
       return;
     }
 
-    const nowMs    = video.currentTime * 1000;
+    const nowMs     = video.currentTime * 1000;
     const activeCue = cues.find(c => nowMs >= c.start && nowMs <= c.end);
 
     if (activeCue) {
       if (text.textContent !== activeCue.text) {
         text.textContent = activeCue.text;
       }
-      text.style.fontSize = SIZE_MAP[settings.overlaySize || '100'] || '18px';
-      text.style.display  = 'block';
-      applyPosition(overlay);
+      applyStyles(overlay, text);
+      text.style.display = 'block';
     } else {
       text.style.display = 'none';
     }
@@ -136,10 +199,13 @@ const SubtitleRenderer = (() => {
   }
 
   /**
-   * 설정만 업데이트 (자막 유지)
+   * 설정만 업데이트 (자막 유지, 즉시 반영)
    */
   function updateSettings(newSettings) {
     settings = { ...settings, ...newSettings };
+    const overlay = document.getElementById(OVERLAY_ID);
+    const text    = document.getElementById(TEXT_ID);
+    if (overlay && text) applyStyles(overlay, text);
   }
 
   /**

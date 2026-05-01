@@ -139,14 +139,14 @@ export default function UploadPage() {
                   <span className="text-sm text-zinc-500">
                     {t("clickToSelect")}
                   </span>
-                  <span className="text-xs text-zinc-400">.srt, .vtt</span>
+                  <span className="text-xs text-zinc-400">.srt, .vtt, .smi, .sami, .ttml</span>
                 </>
               )}
             </div>
             <input
               ref={fileRef}
               type="file"
-              accept=".srt,.vtt"
+              accept=".srt,.vtt,.smi,.sami,.ttml,.xml"
               className="hidden"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
