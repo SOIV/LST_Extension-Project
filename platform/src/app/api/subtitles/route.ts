@@ -61,13 +61,16 @@ export async function GET(request: NextRequest) {
   const track = tracks[0];
   const allLanguages = tracks.map((t) => t.language_code);
 
-  // 3. 현재 리비전 조회
-  const { data: revision, error: revisionError } = await supabase
+  // 3. 현재 리비전 조회 (is_current 불일치 방어: revision_number 내림차순으로 최신 우선)
+  const { data: revisions, error: revisionError } = await supabase
     .from("subtitle_revisions")
     .select("storage_path, format")
     .eq("track_id", track.id)
     .eq("is_current", true)
-    .single();
+    .order("revision_number", { ascending: false })
+    .limit(1);
+
+  const revision = revisions?.[0];
 
   if (revisionError || !revision) {
     return Response.json(

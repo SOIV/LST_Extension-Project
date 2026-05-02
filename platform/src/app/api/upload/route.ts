@@ -145,14 +145,8 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "파일 업로드 실패" }, { status: 500 });
   }
 
-  // 5. 기존 is_current 해제
-  await supabase
-    .from("subtitle_revisions")
-    .update({ is_current: false })
-    .eq("track_id", trackRow.id);
-
-  // 6. subtitle_revisions 저장
-  const { error: revisionError } = await supabase
+  // 5. subtitle_revisions 저장 (is_current는 RPC로 원자적 처리)
+  const { data: newRevision, error: revisionError } = await supabase
     .from("subtitle_revisions")
     .insert({
       track_id: trackRow.id,
@@ -161,11 +155,23 @@ export async function POST(request: NextRequest) {
       format,
       revision_number: revisionNumber,
       message,
-      is_current: true,
-    });
+      is_current: false,
+    })
+    .select("id")
+    .single();
 
-  if (revisionError) {
+  if (revisionError || !newRevision) {
     return Response.json({ error: "리비전 저장 실패" }, { status: 500 });
+  }
+
+  // 6. is_current 원자적 업데이트 (SECURITY DEFINER 함수로 RLS 우회)
+  const { error: rpcError } = await supabase.rpc("update_current_revision", {
+    p_track_id: trackRow.id,
+    p_new_revision_id: newRevision.id,
+  });
+
+  if (rpcError) {
+    return Response.json({ error: "리비전 업데이트 실패" }, { status: 500 });
   }
 
   return Response.json({
