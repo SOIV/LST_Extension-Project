@@ -71,14 +71,14 @@ const SubtitleLoader = (() => {
       return;
     }
 
-    const cues = SubtitleParser.parse(data.content, data.format);
+    const { cues, hasExplicitPosition } = SubtitleParser.parse(data.content, data.format);
 
     if (cues.length === 0) {
       setStatus('unavailable');
       return;
     }
 
-    SubtitleRenderer.load(cues, settings);
+    SubtitleRenderer.load(cues, settings, hasExplicitPosition);
     setStatus('available', data.languages || []);
   }
 

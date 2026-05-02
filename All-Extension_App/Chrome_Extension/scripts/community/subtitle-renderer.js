@@ -1,26 +1,34 @@
 /**
  * LST - Subtitle Renderer
  * YouTube 영상 위 자막 오버레이 렌더링
+ *
+ * [재생바 자동 회피]
+ * - overlayPosition === 'bottom' && hasExplicitPosition === false 일 때 활성화
+ * - #movie_player에서 'ytp-autohide' 클래스 변화를 MutationObserver로 감지
+ *   · 클래스 없음(재생바 표시) → .ytp-chrome-bottom 높이만큼 위로 이동
+ *   · 클래스 있음(재생바 숨김)  → 기본 bottom 위치 복귀
+ * - 파일에 위치 정보가 포함된 경우(hasExplicitPosition) 옵저버 비활성화 → YouTube 동일 동작
  */
 
 const SubtitleRenderer = (() => {
   const OVERLAY_ID  = 'lst-subtitle-overlay';
   const TEXT_ID     = 'lst-subtitle-text';
 
-  let cues     = [];
-  let settings = {};
-  let rafId    = null;
-  let videoEl  = null;
+  let cues                = [];
+  let settings            = {};
+  let rafId               = null;
+  let videoEl             = null;
+  let hasExplicitPosition = false;  // 자막 파일에 고정 위치 정보 포함 여부
+  let controlsVisible     = false;  // 재생바 표시 상태
+  let controlsObserver    = null;   // MutationObserver 인스턴스
 
   // ─── 스타일 맵 ──────────────────────────────────────────────
 
-  // 글꼴 크기 (YouTube 1:1)
   const SIZE_MAP = {
     '50': '11px', '75': '14px', '100': '18px',
     '150': '22px', '200': '26px', '300': '30px', '400': '36px'
   };
 
-  // 글꼴 패밀리
   const FONT_FAMILY_MAP = {
     'proportional-sans-serif': 'Arial, Helvetica, sans-serif',
     'proportional-serif':      '"Times New Roman", Times, Georgia, serif',
@@ -31,14 +39,12 @@ const SubtitleRenderer = (() => {
     'small-caps':              'Arial, Helvetica, sans-serif',
   };
 
-  // 색상 (이름 → HEX)
   const COLOR_MAP = {
     white:   '#ffffff', yellow:  '#ffff00', green:   '#00ff00',
     cyan:    '#00ffff', blue:    '#0000ff', magenta: '#ff00ff',
     red:     '#ff0000', black:   '#000000',
   };
 
-  // 글자 테두리 스타일
   const EDGE_STYLE_MAP = {
     none:          'none',
     raised:        '1px 1px 0 #000, 1px 0 0 #000, 0 1px 0 #000',
@@ -104,23 +110,92 @@ const SubtitleRenderer = (() => {
     return overlay;
   }
 
-  /** 설정값을 overlay/text 엘리먼트에 즉시 반영 */
+  /* ─── 재생바 자동 회피 ──────────────────────────────────── */
+
+  /**
+   * 현재 재생바 상태에 따른 overlay bottom 값 계산
+   * - 재생바 숨김 또는 고정 위치 파일: '5%'
+   * - 재생바 표시: .ytp-chrome-bottom 높이 + 여백
+   */
+  function getAutoBottom() {
+    if (hasExplicitPosition || !controlsVisible) return '5%';
+    const bar = document.querySelector('.ytp-chrome-bottom');
+    const barH = bar ? bar.offsetHeight : 48;
+    return `${barH + 4}px`;
+  }
+
+  /**
+   * #movie_player의 'ytp-autohide' 클래스 변화 감시
+   * - ytp-autohide 없음 = 재생바 표시
+   * - ytp-autohide 있음 = 재생바 숨김
+   */
+  function startControlsObserver(retries = 5) {
+    stopControlsObserver();
+
+    const player = getPlayerContainer();
+    if (!player) {
+      if (retries > 0) setTimeout(() => startControlsObserver(retries - 1), 800);
+      return;
+    }
+
+    // 초기 상태 반영
+    controlsVisible = !player.classList.contains('ytp-autohide');
+
+    controlsObserver = new MutationObserver(() => {
+      const nowVisible = !player.classList.contains('ytp-autohide');
+      if (nowVisible === controlsVisible) return;
+      controlsVisible = nowVisible;
+
+      // bottom 위치만 즉시 업데이트 (전체 applyStyles 불필요)
+      const overlay = document.getElementById(OVERLAY_ID);
+      if (overlay && (settings.overlayPosition || 'bottom') === 'bottom') {
+        overlay.style.bottom = getAutoBottom();
+      }
+    });
+
+    controlsObserver.observe(player, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  function stopControlsObserver() {
+    if (controlsObserver) {
+      controlsObserver.disconnect();
+      controlsObserver = null;
+    }
+  }
+
+  /** 현재 설정에 따라 옵저버 on/off 결정 */
+  function syncControlsObserver() {
+    const needsObserver =
+      !hasExplicitPosition &&
+      (settings.overlayPosition || 'bottom') === 'bottom';
+
+    if (needsObserver) {
+      startControlsObserver();
+    } else {
+      stopControlsObserver();
+      controlsVisible = false;
+    }
+  }
+
+  /* ─── 스타일 적용 ───────────────────────────────────────── */
+
   function applyStyles(overlay, text) {
-    // 위치
     const pos = settings.overlayPosition || 'bottom';
     overlay.style.top       = '';
     overlay.style.bottom    = '';
     overlay.style.transform = '';
+
     if (pos === 'top') {
       overlay.style.top = '8%';
     } else if (pos === 'middle') {
       overlay.style.top       = '50%';
       overlay.style.transform = 'translateY(-50%)';
     } else {
-      overlay.style.bottom = '10%';
+      // bottom: 재생바 상태에 따라 동적으로 결정
+      overlay.style.bottom = getAutoBottom();
     }
 
-    // 창 (overlay 배경)
+    // 창 배경
     overlay.style.background = toRgba(
       settings.windowColor   || 'black',
       settings.windowOpacity ?? '0'
@@ -135,14 +210,14 @@ const SubtitleRenderer = (() => {
     text.style.fontVariant = family === 'small-caps' ? 'small-caps' : '';
 
     // 글꼴 색상
-    text.style.color       = toRgba(settings.fontColor || 'white', settings.fontOpacity ?? '100');
+    text.style.color      = toRgba(settings.fontColor || 'white', settings.fontOpacity ?? '100');
 
     // 글자 테두리
-    text.style.textShadow  = EDGE_STYLE_MAP[settings.edgeStyle || 'drop-shadow'] || EDGE_STYLE_MAP['drop-shadow'];
+    text.style.textShadow = EDGE_STYLE_MAP[settings.edgeStyle || 'drop-shadow'] || EDGE_STYLE_MAP['drop-shadow'];
 
-    // 배경 색상
-    text.style.background  = toRgba(settings.bgColor || 'black', settings.bgOpacity ?? '75');
-    text.style.padding     = '6px 16px';
+    // 배경
+    text.style.background   = toRgba(settings.bgColor || 'black', settings.bgOpacity ?? '75');
+    text.style.padding      = '6px 16px';
     text.style.borderRadius = '4px';
   }
 
@@ -186,14 +261,17 @@ const SubtitleRenderer = (() => {
    * 자막 로드 및 렌더 시작
    * @param {{ start: number, end: number, text: string }[]} subtitleCues
    * @param {object} newSettings
+   * @param {boolean} [explicitPosition=false] - 자막 파일에 고정 위치 정보 포함 여부
    */
-  function load(subtitleCues, newSettings) {
+  function load(subtitleCues, newSettings, explicitPosition = false) {
     clear();
-    cues     = subtitleCues || [];
-    settings = newSettings  || {};
+    cues                = subtitleCues || [];
+    settings            = newSettings  || {};
+    hasExplicitPosition = explicitPosition;
 
     if (cues.length > 0) {
       getOrCreateOverlay();
+      syncControlsObserver();
       tick();
     }
   }
@@ -206,14 +284,22 @@ const SubtitleRenderer = (() => {
     const overlay = document.getElementById(OVERLAY_ID);
     const text    = document.getElementById(TEXT_ID);
     if (overlay && text) applyStyles(overlay, text);
+
+    // overlayPosition 변경 시 옵저버 재설정
+    if ('overlayPosition' in newSettings) {
+      syncControlsObserver();
+    }
   }
 
   /**
    * 자막 및 오버레이 제거
    */
   function clear() {
-    cues    = [];
-    videoEl = null;
+    cues                = [];
+    videoEl             = null;
+    hasExplicitPosition = false;
+    controlsVisible     = false;
+    stopControlsObserver();
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     const overlay = document.getElementById(OVERLAY_ID);
     if (overlay) overlay.remove();
