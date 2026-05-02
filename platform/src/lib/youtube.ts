@@ -517,7 +517,10 @@ export async function getChannelRegularVideos(
       if (v._lbc === "live") return false;
       return true;
     })
-    .map(({ _lbc: _, ...rest }) => rest as Candidate);
+    .map(({ _lbc, ...rest }) => {
+      void _lbc;
+      return rest as Candidate;
+    });
 
   // 4단계: 180초 이하 → oEmbed 세로 비율 확인 (Shorts 제외)
   const shortCandidates = candidates.filter((v) => v._sec <= 180);
@@ -532,7 +535,10 @@ export async function getChannelRegularVideos(
       return true;
     })
     .slice(0, maxResults)
-    .map(({ _sec: _, ...rest }) => rest as YoutubeVideo);
+    .map(({ _sec, ...rest }) => {
+      void _sec;
+      return rest as YoutubeVideo;
+    });
 
   return { videos, nextPageToken };
 }

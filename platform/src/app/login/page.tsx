@@ -3,17 +3,30 @@
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import Link from "next/link";
 
 function LoginContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
+  function sanitizeNextPath(next: string | null): string | null {
+    if (!next) return null;
+    if (!next.startsWith("/") || next.startsWith("//")) return null;
+    return next;
+  }
+
   async function handleGoogleLogin() {
     const supabase = createClient();
+    const callbackUrl = new URL("/auth/callback", location.origin);
+    const next = sanitizeNextPath(searchParams.get("next"));
+    if (next) {
+      callbackUrl.searchParams.set("next", next);
+    }
+
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${location.origin}/auth/callback`,
+        redirectTo: callbackUrl.toString(),
       },
     });
   }
@@ -54,13 +67,13 @@ function LoginContent() {
 
         <p className="text-xs text-center text-zinc-400 dark:text-zinc-500">
           계속하면{" "}
-          <a href="/terms" className="underline underline-offset-2 hover:text-zinc-600">
+          <Link href="/terms" className="underline underline-offset-2 hover:text-zinc-600">
             이용약관
-          </a>
+          </Link>
           {" "}및{" "}
-          <a href="/privacy" className="underline underline-offset-2 hover:text-zinc-600">
+          <Link href="/privacy" className="underline underline-offset-2 hover:text-zinc-600">
             개인정보처리방침
-          </a>
+          </Link>
           에 동의하는 것으로 간주됩니다.
         </p>
       </div>

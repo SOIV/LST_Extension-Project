@@ -13,9 +13,9 @@ export default function Navbar() {
   const router = useRouter();
   const t = useTranslations("Navbar");
   const [user, setUser] = useState<User | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const searchParams = useSearchParams();
+  const query = searchParams.get("q") ?? "";
 
   useEffect(() => {
     const supabase = createClient();
@@ -26,11 +26,6 @@ export default function Navbar() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const q = searchParams.get("q") ?? "";
-    setSearchQuery(q);
-  }, [searchParams]);
-
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -39,7 +34,7 @@ export default function Navbar() {
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    const q = searchQuery.trim();
+    const q = inputRef.current?.value.trim() ?? "";
     if (!q) return;
     router.push(`/search?q=${encodeURIComponent(q)}`);
     inputRef.current?.blur();
@@ -64,10 +59,11 @@ export default function Navbar() {
         <form onSubmit={handleSearch} className="flex-1 min-w-0 max-w-sm">
           <div className="relative">
             <input
+              key={query}
               ref={inputRef}
+              name="q"
               type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              defaultValue={query}
               placeholder={t("searchPlaceholder")}
               className="w-full h-8 pl-3 pr-8 rounded-lg text-sm bg-zinc-100 dark:bg-zinc-800 border border-transparent focus:border-zinc-300 dark:focus:border-zinc-600 focus:outline-none text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 transition-colors"
             />

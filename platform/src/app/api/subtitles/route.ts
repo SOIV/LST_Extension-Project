@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
     .from("subtitle_tracks")
     .select("id, language_code")
     .eq("video_id", video.id)
-    .eq("status", "approved");
+    .eq("status", "approved")
+    .order("language_code", { ascending: true });
 
   if (lang) tracksQuery.eq("language_code", lang);
 
@@ -57,8 +58,17 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // 언어 미지정 시 첫 번째 트랙 사용
-  const track = tracks[0];
+  // 언어 미지정 시 우선순위(ko/en/ja) 기반 + 이름순 fallback으로 결정
+  const preferredOrder = ["ko", "en", "ja"];
+  const sortedTracks = [...tracks].sort((a, b) => {
+    const ai = preferredOrder.indexOf(a.language_code);
+    const bi = preferredOrder.indexOf(b.language_code);
+    const aRank = ai === -1 ? Number.MAX_SAFE_INTEGER : ai;
+    const bRank = bi === -1 ? Number.MAX_SAFE_INTEGER : bi;
+    if (aRank !== bRank) return aRank - bRank;
+    return a.language_code.localeCompare(b.language_code);
+  });
+  const track = sortedTracks[0];
   const allLanguages = tracks.map((t) => t.language_code);
 
   // 3. 현재 리비전 조회 (is_current 불일치 방어: revision_number 내림차순으로 최신 우선)

@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { uploadToR2 } from "@/lib/r2";
 import { type NextRequest } from "next/server";
 
+const MAX_SUBTITLE_CONTENT_LENGTH = 4 * 1024 * 1024; // 4MB
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ trackId: string }> }
@@ -24,6 +26,12 @@ export async function POST(
 
   if (!content?.trim() || !["srt", "vtt"].includes(format)) {
     return Response.json({ error: "잘못된 요청입니다." }, { status: 400 });
+  }
+  if (content.length > MAX_SUBTITLE_CONTENT_LENGTH) {
+    return Response.json(
+      { error: "자막 내용은 4MB 이하만 저장할 수 있습니다." },
+      { status: 413 }
+    );
   }
 
   // Track + video info
@@ -54,16 +62,9 @@ export async function POST(
     );
   }
 
-  // Count existing revisions for next revision number
-  const { count } = await supabase
-    .from("subtitle_revisions")
-    .select("*", { count: "exact", head: true })
-    .eq("track_id", trackId);
-
-  const revisionNumber = (count ?? 0) + 1;
-
-  // Upload to R2
-  const storagePath = `subtitles/${ytId}/${track.language_code}/${revisionNumber}.${format}`;
+  // Upload to R2 (동시 요청 충돌 방지를 위해 경로에 고유 suffix 사용)
+  const uniqueSuffix = `${Date.now()}-${crypto.randomUUID()}`;
+  const storagePath = `subtitles/${ytId}/${track.language_code}/${uniqueSuffix}.${format}`;
   const contentType = format === "vtt" ? "text/vtt" : "text/plain";
 
   try {
@@ -72,22 +73,45 @@ export async function POST(
     return Response.json({ error: "파일 업로드 실패" }, { status: 500 });
   }
 
-  // Insert new revision (is_current는 RPC로 원자적 처리)
-  const { data: newRevision, error: revError } = await supabase
-    .from("subtitle_revisions")
-    .insert({
-      track_id: trackId,
-      contributor_id: user.id,
-      storage_path: storagePath,
-      format,
-      revision_number: revisionNumber,
-      message,
-      is_current: false,
-    })
-    .select("id")
-    .single();
+  // Insert new revision (동시성 충돌 시 재시도, is_current는 RPC로 원자적 처리)
+  let revisionNumber = 0;
+  let newRevision: { id: string } | null = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data: latestRevision } = await supabase
+      .from("subtitle_revisions")
+      .select("revision_number")
+      .eq("track_id", trackId)
+      .order("revision_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  if (revError || !newRevision) {
+    revisionNumber = (latestRevision?.revision_number ?? 0) + 1;
+
+    const { data, error: revError } = await supabase
+      .from("subtitle_revisions")
+      .insert({
+        track_id: trackId,
+        contributor_id: user.id,
+        storage_path: storagePath,
+        format,
+        revision_number: revisionNumber,
+        message,
+        is_current: false,
+      })
+      .select("id")
+      .single();
+
+    if (!revError && data) {
+      newRevision = data;
+      break;
+    }
+
+    if (revError?.code !== "23505" || attempt === 4) {
+      return Response.json({ error: "리비전 저장 실패" }, { status: 500 });
+    }
+  }
+
+  if (!newRevision) {
     return Response.json({ error: "리비전 저장 실패" }, { status: 500 });
   }
 

@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { uploadToR2 } from "@/lib/r2";
 import { type NextRequest } from "next/server";
 
+const MAX_SUBTITLE_FILE_SIZE_BYTES = 4 * 1024 * 1024; // 4MB
+
 /** YouTube URL에서 videoId 추출 */
 function extractVideoId(input: string): string | null {
   try {
@@ -10,11 +12,14 @@ function extractVideoId(input: string): string | null {
       return input.trim();
     }
     const url = new URL(input);
-    if (url.hostname.includes("youtube.com")) {
-      return url.searchParams.get("v");
+    const hostname = url.hostname.toLowerCase().replace(/^www\./, "");
+    if (hostname === "youtube.com" || hostname === "m.youtube.com") {
+      const v = url.searchParams.get("v");
+      return v && /^[a-zA-Z0-9_-]{11}$/.test(v) ? v : null;
     }
-    if (url.hostname === "youtu.be") {
-      return url.pathname.slice(1).split("?")[0];
+    if (hostname === "youtu.be") {
+      const shortId = url.pathname.slice(1).split("?")[0];
+      return /^[a-zA-Z0-9_-]{11}$/.test(shortId) ? shortId : null;
     }
     return null;
   } catch {
@@ -55,6 +60,15 @@ export async function POST(request: NextRequest) {
 
   if (!youtubeUrl || !languageCode || !file) {
     return Response.json({ error: "필수 항목이 누락되었습니다." }, { status: 400 });
+  }
+  if (!(file instanceof File)) {
+    return Response.json({ error: "잘못된 파일 요청입니다." }, { status: 400 });
+  }
+  if (file.size > MAX_SUBTITLE_FILE_SIZE_BYTES) {
+    return Response.json(
+      { error: "자막 파일은 4MB 이하만 업로드할 수 있습니다." },
+      { status: 413 }
+    );
   }
 
   // videoId 추출
@@ -123,16 +137,9 @@ export async function POST(request: NextRequest) {
     trackRow = newTrack;
   }
 
-  // 3. 현재 리비전 번호 조회
-  const { count } = await supabase
-    .from("subtitle_revisions")
-    .select("*", { count: "exact", head: true })
-    .eq("track_id", trackRow.id);
-
-  const revisionNumber = (count ?? 0) + 1;
-
-  // 4. R2에 파일 업로드
-  const storagePath = `subtitles/${videoId}/${languageCode}/${revisionNumber}.${format}`;
+  // 3. R2에 파일 업로드 (동시 요청 충돌 방지를 위해 경로에 고유 suffix 사용)
+  const uniqueSuffix = `${Date.now()}-${crypto.randomUUID()}`;
+  const storagePath = `subtitles/${videoId}/${languageCode}/${uniqueSuffix}.${format}`;
   const contentType =
     format === "vtt"  ? "text/vtt" :
     format === "smi"  ? "text/x-sami" :
@@ -145,26 +152,49 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "파일 업로드 실패" }, { status: 500 });
   }
 
-  // 5. subtitle_revisions 저장 (is_current는 RPC로 원자적 처리)
-  const { data: newRevision, error: revisionError } = await supabase
-    .from("subtitle_revisions")
-    .insert({
-      track_id: trackRow.id,
-      contributor_id: user.id,
-      storage_path: storagePath,
-      format,
-      revision_number: revisionNumber,
-      message,
-      is_current: false,
-    })
-    .select("id")
-    .single();
+  // 4. subtitle_revisions 저장 (동시성 충돌 시 재시도)
+  let revisionNumber = 0;
+  let newRevision: { id: string } | null = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const { data: latestRevision } = await supabase
+      .from("subtitle_revisions")
+      .select("revision_number")
+      .eq("track_id", trackRow.id)
+      .order("revision_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  if (revisionError || !newRevision) {
+    revisionNumber = (latestRevision?.revision_number ?? 0) + 1;
+
+    const { data, error: revisionError } = await supabase
+      .from("subtitle_revisions")
+      .insert({
+        track_id: trackRow.id,
+        contributor_id: user.id,
+        storage_path: storagePath,
+        format,
+        revision_number: revisionNumber,
+        message,
+        is_current: false,
+      })
+      .select("id")
+      .single();
+
+    if (!revisionError && data) {
+      newRevision = data;
+      break;
+    }
+
+    if (revisionError?.code !== "23505" || attempt === 4) {
+      return Response.json({ error: "리비전 저장 실패" }, { status: 500 });
+    }
+  }
+
+  if (!newRevision) {
     return Response.json({ error: "리비전 저장 실패" }, { status: 500 });
   }
 
-  // 6. is_current 원자적 업데이트 (SECURITY DEFINER 함수로 RLS 우회)
+  // 5. is_current 원자적 업데이트 (SECURITY DEFINER 함수로 RLS 우회)
   const { error: rpcError } = await supabase.rpc("update_current_revision", {
     p_track_id: trackRow.id,
     p_new_revision_id: newRevision.id,

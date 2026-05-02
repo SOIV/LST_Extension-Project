@@ -30,8 +30,14 @@ export const maxDuration = 10;
 
 export async function GET(request: Request) {
   // ── 보안: CRON_SECRET 검증 ────────────────────────────────────────────────
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error("[cron/refresh-channel-cache] CRON_SECRET is not configured");
+    return Response.json({ error: "CRON secret is not configured" }, { status: 500 });
+  }
+
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
