@@ -39,6 +39,13 @@ chrome.runtime.onMessage.addListener((message, sender) => {
     tabSubtitleStatus.set(tabId, status);
     updateBadge(tabId, status);
   }
+
+  // 플레이어 패널 ⚙ 설정 버튼 → 팝업 열기
+  if (message.action === 'openPopup') {
+    chrome.action.openPopup().catch(() => {
+      // openPopup은 Chrome 127+ / 사용자 제스처 필요. 실패 시 조용히 무시
+    });
+  }
 });
 
 // ─── 탭 정리 ──────────────────────────────────────────────────────────────────

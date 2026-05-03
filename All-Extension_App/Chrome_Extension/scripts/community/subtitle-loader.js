@@ -79,11 +79,11 @@ const SubtitleLoader = (() => {
     }
 
     SubtitleRenderer.load(cues, settings, hasExplicitPosition);
-    setStatus('available', data.languages || []);
+    setStatus('available', data.languages || [], { format: data.format });
   }
 
-  function setStatus(status, languages) {
-    if (statusCallback) statusCallback(status, languages);
+  function setStatus(status, languages, trackInfo) {
+    if (statusCallback) statusCallback(status, languages, trackInfo);
   }
 
   /* ─── SPA 네비게이션 감지 ───────────────────────────────── */

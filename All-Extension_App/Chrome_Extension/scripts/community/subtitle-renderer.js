@@ -24,9 +24,11 @@ const SubtitleRenderer = (() => {
 
   // ─── 스타일 맵 ──────────────────────────────────────────────
 
+  // YouTube 100% 기준(≈26px)에 맞춰 재보정
+  // 50%~400% : YouTube 동일 배율(×0.5 / ×0.75 / ×1 / ×1.5 / ×2 / ×3 / ×4)
   const SIZE_MAP = {
-    '50': '11px', '75': '14px', '100': '18px',
-    '150': '22px', '200': '26px', '300': '30px', '400': '36px'
+    '50': '13px', '75': '20px', '100': '26px',
+    '150': '39px', '200': '52px', '300': '72px', '400': '96px'
   };
 
   const FONT_FAMILY_MAP = {
@@ -114,14 +116,14 @@ const SubtitleRenderer = (() => {
 
   /**
    * 현재 재생바 상태에 따른 overlay bottom 값 계산
-   * - 재생바 숨김 또는 고정 위치 파일: '5%'
+   * - 재생바 숨김 또는 고정 위치 파일: '1.8~2%'(현재는 2%로 고정)
    * - 재생바 표시: .ytp-chrome-bottom 높이 + 여백
    */
   function getAutoBottom() {
-    if (hasExplicitPosition || !controlsVisible) return '5%';
+    if (hasExplicitPosition || !controlsVisible) return '2%';
     const bar = document.querySelector('.ytp-chrome-bottom');
     const barH = bar ? bar.offsetHeight : 48;
-    return `${barH + 4}px`;
+    return `${barH + 24}px`;
   }
 
   /**
@@ -202,7 +204,7 @@ const SubtitleRenderer = (() => {
     );
 
     // 글꼴 크기
-    text.style.fontSize = SIZE_MAP[settings.overlaySize || '100'] || '18px';
+    text.style.fontSize = SIZE_MAP[settings.overlaySize || '100'] || '26px';
 
     // 글꼴 패밀리 + Small Caps
     const family = settings.fontFamily || 'proportional-sans-serif';

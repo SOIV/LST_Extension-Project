@@ -345,19 +345,3 @@
 .lst-overlay[data-size="300"] .lst-subtitle-text {
   font-size: 48px;
 }
-
-/* 위치 옵션 */
-.lst-overlay.position-top {
-  top: 100px;
-  bottom: auto;
-}
-
-.lst-overlay.position-middle {
-  top: 50%;
-  bottom: auto;
-  transform: translate(-50%, -50%);
-}
-
-.lst-overlay.position-bottom {
-  /* 기본값 */
-}

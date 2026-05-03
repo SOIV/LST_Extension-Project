@@ -30,9 +30,10 @@
         "scripts/community/subtitle-parser.js",
         "scripts/community/subtitle-renderer.js",
         "scripts/community/subtitle-loader.js",
+        "scripts/community/panel.js",
         "scripts/community/init.js"
       ],
-      "css": ["styles/overlay.css"],
+      "css": ["styles/overlay.css", "styles/panel.css"],
       "run_at": "document_end"
     }
   ],

@@ -1,0 +1,442 @@
+/**
+ * LST - Popup UI Components
+ * 버튼, 카드, 스크롤바, 토스트, 뱃지, 다크모드
+ */
+
+/* ============================================================================
+   상태 카드
+   ============================================================================ */
+
+.status-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.status-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.status-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: white;
+}
+
+.status-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.status-value {
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+
+.status-value.success {
+  color: #4caf50;
+}
+
+.status-value.error {
+  color: #f44336;
+}
+
+/* ============================================================================
+   About 페이지
+   ============================================================================ */
+
+.about-description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.platform-list {
+  display: grid;
+  gap: 8px;
+}
+
+.platform-item {
+  font-size: 13px;
+  color: #555;
+  padding: 4px 0;
+}
+
+.usage-steps {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.usage-steps li {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.8;
+  margin-bottom: 8px;
+}
+
+.link-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #667eea;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: 1px solid #e0e0e0;
+}
+
+.link-item:hover {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.link-item svg {
+  width: 16px;
+  height: 16px;
+}
+
+.version-info {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+}
+
+/* ============================================================================
+   버튼
+   ============================================================================ */
+
+.btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+.btn-warning {
+  background: #ff9800;
+  color: white;
+}
+
+.btn-warning:hover {
+  background: #f57c00;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* ============================================================================
+   스크롤바
+   ============================================================================ */
+
+.content-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-body::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.content-body::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.content-body::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* ============================================================================
+   토스트 알림
+   ============================================================================ */
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  z-index: 10000;
+  animation: slideUpToast 0.3s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.toast.success {
+  background: #4caf50;
+}
+
+.toast.error {
+  background: #f44336;
+}
+
+.toast.info {
+  background: #2196f3;
+}
+
+@keyframes slideUpToast {
+  from {
+    transform: translate(-50%, 20px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   자막 상태 카드
+   ============================================================================ */
+
+.subtitle-status-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.subtitle-status-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e0e0;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.subtitle-status-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: #888;
+  transition: stroke 0.2s;
+}
+
+.subtitle-status-card.available .subtitle-status-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.subtitle-status-card.available .subtitle-status-icon svg {
+  stroke: white;
+}
+
+.subtitle-status-card.unavailable .subtitle-status-icon {
+  background: #f5f5f5;
+}
+
+.subtitle-status-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.subtitle-status-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.subtitle-status-sub {
+  font-size: 12px;
+  color: #888;
+}
+
+/* ============================================================================
+   About - 플랫폼 뱃지
+   ============================================================================ */
+
+.platform-item--soon {
+  opacity: 0.6;
+}
+
+.badge-soon {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ============================================================================
+   다크모드
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .status-item {
+    background: #1a1a1a;
+    border-color: #404040;
+  }
+
+  .status-label {
+    color: #b0b0b0;
+  }
+
+  .status-value {
+    color: #e0e0e0;
+  }
+
+  .btn-secondary {
+    background: #404040;
+    color: #e0e0e0;
+  }
+
+  .btn-secondary:hover {
+    background: #505050;
+  }
+
+  .btn-warning {
+    background: #f57c00;
+    color: white;
+  }
+
+  .btn-warning:hover {
+    background: #ef6c00;
+  }
+
+  .link-item {
+    background: #2a2a2a;
+    border-color: #404040;
+    color: #667eea;
+  }
+
+  .link-item:hover {
+    background: #667eea;
+    color: white;
+  }
+
+  .version-info {
+    border-top-color: #404040;
+    color: #888;
+  }
+
+  .content-body::-webkit-scrollbar-track {
+    background: #1a1a1a;
+  }
+
+  .content-body::-webkit-scrollbar-thumb {
+    background: #404040;
+  }
+
+  .content-body::-webkit-scrollbar-thumb:hover {
+    background: #505050;
+  }
+
+  .subtitle-status-card {
+    background: #1a1a1a;
+    border-color: #404040;
+  }
+
+  .subtitle-status-icon {
+    background: #333;
+  }
+
+  .subtitle-status-text {
+    color: #e0e0e0;
+  }
+}
+
+/* ============================================================================
+   애니메이션 감소 모드
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
