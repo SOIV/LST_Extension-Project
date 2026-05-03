@@ -117,7 +117,7 @@ const SubtitleParser = (() => {
       const styleText = styleMatch[1];
       hasExplicitPosition =
         /position\s*:\s*(absolute|fixed)/i.test(styleText) ||
-        (/\btop\s*:/.test(styleText) && /\bleft\s*:/.test(styleText));
+        (/\btop\s*:/i.test(styleText) && /\bleft\s*:/i.test(styleText));
     }
 
     const syncRe = /<SYNC[^>]+Start\s*=\s*["']?(\d+)["']?[^>]*>([\s\S]*?)(?=<SYNC|<\/BODY>|$)/gi;

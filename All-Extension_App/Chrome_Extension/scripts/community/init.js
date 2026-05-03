@@ -7,6 +7,7 @@
   let subtitleStatus    = 'loading';
   let subtitleLanguages = [];
   let currentSettings   = {};
+  let subtitleTrackInfo = null;
 
   /* ─── 패널 업데이트 ─────────────────────────────────────── */
 
@@ -51,12 +52,13 @@
   function onStatusChange(status, languages, trackInfo) {
     subtitleStatus    = status;
     subtitleLanguages = languages || [];
+    subtitleTrackInfo = status === 'available' ? (trackInfo || null) : null;
 
     // 배지 업데이트
     chrome.runtime.sendMessage({ action: 'subtitleStatus', status }).catch(() => {});
 
     // 패널 동기화
-    syncPanel(status, subtitleLanguages, trackInfo);
+    syncPanel(status, subtitleLanguages, subtitleTrackInfo);
   }
 
   /* ─── 버튼 주입 ─────────────────────────────────────────── */
@@ -117,7 +119,7 @@
           Object.assign(currentSettings, message.settings);
           SubtitleLoader.updateSettings(message.settings);
           // 패널 토글/언어 표시 동기화
-          syncPanel(subtitleStatus, subtitleLanguages, null);
+          syncPanel(subtitleStatus, subtitleLanguages, subtitleTrackInfo);
         }
         sendResponse({ success: true });
         break;

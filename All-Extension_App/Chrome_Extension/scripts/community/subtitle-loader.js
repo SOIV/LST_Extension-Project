@@ -11,6 +11,7 @@ const SubtitleLoader = (() => {
   let statusCallback = null;
   let spaObserver    = null;
   let lastUrl        = location.href;
+  let loadRequestId  = 0;
 
   /* ─── 유틸 ─────────────────────────────────────────────── */
 
@@ -48,7 +49,10 @@ const SubtitleLoader = (() => {
   /* ─── 로드 ─────────────────────────────────────────────── */
 
   async function load() {
+    const requestId = ++loadRequestId;
+
     if (!isYouTubeVideoPage()) {
+      if (requestId !== loadRequestId) return;
       setStatus('not_youtube');
       SubtitleRenderer.clear();
       currentVideoId = null;
@@ -65,6 +69,7 @@ const SubtitleLoader = (() => {
     SubtitleRenderer.clear();
 
     const data = await fetchSubtitle(videoId, settings.subtitleLang);
+    if (requestId !== loadRequestId || currentVideoId !== videoId) return;
 
     if (!data || !data.content) {
       setStatus('unavailable');
@@ -72,6 +77,7 @@ const SubtitleLoader = (() => {
     }
 
     const { cues, hasExplicitPosition } = SubtitleParser.parse(data.content, data.format);
+    if (requestId !== loadRequestId || currentVideoId !== videoId) return;
 
     if (cues.length === 0) {
       setStatus('unavailable');

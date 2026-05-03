@@ -54,10 +54,19 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   tabSubtitleStatus.delete(tabId);
 });
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // 페이지 이동 시 배지 초기화
   if (changeInfo.status === 'loading') {
-    updateBadge(tabId, 'loading');
+    const url = tab?.url || tab?.pendingUrl || '';
+    const isYouTube =
+      /^https:\/\/(www\.)?youtube\.com\//.test(url);
+
+    if (isYouTube) {
+      updateBadge(tabId, 'loading');
+    } else {
+      tabSubtitleStatus.set(tabId, 'not_youtube');
+      updateBadge(tabId, 'not_youtube');
+    }
   }
 });
 
