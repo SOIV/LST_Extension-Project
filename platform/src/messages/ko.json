@@ -34,7 +34,7 @@
     "labelUsername": "닉네임",
     "placeholderUsername": "표시될 이름",
     "labelHandle": "핸들",
-    "handleHint": "소문자, 숫자, 밑줄(_)만 사용 가능",
+    "handleHint": "영문(대/소문자), 숫자, 밑줄(_)만 사용 가능",
     "errorHandleTaken": "이미 사용 중인 핸들입니다.",
     "errorSave": "저장 중 오류가 발생했습니다.",
     "successSave": "저장되었습니다.",

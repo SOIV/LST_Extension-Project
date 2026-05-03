@@ -34,7 +34,7 @@
     "labelUsername": "ニックネーム",
     "placeholderUsername": "表示名",
     "labelHandle": "ハンドル",
-    "handleHint": "小文字、数字、アンダースコア（_）のみ使用可能",
+    "handleHint": "英字（大文字・小文字）、数字、アンダースコア（_）のみ使用可能",
     "errorHandleTaken": "このハンドルはすでに使用されています。",
     "errorSave": "保存中にエラーが発生しました。",
     "successSave": "保存しました。",

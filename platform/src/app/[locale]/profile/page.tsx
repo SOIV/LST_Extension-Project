@@ -118,7 +118,7 @@ export default function ProfilePage() {
                 type="text"
                 value={handle}
                 onChange={(e) =>
-                  setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
+                  setHandle(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))
                 }
                 placeholder="your_handle"
                 required

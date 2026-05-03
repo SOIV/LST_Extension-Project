@@ -34,7 +34,7 @@
     "labelUsername": "Display Name",
     "placeholderUsername": "Your display name",
     "labelHandle": "Handle",
-    "handleHint": "Lowercase letters, numbers, and underscores only",
+    "handleHint": "Letters (A–Z, a–z), numbers, and underscores only",
     "errorHandleTaken": "This handle is already taken.",
     "errorSave": "An error occurred while saving.",
     "successSave": "Saved successfully.",

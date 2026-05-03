@@ -118,7 +118,7 @@ export default function ProfilePage() {
                 type="text"
                 value={handle}
                 onChange={(e) =>
-                  setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
+                  setHandle(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))
                 }
                 placeholder="your_handle"
                 required
@@ -126,7 +126,7 @@ export default function ProfilePage() {
                 className="flex-1 px-3 py-2 rounded-r-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
               />
             </div>
-            <p className="text-xs text-zinc-400">소문자, 숫자, 밑줄(_)만 사용 가능</p>
+            <p className="text-xs text-zinc-400">영문(대/소문자), 숫자, 밑줄(_)만 사용 가능</p>
           </div>
 
           {/* 피드백 */}
