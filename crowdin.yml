@@ -5,8 +5,20 @@ files:
   # Chrome/Firefox Extension locales
   - source: /All-Extension_App/Chrome_Extension/_locales/en/messages.json
     translation: /All-Extension_App/Chrome_Extension/_locales/%two_letters_code%/messages.json
+    language_mapping:
+      two_letters_code:
+        ja: ja
+        ja-JP: ja
+        ko: ko
+        ko-KR: ko
 
   # Platform (Next.js) messages
   - source: /platform/src/messages/en.json
     translation: /platform/src/messages/%two_letters_code%.json
     type: json
+    language_mapping:
+      two_letters_code:
+        ja: ja
+        ja-JP: ja
+        ko: ko
+        ko-KR: ko
