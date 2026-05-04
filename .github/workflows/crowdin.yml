@@ -4,10 +4,10 @@ on:
   push:
     branches: [main]
     paths:
-      # 익스텐션 원본(ko) 번역 파일이 바뀔 때만 실행
-      - 'All-Extension_App/Chrome_Extension/_locales/ko/messages.json'
-      # 플랫폼 원본(ko) 번역 파일이 바뀔 때만 실행
-      - 'platform/src/messages/ko.json'
+      # 익스텐션 원본(en) 번역 파일이 바뀔 때만 실행
+      - 'All-Extension_App/Chrome_Extension/_locales/en/messages.json'
+      # 플랫폼 원본(en) 번역 파일이 바뀔 때만 실행
+      - 'platform/src/messages/en.json'
 
   # 매주 월요일 오전 9시(KST) = UTC 0시에 번역 내려받기
   schedule:

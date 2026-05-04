@@ -3,10 +3,10 @@ api_token_env: CROWDIN_PERSONAL_TOKEN
 
 files:
   # Chrome/Firefox Extension locales
-  - source: /All-Extension_App/Chrome_Extension/_locales/ko/messages.json
+  - source: /All-Extension_App/Chrome_Extension/_locales/en/messages.json
     translation: /All-Extension_App/Chrome_Extension/_locales/%two_letters_code%/messages.json
 
   # Platform (Next.js) messages
-  - source: /platform/src/messages/ko.json
+  - source: /platform/src/messages/en.json
     translation: /platform/src/messages/%two_letters_code%.json
     type: json
