@@ -5,7 +5,17 @@ import { routing } from "./i18n/routing";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-const PUBLIC_PATHS = ["/", "/login", "/auth/callback", "/api/subtitles", "/search", "/channel", "/subtitles"];
+const PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/auth/callback",
+  "/api/subtitles",
+  "/search",
+  "/channel",
+  "/subtitles",
+  "/privacy",
+  "/terms",
+];
 
 function pathnameWithoutLocale(pathname: string): string {
   const locale = routing.locales.find(
@@ -28,7 +38,7 @@ export async function proxy(request: NextRequest) {
 
   // i18nResponse를 베이스로 사용 — locale 헤더가 서버 컴포넌트까지 전달됨
   // 새 NextResponse.next()를 만들면 intlMiddleware가 설정한 locale 정보가 사라짐
-  let response = i18nResponse;
+  const response = i18nResponse;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
