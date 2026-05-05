@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 const r2Client = new S3Client({
   region: "auto",
@@ -29,4 +29,14 @@ export async function uploadToR2(
     })
   );
   return key;
+}
+
+/** R2 연결 상태 확인 (읽기 권한 필요) */
+export async function checkR2Connection() {
+  await r2Client.send(
+    new ListObjectsV2Command({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      MaxKeys: 1,
+    })
+  );
 }
