@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { type NextRequest } from "next/server";
 
 /** POST /api/creator/connect — 채널 연동 */
 export async function POST() {
