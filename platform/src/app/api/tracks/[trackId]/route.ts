@@ -18,6 +18,28 @@ export async function PATCH(
     return Response.json({ error: "status는 'approved' 또는 'rejected'여야 합니다." }, { status: 400 });
   }
 
+  // 플랫폼 어드민 여부 확인
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const isAdmin = profile?.role === "admin";
+
+  // 어드민은 채널 소유권 검증 없이 바로 업데이트
+  if (isAdmin) {
+    const { error: updateError } = await supabase
+      .from("subtitle_tracks")
+      .update({ status })
+      .eq("id", trackId);
+
+    if (updateError) {
+      return Response.json({ error: "상태 업데이트 실패" }, { status: 500 });
+    }
+    return Response.json({ success: true, status });
+  }
+
   // 트랙 조회 (영상 정보 포함)
   const { data: track } = await supabase
     .from("subtitle_tracks")
@@ -47,7 +69,6 @@ export async function PATCH(
       const ytVideo = await getVideoById((video as { youtube_video_id: string }).youtube_video_id);
       if (ytVideo) {
         channelId = ytVideo.channelId;
-        // 다음 요청을 위해 저장
         await supabase
           .from("videos")
           .update({ youtube_channel_id: channelId })
@@ -62,7 +83,7 @@ export async function PATCH(
     return Response.json({ error: "채널 정보를 확인할 수 없습니다." }, { status: 422 });
   }
 
-  // 현재 유저가 해당 채널의 연동된 크리에이터인지 확인
+  // 연동된 크리에이터인지 확인
   const { data: creator } = await supabase
     .from("connected_creators")
     .select("id")
@@ -74,7 +95,6 @@ export async function PATCH(
     return Response.json({ error: "이 채널의 자막을 승인/거절할 권한이 없습니다." }, { status: 403 });
   }
 
-  // 상태 업데이트
   const { error: updateError } = await supabase
     .from("subtitle_tracks")
     .update({ status })
