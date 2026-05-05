@@ -11,7 +11,7 @@ const CONTENT: Record<string, {
     title: "개인정보처리방침",
     effectiveDate: "시행일: 2026-05-06",
     intro:
-      "Live Stream Translator(LST)는 서비스 제공을 위해 필요한 범위 내에서 개인정보를 처리하며, 관련 법령을 준수합니다.",
+      "LST Project는 서비스 제공을 위해 필요한 범위 내에서 개인정보를 처리하며, 관련 법령을 준수합니다.",
     sections: [
       {
         title: "1. 수집 항목",
@@ -44,7 +44,7 @@ const CONTENT: Record<string, {
     title: "Privacy Policy",
     effectiveDate: "Effective date: 2026-05-06",
     intro:
-      "Live Stream Translator (LST) processes personal data only to the extent necessary to provide the Service and in accordance with applicable laws.",
+      "LST Project processes personal data only to the extent necessary to provide the Service and in accordance with applicable laws.",
     sections: [
       {
         title: "1. Data We Process",
@@ -77,7 +77,7 @@ const CONTENT: Record<string, {
     title: "プライバシーポリシー",
     effectiveDate: "施行日: 2026-05-06",
     intro:
-      "Live Stream Translator（LST）は、サービス提供に必要な範囲で個人情報を取り扱い、関連法令を遵守します。",
+      "LST Projectは、サービス提供に必要な範囲で個人情報を取り扱い、関連法令を遵守します。",
     sections: [
       {
         title: "1. 取得・処理する情報",

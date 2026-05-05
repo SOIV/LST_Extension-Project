@@ -37,10 +37,10 @@ function LoginContent() {
         {/* 로고 */}
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            LST
+            LST Project
           </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Live Stream Translator
+            LST Project
           </p>
         </div>
 

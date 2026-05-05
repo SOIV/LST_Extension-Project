@@ -48,7 +48,7 @@
     "onboardingDesc": "Set a handle to start uploading subtitles and connecting channels."
   },
   "SubtitlePage": {
-    "creatorNotConnected": "This channel's creator hasn't connected with LST yet.",
+    "creatorNotConnected": "This channel's creator hasn't connected with LST Project yet.",
     "creatorNotConnectedDesc": "Once the creator connects their channel, you'll be able to participate in community subtitle work.",
     "requestConnection": "Ask the creator to connect",
     "copyShareLink": "Copy share link",
@@ -100,7 +100,7 @@
     "subtitleAvailable": "Subtitles available",
     "subtitlePending": "Under review",
     "subtitleDraft": "In progress",
-    "connectedBadge": "LST Connected",
+    "connectedBadge": "LST Project Connected",
     "notConnectedBadge": "Not connected",
     "notConnectedDesc": "Once the creator connects their channel, community subtitle work can begin.",
     "liveVodNotice": "Live stream replays may also appear in this tab.",

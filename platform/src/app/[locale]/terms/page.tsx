@@ -11,7 +11,7 @@ const CONTENT: Record<string, {
     title: "이용약관",
     effectiveDate: "시행일: 2026-05-06",
     intro:
-      "본 약관은 Live Stream Translator(LST) 플랫폼(이하 \"서비스\")의 이용 조건과 당사자 간 권리·의무를 규정합니다.",
+      "본 약관은 LST Project 플랫폼(이하 \"서비스\")의 이용 조건과 당사자 간 권리·의무를 규정합니다.",
     sections: [
       {
         title: "1. 서비스 이용",
@@ -44,7 +44,7 @@ const CONTENT: Record<string, {
     title: "Terms of Service",
     effectiveDate: "Effective date: 2026-05-06",
     intro:
-      "These Terms govern your use of the Live Stream Translator (LST) platform (the \"Service\") and define the rights and obligations of users and the operator.",
+      "These Terms govern your use of the LST Project platform (the \"Service\") and define the rights and obligations of users and the operator.",
     sections: [
       {
         title: "1. Use of the Service",
@@ -77,7 +77,7 @@ const CONTENT: Record<string, {
     title: "利用規約",
     effectiveDate: "施行日: 2026-05-06",
     intro:
-      "本規約は、Live Stream Translator（LST）プラットフォーム（以下「本サービス」）の利用条件および当事者の権利・義務を定めるものです。",
+      "本規約は、LST Projectプラットフォーム（以下「本サービス」）の利用条件および当事者の権利・義務を定めるものです。",
     sections: [
       {
         title: "1. サービス利用",

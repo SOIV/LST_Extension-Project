@@ -52,7 +52,7 @@ export default function Navbar() {
           href="/"
           className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-50 flex-shrink-0"
         >
-          LST
+          LST Project
         </Link>
 
         {/* 검색바 */}

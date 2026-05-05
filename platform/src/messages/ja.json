@@ -48,7 +48,7 @@
     "onboardingDesc": "ハンドルを設定すると、字幕のアップロードやチャンネル連携が可能になります。"
   },
   "SubtitlePage": {
-    "creatorNotConnected": "このチャンネルのクリエイターはまだLSTと連携していません。",
+    "creatorNotConnected": "このチャンネルのクリエイターはまだLST Projectと連携していません。",
     "creatorNotConnectedDesc": "クリエイターがチャンネルを連携すると、コミュニティ字幕作業に参加できます。",
     "requestConnection": "クリエイターに連携をリクエストしましょう",
     "copyShareLink": "共有リンクをコピー",
@@ -100,7 +100,7 @@
     "subtitleAvailable": "字幕あり",
     "subtitlePending": "審査中",
     "subtitleDraft": "作業中",
-    "connectedBadge": "LST連携済み",
+    "connectedBadge": "LST Project連携済み",
     "notConnectedBadge": "未連携",
     "notConnectedDesc": "クリエイターがチャンネルを連携すると、コミュニティ字幕作業を開始できます。",
     "liveVodNotice": "ライブ配信のアーカイブも表示される場合があります。",
