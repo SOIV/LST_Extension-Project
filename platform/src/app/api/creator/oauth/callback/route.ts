@@ -1,5 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  encryptYoutubeToken,
+  isYoutubeTokenEncryptionConfigured,
+} from "@/lib/youtubeTokenCrypto";
 import { NextRequest, NextResponse } from "next/server";
+
+const YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube.force-ssl";
+
+type GoogleTokenResponse = {
+  access_token?: string;
+  refresh_token?: string;
+  scope?: string;
+  token_type?: string;
+  expires_in?: number;
+};
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -46,9 +60,18 @@ export async function GET(request: NextRequest) {
     return redirect("/dashboard?error=oauth_failed");
   }
 
-  const { access_token } = (await tokenRes.json()) as { access_token?: string };
+  const {
+    access_token,
+    refresh_token,
+    scope,
+    token_type,
+    expires_in,
+  } = (await tokenRes.json()) as GoogleTokenResponse;
   if (!access_token) {
     return redirect("/dashboard?error=oauth_failed");
+  }
+  if (!scope?.split(" ").includes(YOUTUBE_SCOPE)) {
+    return redirect("/dashboard?error=oauth_scope_missing");
   }
 
   // Fetch the authenticated user's YouTube channel
@@ -65,6 +88,10 @@ export async function GET(request: NextRequest) {
   const channel = channelData.items?.[0];
   if (!channel) {
     return redirect("/dashboard?error=oauth_failed");
+  }
+
+  if (!isYoutubeTokenEncryptionConfigured()) {
+    return redirect("/dashboard?error=oauth_config_missing");
   }
 
   const youtubeChannelId: string = channel.id;
@@ -99,6 +126,51 @@ export async function GET(request: NextRequest) {
     } else {
       return redirect("/dashboard?error=oauth_failed");
     }
+  }
+
+  const { data: existingTokenRow, error: tokenFetchError } = await supabase
+    .from("creator_youtube_tokens")
+    .select("refresh_token_encrypted")
+    .eq("youtube_channel_id", youtubeChannelId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (tokenFetchError) {
+    return redirect("/dashboard?error=oauth_failed");
+  }
+
+  const refreshTokenEncrypted =
+    refresh_token && refresh_token.length > 0
+      ? encryptYoutubeToken(refresh_token)
+      : existingTokenRow?.refresh_token_encrypted ?? null;
+
+  if (!refreshTokenEncrypted) {
+    // A refresh token is mandatory for long-term channel operations.
+    return redirect("/dashboard?error=oauth_refresh_missing");
+  }
+
+  const expiresAt =
+    typeof expires_in === "number" && Number.isFinite(expires_in)
+      ? new Date(Date.now() + expires_in * 1000).toISOString()
+      : null;
+
+  const { error: tokenUpsertError } = await supabase
+    .from("creator_youtube_tokens")
+    .upsert(
+      {
+        user_id: user.id,
+        youtube_channel_id: youtubeChannelId,
+        access_token_encrypted: encryptYoutubeToken(access_token),
+        refresh_token_encrypted: refreshTokenEncrypted,
+        scope: scope ?? YOUTUBE_SCOPE,
+        token_type: token_type ?? "Bearer",
+        expires_at: expiresAt,
+      },
+      { onConflict: "youtube_channel_id" }
+    );
+
+  if (tokenUpsertError) {
+    return redirect("/dashboard?error=oauth_token_store_failed");
   }
 
   // Auto-import handle from YouTube if user doesn't have one yet

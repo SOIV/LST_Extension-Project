@@ -42,8 +42,10 @@ export async function GET(request: NextRequest) {
     response_type: "code",
     scope: YOUTUBE_SCOPE,
     access_type: "offline",
+    include_granted_scopes: "true",
     state,
-    prompt: "select_account",
+    // Force consent so refresh_token issuance is reliable across reconnects.
+    prompt: "consent select_account",
   });
 
   const response = NextResponse.redirect(`${GOOGLE_AUTH_URL}?${params}`);

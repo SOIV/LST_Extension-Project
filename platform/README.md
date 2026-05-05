@@ -22,6 +22,23 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## YouTube Creator OAuth Setup
+
+Required environment variables:
+
+```bash
+YOUTUBE_CLIENT_ID=...
+YOUTUBE_CLIENT_SECRET=...
+YOUTUBE_TOKEN_CIPHER_KEY=base64:... # 32-byte key in base64 recommended
+```
+
+Notes:
+
+- `YOUTUBE_TOKEN_CIPHER_KEY` encrypts access/refresh tokens before DB storage.
+- If you use plain text instead of `base64:` or `hex:`, the app derives a 256-bit key from that value.
+- Apply DB migration before enabling creator OAuth:
+  - `platform/supabase/migrations/20260506_add_creator_youtube_tokens.sql`
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
