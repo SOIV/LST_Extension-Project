@@ -74,6 +74,7 @@ async function runCheck(origin: string, spec: CheckSpec): Promise<CheckResult> {
 
 type InfraResult = {
   status: "pass" | "fail";
+  httpStatus?: number | null;
   latencyMs: number;
   note?: string;
   error?: string;
@@ -87,6 +88,7 @@ async function runDbCheck(): Promise<InfraResult> {
   if (!url || !anonKey) {
     return {
       status: "fail",
+      httpStatus: null,
       latencyMs: Date.now() - startedAt,
       note: "Supabase environment variables are missing",
       error: "NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is not set",
@@ -107,17 +109,23 @@ async function runDbCheck(): Promise<InfraResult> {
       signal: controller.signal,
     });
 
+    // DB status endpoint is used as a connectivity probe.
+    // 4xx often means auth/policy mismatch but service is reachable.
+    const reachable = res.status >= 200 && res.status < 500;
+
     return {
-      status: res.ok ? "pass" : "fail",
+      status: reachable ? "pass" : "fail",
+      httpStatus: res.status,
       latencyMs: Date.now() - startedAt,
-      note: "Supabase REST health probe",
-      error: res.ok ? undefined : `HTTP ${res.status}`,
+      note: "Supabase REST connectivity probe",
+      error: reachable ? undefined : `HTTP ${res.status}`,
     };
   } catch {
     return {
       status: "fail",
+      httpStatus: null,
       latencyMs: Date.now() - startedAt,
-      note: "Supabase REST health probe",
+      note: "Supabase REST connectivity probe",
       error: "Network or timeout error",
     };
   } finally {
@@ -132,12 +140,14 @@ async function runStorageCheck(): Promise<InfraResult> {
     await checkR2Connection();
     return {
       status: "pass",
+      httpStatus: 200,
       latencyMs: Date.now() - startedAt,
       note: "R2 ListObjectsV2 health probe",
     };
   } catch (error) {
     return {
       status: "fail",
+      httpStatus: null,
       latencyMs: Date.now() - startedAt,
       note: "R2 ListObjectsV2 health probe",
       error: error instanceof Error ? error.message : "Unknown storage error",
