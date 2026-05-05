@@ -26,8 +26,9 @@ export async function proxy(request: NextRequest) {
     return i18nResponse;
   }
 
-  // Set up Supabase auth check
-  let response = NextResponse.next({ request: { headers: request.headers } });
+  // i18nResponse를 베이스로 사용 — locale 헤더가 서버 컴포넌트까지 전달됨
+  // 새 NextResponse.next()를 만들면 intlMiddleware가 설정한 locale 정보가 사라짐
+  let response = i18nResponse;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,7 +42,7 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          response = NextResponse.next({ request });
+          // response를 재생성하지 않고 i18nResponse에 쿠키만 추가
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
@@ -73,13 +74,6 @@ export async function proxy(request: NextRequest) {
   if (user && stripped === "/login") {
     return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
-
-  // Merge i18n headers into response
-  i18nResponse.headers.forEach((value, key) => {
-    if (!response.headers.has(key)) {
-      response.headers.set(key, value);
-    }
-  });
 
   return response;
 }
