@@ -3,7 +3,7 @@ import { routing } from "@/i18n/routing";
 import { NextRequest, NextResponse } from "next/server";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
-const YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube.readonly";
+const YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube.force-ssl";
 
 function detectLocale(request: NextRequest): string {
   const param = request.nextUrl.searchParams.get("locale");
