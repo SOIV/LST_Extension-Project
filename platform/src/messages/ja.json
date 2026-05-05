@@ -28,7 +28,10 @@
     "placeholderMessage": "変更内容を説明...",
     "errorUpload": "アップロード中にエラーが発生しました。",
     "uploading": "アップロード中...",
-    "upload": "アップロード"
+    "upload": "アップロード",
+    "handleRequired": "ハンドルの設定が必要です",
+    "handleRequiredDesc": "字幕をアップロードするには、まずプロフィールでハンドルを設定してください。",
+    "goToProfile": "プロフィールへ"
   },
   "ProfilePage": {
     "title": "プロフィール",
@@ -40,7 +43,9 @@
     "errorSave": "保存中にエラーが発生しました。",
     "successSave": "保存しました。",
     "saving": "保存中...",
-    "save": "保存"
+    "save": "保存",
+    "onboardingTitle": "プロフィールを完成させましょう",
+    "onboardingDesc": "ハンドルを設定すると、字幕のアップロードやチャンネル連携が可能になります。"
   },
   "SubtitlePage": {
     "creatorNotConnected": "このチャンネルのクリエイターはまだLSTと連携していません。",
@@ -106,14 +111,14 @@
     "title": "クリエイターダッシュボード",
     "channelSection": "連携済みチャンネル",
     "noChannels": "連携済みのチャンネルがありません。",
-    "connectChannel": "チャンネルを連携",
-    "channelIdPlaceholder": "YouTubeチャンネルID（UCxxxxxxxx...）",
-    "channelIdHint": "YouTubeチャンネルURLまたはUCから始まるチャンネルIDを入力してください。",
-    "connecting": "連携中...",
-    "connect": "連携",
+    "connectYouTube": "YouTubeチャンネルを連携",
+    "connectYouTubeDesc": "YouTubeアカウントでログインしてチャンネルの所有権を確認してください。",
+    "connectedSuccess": "チャンネルが正常に連携されました。",
+    "errorChannelTaken": "このチャンネルはすでに別のアカウントに連携されています。",
+    "errorConnect": "チャンネル連携中にエラーが発生しました。",
+    "viewOnYouTube": "YouTubeで見る",
     "disconnect": "連携解除",
     "confirmDisconnect": "このチャンネルの連携を解除しますか？",
-    "errorConnect": "チャンネル連携中にエラーが発生しました。",
     "errorDisconnect": "連携解除中にエラーが発生しました。",
     "pendingSection": "承認待ち字幕",
     "noPending": "承認待ちの字幕はありません。",

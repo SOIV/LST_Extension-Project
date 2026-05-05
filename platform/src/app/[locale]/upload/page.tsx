@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { useState, useRef, useEffect } from "react";
+import { useRouter, Link } from "@/i18n/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { useTranslations } from "next-intl";
 
 const LANGUAGES = [
@@ -27,6 +28,20 @@ export default function UploadPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasHandle, setHasHandle] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) { router.push("/login"); return; }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("handle")
+        .eq("id", data.user.id)
+        .single();
+      setHasHandle(!!profile?.handle);
+    });
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,6 +70,38 @@ export default function UploadPage() {
     }
 
     router.push(`/subtitles/${data.videoId}`);
+  }
+
+  if (hasHandle === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="w-6 h-6 border-2 border-zinc-300 border-t-zinc-700 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!hasHandle) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
+        <div className="max-w-lg mx-auto flex flex-col items-center gap-4 py-16 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 px-8">
+          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <p className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("handleRequired")}</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("handleRequiredDesc")}</p>
+          </div>
+          <Link
+            href="/profile"
+            className="mt-1 px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+          >
+            {t("goToProfile")}
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

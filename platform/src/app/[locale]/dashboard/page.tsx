@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
-import { useTranslations } from "next-intl";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   ko: "한국어", en: "English", ja: "日本語",
@@ -31,18 +31,18 @@ interface PendingTrack {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("DashboardPage");
 
   const [loading, setLoading] = useState(true);
   const [channels, setChannels] = useState<ConnectedChannel[]>([]);
   const [pendingTracks, setPendingTracks] = useState<PendingTrack[]>([]);
 
-  // 채널 연동 폼
-  const [channelInput, setChannelInput] = useState("");
-  const [connecting, setConnecting] = useState(false);
+  // OAuth result messages
+  const [connectSuccess, setConnectSuccess] = useState("");
   const [connectError, setConnectError] = useState("");
 
-  // 승인/거절 처리 중인 trackId
+  // Approve/reject state
   const [actioningId, setActioningId] = useState<string | null>(null);
   const [actionError, setActionError] = useState("");
 
@@ -64,32 +64,31 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { router.push("/login"); return; }
-      fetchData().finally(() => setLoading(false));
+      await fetchData();
+      setLoading(false);
     });
   }, [router, fetchData]);
 
-  async function handleConnect(e: React.FormEvent) {
-    e.preventDefault();
-    setConnecting(true);
-    setConnectError("");
+  // Read OAuth result from URL and clear it
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get("connected");
+    const error = params.get("error");
 
-    const res = await fetch("/api/creator/connect", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ channelInput }),
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      setConnectError(data.error ?? t("errorConnect"));
-    } else {
-      setChannelInput("");
-      await fetchData();
+    if (connected === "1") {
+      setConnectSuccess(t("connectedSuccess"));
+    } else if (error === "channel_taken") {
+      setConnectError(t("errorChannelTaken"));
+    } else if (error) {
+      setConnectError(t("errorConnect"));
     }
-    setConnecting(false);
-  }
+
+    if (connected || error) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [t]);
 
   async function handleDisconnect(channelId: string) {
     if (!confirm(t("confirmDisconnect"))) return;
@@ -145,6 +144,17 @@ export default function DashboardPage() {
         <section className="flex flex-col gap-4">
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("channelSection")}</h2>
 
+          {connectSuccess && (
+            <p className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg px-4 py-2">
+              {connectSuccess}
+            </p>
+          )}
+          {connectError && (
+            <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-4 py-2">
+              {connectError}
+            </p>
+          )}
+
           {channels.length > 0 && (
             <div className="flex flex-col gap-2">
               {channels.map((ch) => (
@@ -162,7 +172,7 @@ export default function DashboardPage() {
                       rel="noopener noreferrer"
                       className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 underline underline-offset-2 mt-0.5"
                     >
-                      YouTube에서 보기
+                      {t("viewOnYouTube")}
                     </a>
                   </div>
                   <button
@@ -176,37 +186,23 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {channels.length === 0 && (
+          {channels.length === 0 && !connectSuccess && (
             <p className="text-sm text-zinc-400 dark:text-zinc-500">{t("noChannels")}</p>
           )}
 
-          {/* 채널 연동 폼 */}
-          <form onSubmit={handleConnect} className="flex flex-col gap-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              {t("connectChannel")}
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={channelInput}
-                onChange={(e) => setChannelInput(e.target.value)}
-                placeholder={t("channelIdPlaceholder")}
-                required
-                className="flex-1 px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
-              />
-              <button
-                type="submit"
-                disabled={connecting}
-                className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-              >
-                {connecting ? t("connecting") : t("connect")}
-              </button>
-            </div>
-            {connectError && (
-              <p className="text-xs text-red-600 dark:text-red-400">{connectError}</p>
-            )}
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">{t("channelIdHint")}</p>
-          </form>
+          {/* YouTube OAuth 연동 버튼 */}
+          <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 flex flex-col gap-3">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("connectYouTubeDesc")}</p>
+            <a
+              href={`/api/creator/oauth/start?locale=${locale}`}
+              className="inline-flex items-center gap-2 self-start px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/>
+              </svg>
+              {t("connectYouTube")}
+            </a>
+          </div>
         </section>
 
         {/* ── 승인 대기 자막 ── */}
@@ -252,7 +248,7 @@ export default function DashboardPage() {
                             <>
                               <span>·</span>
                               <a
-                                href={`/subtitles/${video.youtube_video_id}`}
+                                href={`/${locale}/subtitles/${video.youtube_video_id}`}
                                 className="underline underline-offset-2 hover:text-zinc-700 dark:hover:text-zinc-200"
                               >
                                 {t("viewSubtitle")}

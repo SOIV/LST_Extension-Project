@@ -15,6 +15,14 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("onboarding") === "1") {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -69,6 +77,12 @@ export default function ProfilePage() {
 
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);
+
+    // Dismiss onboarding once the user successfully saves a handle
+    if (showOnboarding && handle) {
+      setShowOnboarding(false);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }
 
   if (loading) {
@@ -82,6 +96,19 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
       <div className="max-w-md mx-auto">
+
+        {showOnboarding && (
+          <div className="mb-6 flex items-start gap-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 shrink-0 mt-0.5">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-blue-800 dark:text-blue-200">{t("onboardingTitle")}</p>
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">{t("onboardingDesc")}</p>
+            </div>
+          </div>
+        )}
+
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">{t("title")}</h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{email}</p>

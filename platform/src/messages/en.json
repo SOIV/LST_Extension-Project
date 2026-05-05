@@ -28,7 +28,10 @@
     "placeholderMessage": "Describe your changes...",
     "errorUpload": "An error occurred during upload.",
     "uploading": "Uploading...",
-    "upload": "Upload"
+    "upload": "Upload",
+    "handleRequired": "Handle required",
+    "handleRequiredDesc": "You need to set a handle in your profile before uploading subtitles.",
+    "goToProfile": "Go to Profile"
   },
   "ProfilePage": {
     "title": "Profile",
@@ -40,7 +43,9 @@
     "errorSave": "An error occurred while saving.",
     "successSave": "Saved successfully.",
     "saving": "Saving...",
-    "save": "Save"
+    "save": "Save",
+    "onboardingTitle": "Complete your profile",
+    "onboardingDesc": "Set a handle to start uploading subtitles and connecting channels."
   },
   "SubtitlePage": {
     "creatorNotConnected": "This channel's creator hasn't connected with LST yet.",
@@ -106,14 +111,14 @@
     "title": "Creator Dashboard",
     "channelSection": "Connected Channels",
     "noChannels": "No channels connected.",
-    "connectChannel": "Connect a Channel",
-    "channelIdPlaceholder": "YouTube Channel ID (UCxxxxxxxx...)",
-    "channelIdHint": "Enter a YouTube channel URL or a channel ID starting with UC.",
-    "connecting": "Connecting...",
-    "connect": "Connect",
+    "connectYouTube": "Connect YouTube Channel",
+    "connectYouTubeDesc": "Sign in with your YouTube account to verify channel ownership.",
+    "connectedSuccess": "Channel connected successfully.",
+    "errorChannelTaken": "This channel is already connected to another account.",
+    "errorConnect": "An error occurred while connecting the channel.",
+    "viewOnYouTube": "View on YouTube",
     "disconnect": "Disconnect",
     "confirmDisconnect": "Are you sure you want to disconnect this channel?",
-    "errorConnect": "An error occurred while connecting the channel.",
     "errorDisconnect": "An error occurred while disconnecting.",
     "pendingSection": "Pending Subtitle Approvals",
     "noPending": "No subtitles pending approval.",
