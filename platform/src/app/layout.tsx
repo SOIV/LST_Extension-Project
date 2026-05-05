@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Live Stream Translator",
+  title: "LST Project",
   description: "Community subtitle platform for live streaming",
 };
 
