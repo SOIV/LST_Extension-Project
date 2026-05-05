@@ -148,5 +148,10 @@
     "ariaEndTime": "End time",
     "ariaSubtitleText": "Subtitle text",
     "ariaDeleteCue": "Delete cue"
+  },
+  "Footer": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "copyright": "© 2026 Live Stream Translator"
   }
 }

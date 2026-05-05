@@ -148,5 +148,10 @@
     "ariaEndTime": "終了時間",
     "ariaSubtitleText": "字幕テキスト",
     "ariaDeleteCue": "キューを削除"
+  },
+  "Footer": {
+    "terms": "利用規約",
+    "privacy": "プライバシーポリシー",
+    "copyright": "© 2026 Live Stream Translator"
   }
 }

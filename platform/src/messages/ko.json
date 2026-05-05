@@ -148,5 +148,10 @@
     "ariaEndTime": "종료 시간",
     "ariaSubtitleText": "자막 텍스트",
     "ariaDeleteCue": "큐 삭제"
+  },
+  "Footer": {
+    "terms": "이용약관",
+    "privacy": "개인정보처리방침",
+    "copyright": "© 2026 Live Stream Translator"
   }
 }
