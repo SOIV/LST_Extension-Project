@@ -1,6 +1,7 @@
 {
   "Navbar": {
     "upload": "Upload",
+    "dashboard": "Dashboard",
     "profile": "Profile",
     "logout": "Sign Out",
     "login": "Sign In",
@@ -100,6 +101,26 @@
     "liveVodNotice": "Live stream replays may also appear in this tab.",
     "apiNotConfigured": "YouTube API key is not configured.",
     "errorFetch": "Failed to load channel information."
+  },
+  "DashboardPage": {
+    "title": "Creator Dashboard",
+    "channelSection": "Connected Channels",
+    "noChannels": "No channels connected.",
+    "connectChannel": "Connect a Channel",
+    "channelIdPlaceholder": "YouTube Channel ID (UCxxxxxxxx...)",
+    "channelIdHint": "Enter a YouTube channel URL or a channel ID starting with UC.",
+    "connecting": "Connecting...",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "confirmDisconnect": "Are you sure you want to disconnect this channel?",
+    "errorConnect": "An error occurred while connecting the channel.",
+    "errorDisconnect": "An error occurred while disconnecting.",
+    "pendingSection": "Pending Subtitle Approvals",
+    "noPending": "No subtitles pending approval.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "errorAction": "An error occurred while processing.",
+    "viewSubtitle": "View subtitle"
   },
   "EditorPage": {
     "back": "← Back",

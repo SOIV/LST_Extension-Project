@@ -1,6 +1,7 @@
 {
   "Navbar": {
     "upload": "업로드",
+    "dashboard": "대시보드",
     "profile": "프로필",
     "logout": "로그아웃",
     "login": "로그인",
@@ -100,6 +101,26 @@
     "liveVodNotice": "실시간 스트리밍 다시보기 영상이 함께 표시될 수 있습니다.",
     "apiNotConfigured": "YouTube API 키가 설정되지 않았습니다.",
     "errorFetch": "채널 정보를 불러오는 중 오류가 발생했습니다."
+  },
+  "DashboardPage": {
+    "title": "크리에이터 대시보드",
+    "channelSection": "연동된 채널",
+    "noChannels": "연동된 채널이 없습니다.",
+    "connectChannel": "채널 연동",
+    "channelIdPlaceholder": "YouTube 채널 ID (UCxxxxxxxx...)",
+    "channelIdHint": "YouTube 채널 URL 또는 UC로 시작하는 채널 ID를 입력하세요.",
+    "connecting": "연동 중...",
+    "connect": "연동",
+    "disconnect": "해제",
+    "confirmDisconnect": "이 채널 연동을 해제하시겠습니까?",
+    "errorConnect": "채널 연동 중 오류가 발생했습니다.",
+    "errorDisconnect": "연동 해제 중 오류가 발생했습니다.",
+    "pendingSection": "승인 대기 중인 자막",
+    "noPending": "승인 대기 중인 자막이 없습니다.",
+    "approve": "승인",
+    "reject": "거절",
+    "errorAction": "처리 중 오류가 발생했습니다.",
+    "viewSubtitle": "자막 보기"
   },
   "EditorPage": {
     "back": "← 뒤로",

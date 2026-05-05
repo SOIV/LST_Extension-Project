@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { uploadToR2 } from "@/lib/r2";
+import { getVideoById } from "@/lib/youtube";
 import { type NextRequest } from "next/server";
 
 const MAX_SUBTITLE_FILE_SIZE_BYTES = 4 * 1024 * 1024; // 4MB
@@ -96,9 +97,20 @@ export async function POST(request: NextRequest) {
   if (existingVideo) {
     videoRow = existingVideo;
   } else {
+    // 새 영상 생성 시 YouTube API로 채널 ID 보조 조회 (있으면 저장)
+    let youtubeChannelId: string | null = null;
+    if (process.env.YOUTUBE_API_KEY) {
+      try {
+        const ytVideo = await getVideoById(videoId);
+        if (ytVideo) youtubeChannelId = ytVideo.channelId;
+      } catch {
+        // YouTube API 실패 시 무시 (채널 ID 없이 업로드 허용)
+      }
+    }
+
     const { data: newVideo, error: videoError } = await supabase
       .from("videos")
-      .insert({ youtube_video_id: videoId })
+      .insert({ youtube_video_id: videoId, youtube_channel_id: youtubeChannelId })
       .select("id")
       .single();
 
@@ -126,7 +138,7 @@ export async function POST(request: NextRequest) {
         video_id: videoRow.id,
         language_code: languageCode,
         creator_id: user.id,
-        status: "approved",
+        status: "pending",
       })
       .select("id")
       .single();
