@@ -10,6 +10,14 @@ export default function SiteFooter() {
     <footer className="mt-auto border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
       <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+          <a
+            href="https://status.soiv-studio.xyz/status/lst-project"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-zinc-700 dark:hover:text-zinc-200 underline underline-offset-2"
+          >
+            {t("status")}
+          </a>
           <Link
             href="/terms"
             className="hover:text-zinc-700 dark:hover:text-zinc-200 underline underline-offset-2"
