@@ -4,47 +4,47 @@
 
 ```
 ┌─────────────────────────────────────────┐
-│   🎙️ 음성 인식 엔진 설정                  │
+│   🎙️ 음성 인식 엔진 설정                 │
 ├─────────────────────────────────────────┤
 │                                         │
 │ 기본 엔진 선택:                          │
 │                                         │
 │ ○ Web Speech API (브라우저 내장)         │
 │   └─ 무료, 무제한                        │
-│   └─ 정확도: ★★★☆☆                     │
+│   └─ 정확도: ★★★☆☆                  │
 │   └─ 지연시간: 낮음                      │
-│   └─ 언어: 한국어, 일본어, 영어 등       │
+│   └─ 언어: 한국어, 일본어, 영어 등        │
 │                                         │
 │ ● Whisper API ⭐                        │
-│   Provider: [Hugging Face ▼]           │
+│   Provider: [Hugging Face ▼]            │
 │                                         │
 │   ┌─ OpenAI 공식                        │
-│   │  • 정확도: ★★★★★                   │
+│   │  • 정확도: ★★★★★                │
 │   │  • 비용: $0.006/분                  │
-│   │  • API Key: [**********]           │
+│   │  • API Key: [**********]            │
 │   │  • 상태: ✅ 유효                    │
 │   │                                     │
 │   ├─ Hugging Face 추론 API              │
-│   │  • 정확도: ★★★★☆                   │
+│   │  • 정확도: ★★★★☆                │
 │   │  • 무료 할당량: 1,000분/월           │
-│   │  • Token: [**********]             │
-│   │  • 남은 할당량: 847분               │
+│   │  • Token: [**********]              │
+│   │  • 남은 할당량: 847분                │
 │   │  • 상태: ✅ 유효                    │
 │   │                                     │
 │   └─ 커스텀 엔드포인트 (고급)            │
-│      • API URL: [https://...]          │
+│      • API URL: [https://...]           │
 │      • 인증 방식: [Bearer Token ▼]      │
-│      • Token/Key: [**********]         │
+│      • Token/Key: [**********]          │
 │      • 테스트: [연결 테스트]             │
 │                                         │
 │ ○ 기타 STT API (고급 사용자)             │
-│   API URL: [https://...]               │
-│   인증 방식: [Bearer Token ▼]           │
-│   Header Key: [Authorization]          │
-│   Header Value: [Bearer **********]    │
-│   Request Format: [JSON ▼]             │
-│   Response Path: [result.text]         │
-│   [연결 테스트] [설정 예시 보기]         │
+│   API URL: [https://...]                │
+│   인증 방식: [Bearer Token ▼]            │
+│   Header Key: [Authorization]           │
+│   Header Value: [Bearer **********]     │
+│   Request Format: [JSON ▼]              │
+│   Response Path: [result.text]          │
+│   [연결 테스트] [설정 예시 보기]          │
 │                                         │
 ├─────────────────────────────────────────┤
 │ 💡 추천 무료 옵션:                       │

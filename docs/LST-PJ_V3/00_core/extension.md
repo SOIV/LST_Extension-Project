@@ -295,6 +295,7 @@ chrome.storage.sync.get(["targetLang"], console.log);
 
 * Chrome
 * Edge
+* NAVER Whale
 
 ---
 
