@@ -31,7 +31,10 @@ export default function SiteFooter() {
             {t("privacy")}
           </Link>
         </div>
-        <p className="text-xs text-zinc-400 dark:text-zinc-500">{t("copyright")}</p>
+        <div className="flex flex-col items-center sm:items-end gap-1">
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">{t("copyright")}</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500">{t("youtubeDisclaimer")}</p>
+        </div>
       </div>
     </footer>
   );
