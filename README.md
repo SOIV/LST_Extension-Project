@@ -168,7 +168,7 @@ Chrome 웹 스토어 배포 전에는 개발자 모드로 설치합니다.
 버그 리포트, 기능 제안, 자막 기여, 문서 개선 모두 가능합니다.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/LST_Extension-Project.git
+git clone https://github.com/SOIV/LST_Extension-Project.git
 cd LST_Extension-Project
 git checkout -b feature/your-feature
 git commit -m "feat: describe your change"

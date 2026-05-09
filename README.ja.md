@@ -168,7 +168,7 @@ Chromeウェブストア配布前は、開発者モードでインストール�
 バグ報告、機能提案、字幕投稿、文書改善を歓迎します。
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/LST_Extension-Project.git
+git clone https://github.com/SOIV/LST_Extension-Project.git
 cd LST_Extension-Project
 git checkout -b feature/your-feature
 git commit -m "feat: describe your change"

@@ -168,7 +168,7 @@ A dedicated user/developer docs site may be added later. The docs site should be
 Bug reports, feature requests, subtitle contributions, and documentation improvements are welcome.
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/LST_Extension-Project.git
+git clone https://github.com/SOIV/LST_Extension-Project.git
 cd LST_Extension-Project
 git checkout -b feature/your-feature
 git commit -m "feat: describe your change"
