@@ -95,6 +95,9 @@ Status: `in_progress`
 - [ ] 연동 문구 정합성 수정 **#TODO.md**
 - [x] 승인 전/후 공개 워크플로우 구현
 - [ ] YouTube 자막 업로드 비상 경로 점검 **#TODO.md**
+- [ ] 영상 제목/설명란 관련
+  - [ ] 제목/설명 업로드 (`videos.update` localizations)
+  - [ ] 제목/설명 입력 UI
 
 ### P5. 통합 & 안정화
 
