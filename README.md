@@ -127,7 +127,8 @@ git push origin feature/your-feature
 
 ## 📜 라이선스
 
-GPL-3.0 License — 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+GPL-3.0 License — 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.<br>
+YouTube는 Google LLC의 상표입니다. LST Project는 YouTube와 공식적인 관련이 없습니다.
 
 ---
 

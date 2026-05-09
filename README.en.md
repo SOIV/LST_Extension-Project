@@ -127,7 +127,8 @@ git push origin feature/your-feature
 
 ## 📜 License
 
-GPL-3.0 License — See the [LICENSE](LICENSE) file for details.
+GPL-3.0 License — See the [LICENSE](LICENSE) file for details.<br>
+YouTube is a trademark of Google LLC. LST Project is not officially affiliated with YouTube.
 
 ---
 
