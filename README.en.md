@@ -1,6 +1,6 @@
 # Live Stream Translator (LST) Project
 
-Community subtitle platform + Chrome extension for live streaming
+Community subtitle platform, Chrome extension, and planned desktop helper for YouTube-centered subtitle workflows.
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://www.google.com/chrome/)
@@ -9,132 +9,181 @@ Community subtitle platform + Chrome extension for live streaming
 
 **Language / 언어 / 言語:** [한국어](README.md) | English | [日本語](README.ja.md)
 
----
+## Overview
 
-## 📖 Overview
+LST is a project for community subtitles, real-time STT, and translated subtitles on YouTube videos and live streams.
 
-LST is a project designed to break down language barriers on streaming platforms like YouTube.
+The current project focus is:
 
-- **Community Subtitle Platform** — Anyone can upload and edit subtitles. Once approved by the creator, they appear automatically via the extension.
-- **Chrome Extension** — Overlays community subtitles on YouTube videos. (Real-time STT translation coming soon)
+- **Community subtitle platform**: a web platform for uploading, editing, searching, and managing subtitles by video or channel
+- **Chrome extension**: a browser extension that displays LST community subtitles on YouTube with its own overlay renderer
 
-> Platform: **[lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)**
+The project also plans a **Lite Helper / Desktop App** split for STT, audio capture, and advanced AI translation features that are difficult to run reliably inside a browser extension alone.
 
----
+Platform: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
 
-## ✨ Features
+## Status
+
+| Area | Status | Notes |
+|---|---|---|
+| Community subtitle platform | In progress | Login, upload, search, editor, creator approval flow |
+| Chrome extension | Developer build | YouTube community subtitle loading and custom overlay rendering |
+| Real-time STT | Design/planned | Split between extension-only STT and desktop-assisted STT |
+| Lite Helper | Planned | Lightweight desktop helper for browser limitations |
+| Full Desktop App | Planned | Advanced STT, audio capture, AI translation, local LLM/Ollama candidates |
+| Public docs site | Planned | User/developer docs site has not been scaffolded yet |
+
+## Features
 
 ### Community Subtitle Platform
-- Sign in with Google
-- Upload subtitles (SRT / VTT / SMI / SAMI) by YouTube URL
-- Web-based subtitle editor with Timeline and Script views
-- YouTube player integration — click a cue to seek
-- Revision history (version control)
+
+- Google OAuth sign-in
+- Profile and handle management
+- Subtitle upload by YouTube URL
+- SRT, VTT, SMI/SAMI, and TTML-family subtitle handling
+- Video subtitle list and search
+- Web subtitle editor
+- YouTube player preview integration
+- Revision-based subtitle management
+- Creator channel connection, dashboard, and pending approval flow
+- Supabase-backed auth/database and Cloudflare R2 file storage
 
 ### Chrome Extension
-- Automatically loads community subtitles when watching YouTube
-- Customizable subtitle position, size, and color
-- SPA navigation detection (supports in-page YouTube navigation)
 
-### Platform Support
-| Platform | Community Subtitles | Real-time STT |
-|---|---|---|
-| YouTube / YouTube Live | ✅ | 🔜 Planned |
-| Twitch | 🔜 Planned | 🔜 Planned |
-| ニコニコ動画 | 🔜 Planned | 🔜 Planned |
-| SOOP / Chzzk | 🔜 Planned | 🔜 Planned |
+- Chrome Extension Manifest V3
+- Community subtitle lookup on YouTube video pages
+- Custom overlay renderer that does not depend on YouTube's native subtitle renderer
+- Subtitle position, size, color, and display settings
+- YouTube SPA navigation detection
+- Popup UI and in-player panel UI
+- Korean, English, and Japanese locales
+- Planned expansion for real-time STT and translated subtitles
 
----
+### STT and Translation Direction
 
-## 📂 Project Structure
+LST separates STT/translation features by runtime boundary. The table below describes the intended placement, not the current release status.
 
-```
+| Feature | Extension only | Lite Helper | Full Desktop App |
+|---|---:|---:|---:|
+| Community subtitle display | Available | Not needed | Not needed |
+| Web Speech STT | Possible | Optional | Optional |
+| Whisper/OpenAI API STT | Possible | Possible | Possible |
+| System audio capture | Limited | Possible | Possible |
+| Advanced AI translation presets | Limited | Partial | Recommended |
+| Ollama/local LLM integration | Not suitable | Limited | Recommended |
+
+The extension should stay lightweight and immediately usable. Features that require low-latency audio capture, heavy processing, custom presets, or local AI runtimes are better isolated into the desktop side.
+
+## Project Structure
+
+```text
 LST_Extension-Project/
 ├── All-Extension_App/
-│   └── Chrome_Extension/    # Chrome extension (Manifest V3)
+│   └── Chrome_Extension/          # Chrome extension
 │       ├── manifest.json
 │       ├── popup.html
-│       ├── scripts/         # Subtitle parser, renderer, loader
+│       ├── scripts/community/     # Community subtitle loader/parser/renderer
+│       ├── scripts/stt/           # STT experiments/candidates
 │       ├── styles/
-│       └── _locales/        # Korean / English
-├── platform/                # Community subtitle platform (Next.js)
+│       └── _locales/              # ko / en / ja
+├── platform/                      # Next.js community subtitle platform
 │   └── src/app/
-│       ├── api/             # REST API (subtitles, upload, revisions)
-│       ├── subtitles/       # Video subtitle list + web editor
-│       ├── upload/          # Subtitle upload
-│       └── profile/         # Profile management
-├── Desktop_App/             # Desktop app (planned)
-└── docs/                    # Design documents
+│       ├── [locale]/              # Localized page routes
+│       ├── api/                   # Subtitle, upload, creator, and status APIs
+│       ├── auth/
+│       ├── subtitles/
+│       └── upload/
+├── Desktop_App/                   # Desktop/Lite Helper workspace
+└── docs/
+    └── LST-PJ_V3/
+        ├── public/                # Public-safe documents
+        ├── planning/              # Planning and draft documents
+        ├── 99_archive/            # Archived documents
+        ├── INDEX.md
+        └── _classification.md
 ```
 
----
+Sensitive business or operations drafts are kept under `docs/LST-PJ_V3/sensitive-draft/`, which is excluded by `.gitignore`.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Platform
+
 | Category | Technology |
 |---|---|
-| Framework | Next.js (App Router) |
-| Auth | Supabase Auth (Google OAuth) |
-| Database | Supabase (PostgreSQL + RLS) |
-| File Storage | Cloudflare R2 |
+| Framework | Next.js 16 App Router |
+| UI | React 19, Tailwind CSS |
+| Language | TypeScript |
+| i18n | next-intl |
+| Auth | Supabase Auth, Google OAuth |
+| Database | Supabase PostgreSQL, RLS |
+| File storage | Cloudflare R2, S3 compatible API |
 | Deployment | Vercel |
-| Styling | Tailwind CSS |
 
 ### Extension
+
 | Category | Technology |
 |---|---|
-| API | Chrome Extension Manifest V3 |
-| Subtitle Parsing | Custom SRT / VTT parser |
-| Rendering | requestAnimationFrame overlay |
-| Settings | chrome.storage.sync |
+| Extension API | Chrome Extension Manifest V3 |
+| Target platform | YouTube / YouTube Live first |
+| Subtitle handling | Custom SRT/VTT/SMI-family parser |
+| Rendering | DOM overlay, requestAnimationFrame synchronization |
+| Settings storage | chrome.storage.sync |
+| Locales | Chrome `_locales` |
 
----
+## Development
 
-## 🚀 Install Extension (Developer Mode)
-
-Until the Chrome Web Store listing is available, install it manually:
-
-1. Clone this repo or download as ZIP
-2. Navigate to `chrome://extensions` in Chrome
-3. Enable **Developer mode** (top right)
-4. Click **Load unpacked**
-5. Select the `All-Extension_App/Chrome_Extension` folder
-
-> 📅 Chrome Web Store submission is planned for a future release.
-
----
-
-## 🤝 Contributing
-
-Bug reports, feature requests, and subtitle contributions are all welcome.
+### Platform
 
 ```bash
-# 1. Fork and clone
+cd platform
+npm install
+npm run dev
+```
+
+The platform requires environment variables for Supabase, Cloudflare R2, YouTube API, and related services. Configure `platform/.env.local` for local development.
+
+### Chrome Extension
+
+Before Chrome Web Store distribution, install the extension in developer mode.
+
+1. Open `chrome://extensions` in Chrome
+2. Enable **Developer mode**
+3. Click **Load unpacked**
+4. Select `All-Extension_App/Chrome_Extension`
+
+## Documentation
+
+Documents are managed under `docs/LST-PJ_V3` with public-safe documents separated from planning drafts.
+
+- Document index: [docs/LST-PJ_V3/INDEX.md](docs/LST-PJ_V3/INDEX.md)
+- Classification policy: [docs/LST-PJ_V3/_classification.md](docs/LST-PJ_V3/_classification.md)
+- Public documents: `docs/LST-PJ_V3/public/`
+- Planning documents: `docs/LST-PJ_V3/planning/`
+
+A dedicated user/developer docs site may be added later. The docs site should be generated from rewritten public-facing content, not directly from planning or sensitive drafts.
+
+## Contributing
+
+Bug reports, feature requests, subtitle contributions, and documentation improvements are welcome.
+
+```bash
 git clone https://github.com/YOUR_USERNAME/LST_Extension-Project.git
-
-# 2. Create a branch
+cd LST_Extension-Project
 git checkout -b feature/your-feature
-
-# 3. Commit your changes
 git commit -m "feat: describe your change"
-
-# 4. Push & open a Pull Request
 git push origin feature/your-feature
 ```
 
----
+## License
 
-## 📜 License
+GPL-3.0 License. See [LICENSE](LICENSE) for details.
 
-GPL-3.0 License — See the [LICENSE](LICENSE) file for details.<br>
-YouTube is a trademark of Google LLC. LST Project is not officially affiliated with YouTube.
+YouTube is a trademark of Google LLC. LST Project is not officially affiliated with YouTube or Google LLC.
 
----
+## Contact
 
-## 📮 Contact
-
-- **Platform**: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
-- **GitHub Issues**: [issues](https://github.com/SOIV/LST_Extension-Project/issues)
-- **Discord**: [discord.gg/tVnhbaB9yY](https://discord.gg/tVnhbaB9yY)
-- **Email**: biz@soiv-studio.xyz
+- Platform: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
+- GitHub Issues: [issues](https://github.com/SOIV/LST_Extension-Project/issues)
+- Discord: [discord.gg/tVnhbaB9yY](https://discord.gg/tVnhbaB9yY)
+- Email: biz@soiv-studio.xyz
