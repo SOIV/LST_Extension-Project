@@ -1,5 +1,10 @@
+# Update Release files
 Releases
-.claude
+
+# Local files
 docs/local/*
 !docs/local/.gitkeep
+
+# AI
+.claude
 .codex
