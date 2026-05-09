@@ -5,6 +5,9 @@ Releases
 docs/local/*
 !docs/local/.gitkeep
 
+# Sensitive draft docs (local/private only)
+docs/LST-PJ_V3/sensitive-draft/
+
 # AI
 .claude
 .codex

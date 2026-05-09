@@ -1,5 +1,36 @@
 # STT 엔진 선택 UI 설계 (최종안)
 
+## 0. Provider 모델 정책
+
+OpenAI 계열 STT는 더 이상 `whisper-1`만 전제로 쓰지 않는다.
+문서와 UI에서는 사용자가 이해하기 쉬운 이름으로는 **Whisper/API STT**를 유지하되, 내부 provider 모델은 아래처럼 분리한다.
+
+| Provider | Model | Position |
+|---|---|---|
+| OpenAI Realtime API | `gpt-realtime-whisper` | 실시간/스트리밍 STT 후보 |
+| OpenAI Realtime API | `gpt-realtime-translate` | 실시간 음성 번역 후보 |
+| OpenAI Realtime API | `gpt-realtime-2` | 음성 에이전트/추론형 대화 후보 |
+| OpenAI | `gpt-4o-transcribe` | 고품질 기본 후보 |
+| OpenAI | `gpt-4o-mini-transcribe` | 저비용/빠른 처리 후보 |
+| OpenAI | `gpt-4o-transcribe-diarize` | 화자 분리가 필요한 경우 |
+| OpenAI | `whisper-1` | 기존 Whisper 호환/legacy fallback |
+| Hugging Face/custom | provider별 Whisper 모델 | 사용자 토큰 또는 커스텀 엔드포인트 |
+
+정책:
+
+- UI 표기는 `Whisper API`보다 `OpenAI STT` 또는 `고품질 STT` 쪽으로 점진 변경한다.
+- 실시간 자막 경로는 `gpt-realtime-whisper`를 우선 검토한다.
+- 파일/청크 기반 전사 경로는 운영비와 품질을 기준으로 `gpt-4o-mini-transcribe` 또는 `gpt-4o-transcribe` 중 선택한다.
+- 사용자 API 키 모드는 모델 선택 옵션을 제공한다.
+- `whisper-1`은 삭제하지 않고 legacy/fallback으로 유지한다.
+- 화자 분리 기능은 별도 옵션으로 두고 기본 실시간 자막 경로와 분리한다.
+
+Source:
+
+- OpenAI Speech to text guide: https://platform.openai.com/docs/guides/speech-to-text
+- OpenAI voice model release: https://openai.com/index/advancing-voice-intelligence-with-new-models-in-the-api/
+- OpenAI model docs: `gpt-4o-transcribe`, `gpt-4o-mini-transcribe`, `whisper-1`
+
 ## 1. 단계별 선택 방식 (추천)
 
 복잡도를 줄이기 위해 **2단계 선택** 방식 제안:
@@ -326,6 +357,8 @@
       // 서버 제공 모드
       "server": {
         "plan": "free", // "free" | "pro"
+        "provider": "openai",
+        "model": "gpt-4o-mini-transcribe",
         "used_minutes": 18,
         "quota_minutes": 60,
         "reset_date": "2025-01-01"
@@ -334,6 +367,7 @@
       // 사용자 API 모드
       "own_api": {
         "provider": "openai", // "openai" | "huggingface"
+        "model": "gpt-4o-transcribe", // "gpt-4o-transcribe" | "gpt-4o-mini-transcribe" | "gpt-4o-transcribe-diarize" | "whisper-1"
         "api_key": "sk-xxx (encrypted)",
         "endpoint": "https://api.openai.com/v1/audio/transcriptions"
       },

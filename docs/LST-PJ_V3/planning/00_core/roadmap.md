@@ -155,4 +155,4 @@ Status: `planned`
 
 - 진행률은 매주 1회 업데이트한다.
 - `completed`는 "구현 + 기본 검증"을 모두 충족해야 체크한다.
-- 기능 스펙 변경 시 관련 문서(Extension/Platform/System) 링크를 함께 갱신한다.
+- 기능 스펙 변경 시 관련 제품 문서(Extension/Platform/Desktop App) 또는 공통 시스템 문서 링크를 함께 갱신한다.

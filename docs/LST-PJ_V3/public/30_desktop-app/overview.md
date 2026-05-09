@@ -1,4 +1,4 @@
-# Desktop App 개발 문서 (Electron + Whisper 기반)
+# Desktop App 개발 문서
 
 이 문서는 **Live Stream Translator – Desktop App 구성 요소, 아키텍처, 구현 상세, 기술 스택, 성능 기준**을 다루는 개발 문서입니다.
 Chrome Extension과는 독립적으로 동작하지만, 필요 시 WebSocket을 통해 연동할 수 있습니다.
@@ -7,13 +7,22 @@ Chrome Extension과는 독립적으로 동작하지만, 필요 시 WebSocket을 
 
 # 📌 1. Desktop App 목적
 
-Desktop App은 Chrome Extension으로 처리하기 어려운 고급 기능을 제공하기 위한 보조 프로그램입니다.
+Desktop App은 Chrome Extension으로 처리하기 어려운 작업을 보조하거나, 전문 자막 제작 기능을 제공하기 위한 데스크탑 실행 환경입니다.
+Whisper 자체가 Desktop App의 정의는 아니며, 지연/렉 감소, 안정적인 오디오 캡처, 고급 처리 환경 제공이 핵심 목적입니다.
+
+### 앱 유형
+
+| 유형 | 목적 | 설명 |
+|---|---|---|
+| Lite Helper | Extension 보조 | 실시간 시청 중 지연/렉 감소, 오디오 캡처/처리 오프로딩, WebSocket 브릿지 |
+| Full Desktop App | 전문 제작 | 전체 영상 STT, 고급 편집 UI, AI 보정, 내보내기, 커뮤니티 등록 |
 
 ### 주요 목적
 
 * 시스템 전체 오디오 캡처(WASAPI Loopback / CoreAudio)
-* Whisper 기반 온/오프라인 STT 모델 사용
-* Chrome Extension보다 더 높은 정확도
+* Extension 단독 처리보다 안정적인 실시간 처리
+* 필요 시 Whisper 기반 온/오프라인 STT 모델 사용
+* Chrome Extension보다 더 높은 정확도 또는 낮은 부하
 * CPU/GPU 사용 옵션
 * WebSocket을 통해 Extension에게 실시간 번역 결과 전달
 * 스트리머/프로 방송용 환경 대응
@@ -86,6 +95,7 @@ GPU 가속 지원:
 * Naver Papago API
 * Google Translate API
 * DeepL API
+* AI context translation (optional quality mode)
 
 캐싱:
 
