@@ -26,7 +26,7 @@ LST is a project designed to break down language barriers on streaming platforms
 
 ### Community Subtitle Platform
 - Sign in with Google
-- Upload subtitles (SRT / VTT) by YouTube URL
+- Upload subtitles (SRT / VTT / SMI / SAMI) by YouTube URL
 - Web-based subtitle editor with Timeline and Script views
 - YouTube player integration — click a cue to seek
 - Revision history (version control)

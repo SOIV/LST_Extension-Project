@@ -26,7 +26,7 @@ LST는 YouTube 등 스트리밍 플랫폼의 언어 장벽을 허물기 위한 �
 
 ### 커뮤니티 자막 플랫폼
 - Google 계정으로 로그인
-- YouTube URL로 자막 업로드 (SRT / VTT)
+- YouTube URL로 자막 업로드 (SRT / VTT / SMI / SAMI)
 - 웹 기반 자막 편집기 (타임라인 뷰 / 스크립트 뷰)
 - YouTube 플레이어 연동 — 큐 클릭 시 해당 시간으로 seek
 - 리비전 히스토리 (버전 관리)
