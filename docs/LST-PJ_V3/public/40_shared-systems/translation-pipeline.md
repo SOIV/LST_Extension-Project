@@ -4,15 +4,49 @@ Status: planned
 
 STT 또는 커뮤니티 자막 텍스트가 번역되어 표시되기까지의 공통 파이프라인을 다룬다.
 
+STT와 번역은 한 기능처럼 보일 수 있지만, 문서에서는 다음 두 단계를 분리해서 관리한다.
+
+- Transcription/STT: 음성 입력을 원문 transcript로 변환
+- Translation: 원문 transcript 또는 음성 번역 경로를 번역 자막으로 변환
+
 ## Scope
 
 - STT 결과 텍스트 정규화
 - 번역 API 연결
 - OpenAI Realtime Translate 기반 실시간 음성 번역 검토
+- Realtime Translate의 input transcription model 구분
 - AI 번역 provider 연결
 - 사용자 API 키 방식
 - 캐싱 정책
 - 자막 렌더링 전달 형식
+
+## Pipeline Split
+
+### Text translation
+
+커뮤니티 자막이나 STT 결과 텍스트를 일반 번역 provider에 전달하는 기본 경로다.
+
+```text
+source text
+ -> text normalization
+ -> translation provider
+ -> translated subtitle
+ -> renderer
+```
+
+### Realtime speech translation
+
+음성 입력을 실시간 번역 자막으로 바로 연결하는 경로다.
+
+```text
+audio
+ -> input transcription model
+ -> translation model
+ -> translated subtitle
+ -> renderer
+```
+
+OpenAI Realtime Translate UI 기준으로는 `gpt-4o-transcribe`, `gpt-4o-mini-transcribe`, `gpt-4o-transcribe-diarize`가 input transcription model 역할을 하고, `gpt-realtime-translate`가 translation model 역할을 한다.
 
 ## Translation Providers
 
@@ -21,8 +55,8 @@ STT 또는 커뮤니티 자막 텍스트가 번역되어 표시되기까지의 �
 | Google Translate | 기본/무료 후보 | 공식/비공식 사용 경로와 안정성 검토 필요 |
 | Naver Papago | 한/일/영 번역 후보 | 한국어/일본어 중심 품질 검토 |
 | DeepL | 고품질 번역 후보 | 품질은 좋지만 비용과 제한 검토 필요 |
-| OpenAI Realtime Translate | 실시간 음성 번역 후보 | 음성 입력에서 번역까지 지연 최소화 경로 |
-| OpenAI / Gemini / LLM | AI 문맥 번역 후보 | 속도는 느릴 수 있으나 문맥/말투/용어집 반영에 유리 |
+| OpenAI Realtime Translate | 실시간 음성 번역 후보 | input transcription model + `gpt-realtime-translate` 경로 |
+| OpenAI / Gemini / Claude / LLM | AI 문맥 번역 후보 | 속도는 느릴 수 있으나 문맥/말투/용어집 반영에 유리 |
 | Local LLM (Ollama/LM Studio) | 로컬 AI 번역 후보 | Desktop App/Lite Helper 경유를 원칙으로 함 |
 | Custom API | 고급 사용자용 | 단순 HTTP API만 Extension 직접 연결 후보 |
 
@@ -83,7 +117,16 @@ AI 번역은 실시간 자막의 기본 경로로 두기에는 속도와 비용 
 ## Realtime Voice Translation
 
 OpenAI `gpt-realtime-translate`는 실시간 음성 번역 후보로 별도 추적한다.
-텍스트 STT 결과를 번역 API에 넘기는 기존 방식과 달리, 음성 입력에서 번역까지의 지연을 줄이는 경로로 검토한다.
+텍스트 STT 결과를 일반 번역 API에 넘기는 기존 방식과 달리, Realtime Translate 경로는 input transcription model과 translation model을 한 플로우에서 조합한다.
+
+| Step | OpenAI Candidate | Role |
+|---|---|---|
+| Input transcription | `gpt-4o-transcribe` | 음성을 원문 transcript로 변환 |
+| Input transcription | `gpt-4o-mini-transcribe` | 비용/속도 우선 transcript 생성 |
+| Input transcription | `gpt-4o-transcribe-diarize` | 다중 화자 transcript 생성 |
+| Translation | `gpt-realtime-translate` | 원문 transcript/음성 컨텍스트를 번역 |
+
+이 경로는 번역 자막용이며, STT 단독 자막은 [Extension Realtime STT](../10_extension/realtime-stt.md)의 `gpt-realtime-whisper` 경로를 우선 검토한다.
 
 Source:
 
@@ -93,4 +136,4 @@ Source:
 
 - [STT Engine Selection](stt-engine-selection.md)
 - [Extension Realtime STT](../10_extension/realtime-stt.md)
-- [Revenue Model](../../sensitive-draft/50_strategy/revenue-model.md)
+- `sensitive-draft/50_strategy/revenue-model.md` (local-only, 커밋 제외)

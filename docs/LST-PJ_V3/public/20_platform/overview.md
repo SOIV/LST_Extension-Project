@@ -20,4 +20,7 @@ LST 웹 플랫폼의 범위와 주요 문서 진입점을 정리한다.
 - [Creator Workflow](creator-workflow.md)
 - [Account & Trust System](../../planning/20_platform/account-trust-system.md)
 - [Reviewer Test Design](../../planning/20_platform/reviewer-test-design.md)
-- [Outsourcing Draft](../../sensitive-draft/20_platform/outsourcing-draft.md)
+
+Local-only documents:
+
+- `sensitive-draft/20_platform/outsourcing-draft.md` (커밋 제외)

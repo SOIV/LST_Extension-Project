@@ -8,19 +8,30 @@ OpenAI 계열 STT는 더 이상 `whisper-1`만 전제로 쓰지 않는다.
 | Provider | Model | Position |
 |---|---|---|
 | OpenAI Realtime API | `gpt-realtime-whisper` | 실시간/스트리밍 STT 후보 |
-| OpenAI Realtime API | `gpt-realtime-translate` | 실시간 음성 번역 후보 |
-| OpenAI Realtime API | `gpt-realtime-2` | 음성 에이전트/추론형 대화 후보 |
-| OpenAI | `gpt-4o-transcribe` | 고품질 기본 후보 |
-| OpenAI | `gpt-4o-mini-transcribe` | 저비용/빠른 처리 후보 |
-| OpenAI | `gpt-4o-transcribe-diarize` | 화자 분리가 필요한 경우 |
+| OpenAI Realtime API | `gpt-realtime-translate` | 실시간 음성 번역 후보, STT 단독 경로 아님 |
+| OpenAI Realtime API | `gpt-realtime-2` | Realtime 탭의 메인 처리 모델 후보, STT 단독 경로 아님 |
+| OpenAI | `gpt-4o-transcribe` | input transcription/STT 고품질 후보 |
+| OpenAI | `gpt-4o-mini-transcribe` | input transcription/STT 저비용/빠른 처리 후보 |
+| OpenAI | `gpt-4o-transcribe-diarize` | input transcription/STT + 화자 분리 후보 |
 | OpenAI | `whisper-1` | 기존 Whisper 호환/legacy fallback |
 | Hugging Face/custom | provider별 Whisper 모델 | 사용자 토큰 또는 커스텀 엔드포인트 |
+
+OpenAI Platform의 Create > Audio UI 기준으로는 Realtime 설정에서 `Model`과 `User transcript model`이 분리되어 있다.
+
+| UI Field | Observed Options | Meaning |
+|---|---|---|
+| Model | `gpt-realtime-2`, `gpt-realtime-1.5`, `gpt-realtime` | Realtime 세션의 메인 모델 |
+| User transcript model | `whisper-1`, `gpt-realtime-whisper`, `gpt-4o-transcribe`, `gpt-4o-transcribe-diarize`, `gpt-4o-mini-transcribe` | 사용자 음성 입력의 전사 모델 |
+
+위 표는 Platform UI 관찰값이다.
+실제 API에서 호출 가능한 정확한 model id 목록은 `/v1/models` 또는 공식 API 문서에서 별도 확인한다.
 
 정책:
 
 - UI 표기는 `Whisper API`보다 `OpenAI STT` 또는 `고품질 STT` 쪽으로 점진 변경한다.
 - 실시간 자막 경로는 `gpt-realtime-whisper`를 우선 검토한다.
 - 파일/청크 기반 전사 경로는 운영비와 품질을 기준으로 `gpt-4o-mini-transcribe` 또는 `gpt-4o-transcribe` 중 선택한다.
+- Realtime Translate 경로는 `gpt-4o-transcribe` 계열 input transcription model과 `gpt-realtime-translate` translation model을 조합한다.
 - 사용자 API 키 모드는 모델 선택 옵션을 제공한다.
 - `whisper-1`은 삭제하지 않고 legacy/fallback으로 유지한다.
 - 화자 분리 기능은 별도 옵션으로 두고 기본 실시간 자막 경로와 분리한다.

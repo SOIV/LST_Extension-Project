@@ -10,6 +10,7 @@ Classification: [_classification.md](_classification.md)
 |---|---|---|
 | active | [Project Overview](public/00_core/overview.md) | 전체 프로젝트 방향과 상위 개요 |
 | active | [Roadmap](planning/00_core/roadmap.md) | Phase별 진행 상태와 체크리스트 |
+| planned | [Release & Review Checklist](public/00_core/release-checklist.md) | 배포/심사/개인정보/권한 체크리스트 |
 
 ## Extension
 
@@ -31,7 +32,7 @@ Classification: [_classification.md](_classification.md)
 | in_progress | [Creator Workflow](public/20_platform/creator-workflow.md) | 크리에이터 연동과 승인 흐름 |
 | active | [Account & Trust System](planning/20_platform/account-trust-system.md) | 계정/신뢰도 시스템 |
 | draft | [Reviewer Test Design](planning/20_platform/reviewer-test-design.md) | 언어 시험/검수자 설계 |
-| draft | [Outsourcing Draft](sensitive-draft/20_platform/outsourcing-draft.md) | 번역 외주 시스템 초안 |
+| local-only | `sensitive-draft/20_platform/outsourcing-draft.md` | 번역 외주 시스템 초안, 커밋 제외 |
 
 ## Desktop App
 
@@ -57,8 +58,8 @@ Classification: [_classification.md](_classification.md)
 
 | Status | Document | Purpose |
 |---|---|---|
-| active | [Revenue Model](sensitive-draft/50_strategy/revenue-model.md) | 수익 모델 최종안 |
-| active | [Funding](sensitive-draft/50_strategy/funding.md) | 펀딩 전략 |
+| local-only | `sensitive-draft/50_strategy/revenue-model.md` | 수익 모델 초안, 커밋 제외 |
+| local-only | `sensitive-draft/50_strategy/funding.md` | 펀딩 전략 초안, 커밋 제외 |
 | active | [Library Architecture](public/50_strategy/library-architecture.md) | 라이브러리 분리 전략 |
 
 ## Ideas & Archive
@@ -66,7 +67,7 @@ Classification: [_classification.md](_classification.md)
 | Status | Document | Purpose |
 |---|---|---|
 | draft | [Subtitle Experiments](planning/90_ideas/subtitle-experiments.md) | 자막 관련 실험 아이디어 |
-| archived | [Revenue Strategy (Legacy)](sensitive-draft/99_archive/2026-05/revenue-strategy-legacy.md) | 이전 수익 전략 |
+| local-only | `sensitive-draft/99_archive/2026-05/revenue-strategy-legacy.md` | 이전 수익 전략, 커밋 제외 |
 | archived | [STT Engine UI (Legacy Draft)](99_archive/2026-05/stt-engine-ui-legacy-draft.md) | 이전 STT UI 초안 |
 
 ## Assets

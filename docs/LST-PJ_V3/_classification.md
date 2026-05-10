@@ -11,7 +11,7 @@ Last updated: 2026-05-10
 |---|---|---|
 | `public` | 사용자/기여자/외부인이 봐도 되는 문서 | 공개 docs 사이트 또는 개발자 문서로 승격 가능 |
 | `planning` | 초안, 아이디어, 구현 전 논의 | 공개 레포에 둘 수 있으나 초안임을 명시 |
-| `sensitive-draft` | 사업/가격/운영/외주/보안 등 오해 가능성이 있는 문서 | 공개 정책이 아님을 명시하고, 필요 시 비공개 저장소로 이동 |
+| `sensitive-draft` | 사업/가격/운영/외주/보안 등 오해 가능성이 있는 문서 | 로컬 전용 폴더로 유지하고 커밋/배포 대상에서 제외 |
 | `archive` | 이전 버전/참고용 | 공개 여부는 원본 성격을 따른다 |
 
 ## Public Candidates
@@ -19,6 +19,7 @@ Last updated: 2026-05-10
 | Document | Level | Notes |
 |---|---|---|
 | `public/00_core/overview.md` | public | 프로젝트 전체 소개/아키텍처 |
+| `public/00_core/release-checklist.md` | public | 배포/심사/개인정보/권한 체크리스트 |
 | `public/10_extension/overview.md` | public | Extension 개발 개요 |
 | `public/10_extension/community-subtitles.md` | public | 사용자/개발자 모두 참고 가능 |
 | `public/10_extension/realtime-stt.md` | public | STT 기능 설명, provider 정책은 초안 주의 |
@@ -53,10 +54,10 @@ Last updated: 2026-05-10
 
 | Document | Level | Recommended Action |
 |---|---|---|
-| `sensitive-draft/50_strategy/revenue-model.md` | sensitive-draft | 공개 정책/가격 약속이 아님을 명시. 필요 시 비공개 이동 |
-| `sensitive-draft/50_strategy/funding.md` | sensitive-draft | 펀딩/마케팅/비용 초안. 필요 시 비공개 이동 |
-| `sensitive-draft/20_platform/outsourcing-draft.md` | sensitive-draft | 외주/계약/책임 범위 초안. 필요 시 비공개 이동 |
-| `sensitive-draft/99_archive/2026-05/revenue-strategy-legacy.md` | sensitive-draft | 과거 수익 전략. 공개 유지 시 archive/draft 경고 필요 |
+| `sensitive-draft/50_strategy/revenue-model.md` | sensitive-draft | 로컬 전용 유지, 커밋 제외 |
+| `sensitive-draft/50_strategy/funding.md` | sensitive-draft | 로컬 전용 유지, 커밋 제외 |
+| `sensitive-draft/20_platform/outsourcing-draft.md` | sensitive-draft | 로컬 전용 유지, 커밋 제외 |
+| `sensitive-draft/99_archive/2026-05/revenue-strategy-legacy.md` | sensitive-draft | 로컬 전용 유지, 커밋 제외 |
 
 ## Docs Site Policy
 
@@ -71,11 +72,10 @@ Docusaurus 또는 별도 docs 사이트는 공개 문서만 사용한다.
 
 ## Local/Internal Access Idea
 
-민감 문서는 공개 레포에 계속 두기보다 다음 중 하나로 분리하는 것을 검토한다.
+민감 문서는 `sensitive-draft` 로컬 전용 폴더에 두고 커밋/배포 대상에서 제외한다.
+현재 정책은 다음과 같다.
 
-- private repository
-- local-only folder excluded by `.gitignore`
-- encrypted notes
-- 별도 self-hosted private docs
+- 기본: local-only folder excluded by `.gitignore`
+- 필요 시: private repository, encrypted notes, 별도 self-hosted private docs 검토
 
 로컬 전용 문서를 외부에서 볼 필요가 생기면, 공개 docs 사이트와 분리된 private docs 배포 경로를 따로 둔다.

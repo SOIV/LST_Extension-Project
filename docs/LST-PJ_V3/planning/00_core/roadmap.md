@@ -11,7 +11,7 @@ YouTube 영상/라이브를 대상으로 한 **커뮤니티 자막 플랫폼 + C
 - YouTube 전체 (일반 영상 + 라이브)
 - Chrome Extension (자막 표시)
 - 커뮤니티 자막 플랫폼 (독립 웹 서비스)
-- 실시간 STT 자막 (후속)
+- 실시간 STT 자막 (병행 검증 트랙)
 - 타 플랫폼 지원 (후속)
 - Desktop App / Lite Helper (상황 보고 결정)
 
