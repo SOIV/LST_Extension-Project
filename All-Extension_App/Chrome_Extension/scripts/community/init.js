@@ -31,17 +31,17 @@
       // 콜백
       onToggle: (enabled) => {
         currentSettings.subtitleEnabled = enabled;
-        chrome.storage.sync.set({ subtitleEnabled: enabled });
+        if (chrome.runtime?.id) chrome.storage.sync.set({ subtitleEnabled: enabled });
         SubtitleLoader.updateSettings({ subtitleEnabled: enabled });
       },
       onLangChange: (lang) => {
         currentSettings.subtitleLang = lang;
-        chrome.storage.sync.set({ subtitleLang: lang });
+        if (chrome.runtime?.id) chrome.storage.sync.set({ subtitleLang: lang });
         SubtitleLoader.updateSettings({ subtitleLang: lang });
       },
       onSettingChange: (changed) => {
         Object.assign(currentSettings, changed);
-        chrome.storage.sync.set(changed);
+        if (chrome.runtime?.id) chrome.storage.sync.set(changed);
         SubtitleLoader.updateSettings(changed);
       },
     });
@@ -54,8 +54,10 @@
     subtitleLanguages = languages || [];
     subtitleTrackInfo = status === 'available' ? (trackInfo || null) : null;
 
-    // 배지 업데이트
-    chrome.runtime.sendMessage({ action: 'subtitleStatus', status }).catch(() => {});
+    // 배지 업데이트 (컨텍스트 무효화 시 무시)
+    if (chrome.runtime?.id) {
+      chrome.runtime.sendMessage({ action: 'subtitleStatus', status }).catch(() => {});
+    }
 
     // 패널 동기화
     syncPanel(status, subtitleLanguages, subtitleTrackInfo);
@@ -85,6 +87,10 @@
   let lastHref = location.href;
 
   const navObserver = new MutationObserver(() => {
+    if (!chrome.runtime?.id) {
+      navObserver.disconnect();
+      return;
+    }
     if (location.href !== lastHref) {
       lastHref = location.href;
       // 패널/버튼 제거 후 재주입 대기
