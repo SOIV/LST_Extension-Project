@@ -230,7 +230,7 @@ async function loadSettings() {
       if (elements.showOriginal)    elements.showOriginal.checked    = settings.showOriginal    !== false;
       if (elements.overlayPosition) elements.overlayPosition.value   = settings.overlayPosition || DISPLAY_DEFAULTS.overlayPosition;
       if (elements.enableCache)     elements.enableCache.checked     = settings.enableCache     !== false;
-      if (elements.sttSource)       elements.sttSource.value         = settings.sttSource       || 'mic';
+      if (elements.sttSource)       elements.sttSource.value         = settings.sttSource       || 'tab';
 
       resolve(settings);
     });
@@ -260,7 +260,7 @@ async function saveSettings(silent = false) {
     overlayPosition: elements.overlayPosition?.value   || DISPLAY_DEFAULTS.overlayPosition,
     enableCache:     elements.enableCache?.checked     ?? true,
     // 실시간 STT
-    sttSource:       elements.sttSource?.value         || 'mic',
+    sttSource:       elements.sttSource?.value         || 'tab',
   };
 
   return new Promise((resolve) => {
