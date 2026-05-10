@@ -43,3 +43,11 @@
 ## License
 
 이 폴더 문서의 라이선스는 동일 디렉토리의 [LICENSE](LICENSE)를 확인해 주세요.
+
+## Acknowledgements / Special Thanks
+
+이 프로젝트는 다음 오픈소스 프로젝트들의 영감을 받았습니다:
+- [Speech Translator Chrome Extension](https://chromewebstore.google.com/detail/jodfjmaiakpnmeddgpeflpafebmlhppn?utm_source=item-share-cb)
+- [MORT](https://github.com/killkimno/MORT)
+- Chrome Audio Capture Extension
+- Web Speech API Examples
