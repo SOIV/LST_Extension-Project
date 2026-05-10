@@ -154,6 +154,16 @@
     } else if (message.action === 'stopCapture') {
       stopRecognition();
       sendResponse({ success: true });
+    } else if (message.action === 'tabCaptureActive') {
+      createOverlay();
+      if (subtitleEl) {
+        subtitleEl.textContent = '탭 오디오 캡처 중...';
+        subtitleEl.style.opacity = '0.7';
+      }
+      sendResponse({ success: true });
+    } else if (message.action === 'tabCaptureInactive') {
+      removeOverlay();
+      sendResponse({ success: true });
     }
     return false;
   });

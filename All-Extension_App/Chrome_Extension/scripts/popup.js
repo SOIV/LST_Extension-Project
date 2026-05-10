@@ -61,7 +61,8 @@ const elements = {
   resetDisplayBtn:    document.getElementById('resetDisplayBtn'),
 
   // 실시간 탭
-  sttBtn: document.getElementById('sttBtn'),
+  sttBtn:    document.getElementById('sttBtn'),
+  sttSource: document.getElementById('sttSource'),
 
   // 표시 탭 - 실시간
   showOriginal:    document.getElementById('showOriginal'),
@@ -229,6 +230,7 @@ async function loadSettings() {
       if (elements.showOriginal)    elements.showOriginal.checked    = settings.showOriginal    !== false;
       if (elements.overlayPosition) elements.overlayPosition.value   = settings.overlayPosition || DISPLAY_DEFAULTS.overlayPosition;
       if (elements.enableCache)     elements.enableCache.checked     = settings.enableCache     !== false;
+      if (elements.sttSource)       elements.sttSource.value         = settings.sttSource       || 'mic';
 
       resolve(settings);
     });
@@ -257,6 +259,8 @@ async function saveSettings(silent = false) {
     showOriginal:    elements.showOriginal?.checked    ?? true,
     overlayPosition: elements.overlayPosition?.value   || DISPLAY_DEFAULTS.overlayPosition,
     enableCache:     elements.enableCache?.checked     ?? true,
+    // 실시간 STT
+    sttSource:       elements.sttSource?.value         || 'mic',
   };
 
   return new Promise((resolve) => {
@@ -362,7 +366,8 @@ function toggleDebugMode(enabled) {
       c.style.userSelect = 'auto';
       c.querySelectorAll('[disabled]').forEach(el => el.removeAttribute('disabled'));
     });
-    if (elements.sttBtn) elements.sttBtn.removeAttribute('disabled');
+    if (elements.sttBtn)    elements.sttBtn.removeAttribute('disabled');
+    if (elements.sttSource) elements.sttSource.removeAttribute('disabled');
     showToast('🔧 디버그 모드 활성화', 'info');
   } else {
     logo.classList.remove('logo--debug');
@@ -378,7 +383,8 @@ function toggleDebugMode(enabled) {
       c.style.userSelect = '';
       c.querySelectorAll('select, input, button').forEach(el => el.setAttribute('disabled', ''));
     });
-    if (elements.sttBtn) elements.sttBtn.setAttribute('disabled', '');
+    if (elements.sttBtn)    elements.sttBtn.setAttribute('disabled', '');
+    if (elements.sttSource) elements.sttSource.setAttribute('disabled', '');
     showToast('디버그 모드 비활성화', 'info');
   }
 }
@@ -473,13 +479,40 @@ function setupEventListeners() {
 
   // STT 버튼
   elements.sttBtn?.addEventListener('click', () => {
-    const next = !sttListening;
-    setSttState(next);
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (!tabs[0]) return;
-      const action = next ? 'startSttCapture' : 'stopCapture';
-      chrome.tabs.sendMessage(tabs[0].id, { action }).catch(() => {});
-    });
+    const next    = !sttListening;
+    const source  = elements.sttSource?.value || 'mic';
+
+    if (!next) {
+      // 중지: 소스에 상관없이 모두 정지
+      setSttState(false);
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs[0]) return;
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'stopCapture' }).catch(() => {});
+      });
+      chrome.runtime.sendMessage({ action: 'stopTabCapture' }).catch(() => {});
+      return;
+    }
+
+    if (source === 'tab') {
+      // 탭 오디오 캡처 → background 경유
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs[0]) return;
+        chrome.runtime.sendMessage({ action: 'startTabCapture', tabId: tabs[0].id }, (response) => {
+          if (response?.success) {
+            setSttState(true);
+          } else {
+            showToast('탭 오디오 캡처 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
+          }
+        });
+      });
+    } else {
+      // 마이크 (Web Speech API) → content script 경유
+      setSttState(true);
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (!tabs[0]) return;
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'startSttCapture' }).catch(() => {});
+      });
+    }
   });
 
   // 자동 저장: 토글 & 셀렉트
@@ -488,6 +521,7 @@ function setupEventListeners() {
     elements.fontFamily, elements.fontColor, elements.edgeStyle,
     elements.bgColor, elements.windowColor,
     elements.showOriginal, elements.overlayPosition, elements.enableCache,
+    elements.sttSource,
   ].forEach(el => el?.addEventListener('change', () => saveSettings(true)));
 
   // 자동 저장: 슬라이더 (500ms debounce)

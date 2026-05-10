@@ -168,6 +168,14 @@
             <div class="settings-section">
               <h2 data-i18n="heading_speechRecognition">음성 인식 언어</h2>
               <div class="form-group">
+                <label for="sttSource" data-i18n="label_sttSource">오디오 소스</label>
+                <select id="sttSource" class="form-control" disabled>
+                  <option value="mic" data-i18n="sttSource_mic">마이크 (Web Speech API)</option>
+                  <option value="tab" data-i18n="sttSource_tab">탭 오디오</option>
+                </select>
+                <p class="form-help" data-i18n="help_sttSource">마이크 입력 또는 현재 탭의 오디오를 캡처합니다</p>
+              </div>
+              <div class="form-group">
                 <label for="sourceLang" data-i18n="label_sourceLang">원본 언어</label>
                 <select id="sourceLang" class="form-control" disabled>
                   <option value="auto">자동 감지</option>

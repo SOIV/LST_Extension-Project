@@ -30,23 +30,83 @@ function updateBadge(tabId, status) {
 
 // ─── 메시지 수신 (content script → background) ────────────────────────────────
 
-chrome.runtime.onMessage.addListener((message, sender) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const tabId = sender.tab?.id;
-  if (!tabId) return;
 
-  if (message.action === 'subtitleStatus') {
-    const { status } = message;
-    tabSubtitleStatus.set(tabId, status);
-    updateBadge(tabId, status);
+  if (message.action === 'subtitleStatus' && tabId) {
+    tabSubtitleStatus.set(tabId, message.status);
+    updateBadge(tabId, message.status);
+    return;
   }
 
   // 플레이어 패널 ⚙ 설정 버튼 → 팝업 열기
   if (message.action === 'openPopup') {
-    chrome.action.openPopup().catch(() => {
-      // openPopup은 Chrome 127+ / 사용자 제스처 필요. 실패 시 조용히 무시
-    });
+    chrome.action.openPopup().catch(() => {});
+    return;
+  }
+
+  // 탭 오디오 캡처 시작 (팝업 → 백그라운드)
+  if (message.action === 'startTabCapture') {
+    const targetTabId = message.tabId;
+    if (!targetTabId) { sendResponse({ success: false, error: 'No tabId' }); return; }
+    startTabCapture(targetTabId)
+      .then(() => sendResponse({ success: true }))
+      .catch(e => sendResponse({ success: false, error: e.message }));
+    return true;
+  }
+
+  // 탭 오디오 캡처 중지
+  if (message.action === 'stopTabCapture') {
+    stopTabCapture()
+      .then(() => sendResponse({ success: true }));
+    return true;
   }
 });
+
+// ─── 탭 오디오 캡처 ───────────────────────────────────────────────────────────
+
+let tabCaptureActiveTabId = null;
+
+async function hasOffscreenDocument() {
+  try {
+    const contexts = await chrome.runtime.getContexts({
+      contextTypes: ['OFFSCREEN_DOCUMENT'],
+    });
+    return contexts.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+async function startTabCapture(tabId) {
+  const streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId });
+
+  if (!(await hasOffscreenDocument())) {
+    await chrome.offscreen.createDocument({
+      url: chrome.runtime.getURL('offscreen.html'),
+      reasons: ['AUDIO_PLAYBACK'],
+      justification: 'Tab audio capture for realtime STT',
+    });
+  }
+
+  await chrome.runtime.sendMessage({ action: 'tabCaptureStream', streamId });
+  tabCaptureActiveTabId = tabId;
+
+  chrome.tabs.sendMessage(tabId, { action: 'tabCaptureActive' }).catch(() => {});
+}
+
+async function stopTabCapture() {
+  chrome.runtime.sendMessage({ action: 'tabCaptureStop' }).catch(() => {});
+
+  if (await hasOffscreenDocument()) {
+    chrome.offscreen.closeDocument().catch(() => {});
+  }
+
+  if (tabCaptureActiveTabId !== null) {
+    chrome.tabs.sendMessage(tabCaptureActiveTabId, { action: 'tabCaptureInactive' }).catch(() => {});
+    tabCaptureActiveTabId = null;
+  }
+}
 
 // ─── 탭 정리 ──────────────────────────────────────────────────────────────────
 
