@@ -21,6 +21,7 @@ Classification: [_classification.md](_classification.md)
 | planned | [Realtime STT](public/10_extension/realtime-stt.md) | Extension 단독 Web Speech/Whisper API 실시간 자막 |
 | active | [Overlay Renderer](public/10_extension/overlay-renderer.md) | YouTube 오버레이 렌더링 구조 |
 | active | [Settings UI](public/10_extension/settings-ui.md) | 팝업/플레이어 패널 설정 UI |
+| planned | [Streaming Overlay](public/10_extension/streaming-overlay.md) | OBS 연동 및 전용 오버레이 창 (Phase A~C) |
 
 ## Platform
 
