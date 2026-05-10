@@ -60,13 +60,15 @@ const elements = {
   windowOpacityValue: document.getElementById('windowOpacityValue'),
   resetDisplayBtn:    document.getElementById('resetDisplayBtn'),
 
+  // 실시간 탭
+  sttBtn: document.getElementById('sttBtn'),
+
   // 표시 탭 - 실시간
   showOriginal:    document.getElementById('showOriginal'),
   overlayPosition: document.getElementById('overlayPosition'),
   enableCache:     document.getElementById('enableCache'),
 
   // 공통
-  saveBtn: document.getElementById('saveBtn'),
   navItems: document.querySelectorAll('.nav-item:not(.locked)'),
   tabContents: document.querySelectorAll('.tab-content'),
   pageTitle: document.getElementById('pageTitle'),
@@ -120,8 +122,11 @@ function switchTab(tabName) {
   const titleKey = TAB_TITLE_KEYS[tabName];
   elements.pageTitle.textContent = titleKey ? getMessage(titleKey, tabName) : tabName;
 
-  // 저장 버튼: 정보 탭에서는 숨김
-  elements.saveBtn.style.display = tabName === 'about' ? 'none' : '';
+  // STT 토글: 실시간 탭에서만 표시
+  const headerSttToggle = document.getElementById('headerSttToggle');
+  if (headerSttToggle) {
+    headerSttToggle.style.display = tabName === 'realtime' ? 'flex' : 'none';
+  }
 }
 
 /**
@@ -139,6 +144,27 @@ function switchInnerTab(tabEl) {
   tabEl.classList.add('active');
   const content = document.getElementById(`inner-${innerName}`);
   if (content) content.classList.add('active');
+}
+
+let sttListening = false;
+
+function setSttState(listening) {
+  sttListening = listening;
+  chrome.storage.local.set({ sttListening: listening });
+  if (!elements.sttBtn) return;
+  if (listening) {
+    elements.sttBtn.textContent = 'STOP LISTENING';
+    elements.sttBtn.classList.replace('btn-stt-start', 'btn-stt-stop');
+  } else {
+    elements.sttBtn.textContent = 'START LISTENING';
+    elements.sttBtn.classList.replace('btn-stt-stop', 'btn-stt-start');
+  }
+}
+
+let autoSaveTimer = null;
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => saveSettings(true), 500);
 }
 
 /** 기본 표시 설정값 (YouTube 1:1) */
@@ -212,7 +238,7 @@ async function loadSettings() {
 /**
  * 설정 저장
  */
-async function saveSettings() {
+async function saveSettings(silent = false) {
   const settings = {
     // 커뮤니티
     subtitleEnabled: elements.subtitleEnabled?.checked ?? true,
@@ -242,7 +268,7 @@ async function saveSettings() {
             .catch(() => {});
         }
       });
-      showToast(getMessage('toast_saved', '설정이 저장되었습니다.'), 'success');
+      if (!silent) showToast(getMessage('toast_saved', '설정이 저장되었습니다.'), 'success');
       resolve(settings);
     });
   });
@@ -336,6 +362,7 @@ function toggleDebugMode(enabled) {
       c.style.userSelect = 'auto';
       c.querySelectorAll('[disabled]').forEach(el => el.removeAttribute('disabled'));
     });
+    if (elements.sttBtn) elements.sttBtn.removeAttribute('disabled');
     showToast('🔧 디버그 모드 활성화', 'info');
   } else {
     logo.classList.remove('logo--debug');
@@ -351,6 +378,7 @@ function toggleDebugMode(enabled) {
       c.style.userSelect = '';
       c.querySelectorAll('select, input, button').forEach(el => el.setAttribute('disabled', ''));
     });
+    if (elements.sttBtn) elements.sttBtn.setAttribute('disabled', '');
     showToast('디버그 모드 비활성화', 'info');
   }
 }
@@ -440,27 +468,31 @@ function setupEventListeners() {
       if (elements.windowOpacityValue) elements.windowOpacityValue.textContent = OPACITY_MAP[idx] + '%';
     }
     showToast(getMessage('toast_reset', '기본값으로 재설정되었습니다.'), 'info');
+    saveSettings(true);
   });
 
-  // 저장 버튼
-  elements.saveBtn?.addEventListener('click', async () => {
-    elements.saveBtn.disabled = true;
-    try {
-      await saveSettings();
-    } catch (e) {
-      showToast(getMessage('toast_save_error', '설정 저장에 실패했습니다.'), 'error');
-    } finally {
-      elements.saveBtn.disabled = false;
-    }
+  // STT 버튼
+  elements.sttBtn?.addEventListener('click', () => {
+    const next = !sttListening;
+    setSttState(next);
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs[0]) return;
+      const action = next ? 'startSttCapture' : 'stopCapture';
+      chrome.tabs.sendMessage(tabs[0].id, { action }).catch(() => {});
+    });
   });
 
-  // Ctrl+S / Cmd+S
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault();
-      saveSettings();
-    }
-  });
+  // 자동 저장: 토글 & 셀렉트
+  [
+    elements.subtitleEnabled, elements.subtitleLang,
+    elements.fontFamily, elements.fontColor, elements.edgeStyle,
+    elements.bgColor, elements.windowColor,
+    elements.showOriginal, elements.overlayPosition, elements.enableCache,
+  ].forEach(el => el?.addEventListener('change', () => saveSettings(true)));
+
+  // 자동 저장: 슬라이더 (500ms debounce)
+  [elements.overlaySize, elements.fontOpacity, elements.bgOpacity, elements.windowOpacity]
+    .forEach(el => el?.addEventListener('input', scheduleAutoSave));
 }
 
 /**
@@ -472,9 +504,10 @@ async function init() {
   setupEventListeners();
   checkSubtitleStatus();
 
-  // 디버그 모드 복원
-  chrome.storage.local.get(['debugMode'], (result) => {
+  // 디버그 모드 및 STT 상태 복원
+  chrome.storage.local.get(['debugMode', 'sttListening'], (result) => {
     if (result.debugMode) toggleDebugMode(true);
+    if (result.sttListening) setSttState(true);
   });
 }
 

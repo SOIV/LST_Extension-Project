@@ -399,7 +399,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         .then(() => sendResponse({ success: true }))
         .catch(error => sendResponse({ success: false, error: error.message }));
       return true;
-      break;
 
     default:
       sendResponse({ success: false, error: 'Unknown action' });

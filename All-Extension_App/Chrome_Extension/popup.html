@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Stream Translator - 설정</title>
-  <link rel="stylesheet" href="styles/popup-layout.css">
+<link rel="stylesheet" href="styles/popup-layout.css">
   <link rel="stylesheet" href="styles/popup-form.css">
   <link rel="stylesheet" href="styles/popup-ui.css">
 </head>
@@ -67,7 +67,9 @@
         <div class="header-left">
           <h1 id="pageTitle">커뮤니티 자막</h1>
         </div>
-        <button class="btn btn-primary" id="saveBtn">저장</button>
+        <div id="headerSttToggle" style="display:none;">
+          <button id="sttBtn" class="btn btn-stt-start" disabled>START LISTENING</button>
+        </div>
       </header>
 
       <!-- 탭 컨텐츠 -->

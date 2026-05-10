@@ -203,6 +203,49 @@
   background: #f57c00;
 }
 
+.btn-stt-start,
+.btn-stt-stop {
+  font-weight: 600;
+  letter-spacing: 0;
+  word-spacing: normal;
+  font-kerning: normal;
+  white-space: nowrap;
+}
+
+.btn-stt-start {
+  padding: 8px 20px;
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.btn-stt-start:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.btn-stt-stop {
+  padding: 8px 20px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-stt-stop:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+#sttBtn {
+  appearance: none;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0 !important;
+  word-spacing: normal !important;
+  text-rendering: geometricPrecision;
+  white-space: nowrap;
+}
+
 .btn-full {
   width: 100%;
 }
