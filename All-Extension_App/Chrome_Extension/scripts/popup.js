@@ -479,40 +479,39 @@ function setupEventListeners() {
 
   // STT 버튼
   elements.sttBtn?.addEventListener('click', () => {
-    const next    = !sttListening;
-    const source  = elements.sttSource?.value || 'mic';
+    const next   = !sttListening;
+    const source = elements.sttSource?.value || 'tab';
 
-    if (!next) {
-      // 중지: 소스에 상관없이 모두 정지
-      setSttState(false);
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (!tabs[0]) return;
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'stopCapture' }).catch(() => {});
-      });
-      chrome.runtime.sendMessage({ action: 'stopTabCapture' }).catch(() => {});
-      return;
-    }
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (!tab) return;
 
-    if (source === 'tab') {
-      // 탭 오디오 캡처 → background 경유
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (!tabs[0]) return;
-        chrome.runtime.sendMessage({ action: 'startTabCapture', tabId: tabs[0].id }, (response) => {
+      if (!next) {
+        // 중지: 소스 무관하게 모두 정지
+        setSttState(false);
+        chrome.tabs.sendMessage(tab.id, { action: 'stopCapture' }).catch(() => {});
+        chrome.runtime.sendMessage({ action: 'stopTabCapture' }).catch(() => {});
+        chrome.runtime.sendMessage({ action: 'sttStateChange', active: false, tabId: tab.id }).catch(() => {});
+        return;
+      }
+
+      if (source === 'tab') {
+        // 탭 오디오 캡처 → background 경유
+        chrome.runtime.sendMessage({ action: 'startTabCapture', tabId: tab.id }, (response) => {
           if (response?.success) {
             setSttState(true);
+            chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id }).catch(() => {});
           } else {
             showToast('탭 오디오 캡처 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
           }
         });
-      });
-    } else {
-      // 마이크 (Web Speech API) → content script 경유
-      setSttState(true);
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (!tabs[0]) return;
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'startSttCapture' }).catch(() => {});
-      });
-    }
+      } else {
+        // 마이크 (Web Speech API) → content script 경유
+        setSttState(true);
+        chrome.tabs.sendMessage(tab.id, { action: 'startSttCapture' }).catch(() => {});
+        chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id }).catch(() => {});
+      }
+    });
   });
 
   // 자동 저장: 토글 & 셀렉트

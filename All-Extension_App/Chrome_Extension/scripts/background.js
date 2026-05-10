@@ -20,6 +20,7 @@ const BADGE = {
   unavailable: { text: '',    color: '#71717a' }, // 없음
   loading:     { text: '…',   color: '#a1a1aa' }, // 회색
   not_youtube: { text: '',    color: '#71717a' }, // 없음
+  stt_active:  { text: 'STT', color: '#ef4444' }, // 빨간색 (STT 녹음 중)
 };
 
 function updateBadge(tabId, status) {
@@ -60,6 +61,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     stopTabCapture()
       .then(() => sendResponse({ success: true }));
     return true;
+  }
+
+  // STT 활성 상태 → 배지 업데이트
+  if (message.action === 'sttStateChange') {
+    const { active, tabId: sttTabId } = message;
+    if (sttTabId) {
+      if (active) {
+        updateBadge(sttTabId, 'stt_active');
+      } else {
+        const prevStatus = tabSubtitleStatus.get(sttTabId) || 'not_youtube';
+        updateBadge(sttTabId, prevStatus);
+      }
+    }
+    sendResponse({ success: true });
+    return;
   }
 });
 
