@@ -35,6 +35,14 @@
       ],
       "css": ["styles/overlay.css", "styles/panel.css"],
       "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://youtube.com/*"
+      ],
+      "js": ["scripts/stt/stt-content.js"],
+      "run_at": "document_end"
     }
   ],
 
