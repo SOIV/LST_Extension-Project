@@ -56,7 +56,9 @@
 
     // 배지 업데이트 (컨텍스트 무효화 시 무시)
     if (chrome.runtime?.id) {
-      chrome.runtime.sendMessage({ action: 'subtitleStatus', status }).catch(() => {});
+      try {
+        chrome.runtime.sendMessage({ action: 'subtitleStatus', status }).catch(() => {});
+      } catch (_) {}
     }
 
     // 패널 동기화
