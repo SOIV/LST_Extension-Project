@@ -49,6 +49,24 @@ Text Outline은 CSS `-webkit-text-stroke`로 별도 구현하며 `edgeStyle`과 
 - 획 색상: 글꼴 색상 선택과 동일한 팔레트 사용
 - 공통 설정에 포함하여 커뮤니티 자막과 실시간 자막 모두 적용
 
+## Expert Options (고급 설정) - STT 관련
+
+일반 사용자에게는 숨겨두고, 고급 사용자가 접근할 수 있는 세부 조정 항목.
+참고: [Speech Translator](https://chromewebstore.google.com/detail/jodfjmaiakpnmeddgpeflpafebmlhppn) 확장 프로그램의 Expert Options 섹션
+
+| 설정 | 기본값 (참고) | 설명 |
+|---|---|---|
+| Max letters per translation | 265 | 한 번에 번역할 최대 글자 수. 초과 시 강제 컷. [overlay-renderer.md 섹션 9~10](overlay-renderer.md) 참고 |
+| Max letters (Streaming Mode) | 125 | 스트리밍 모드 활성 시 적용되는 별도 최대 글자 수 (더 짧게 끊어서 지연 최소화) |
+| Delay between translations (ms) | 1000 | 연속 번역 요청 사이 최소 대기 시간. API 과호출 방지 및 자막 흔들림 감소 |
+| Number of preserved final translations | 50 | 이전 자막 히스토리 보존 개수. 히스토리 표시 기능 및 컨텍스트 유지에 사용 |
+
+### 배치 방향
+
+- 팝업 UI에서는 기본 숨김 처리
+- 전체 설정 페이지(새 탭)에서 접기/펼치기 패널로 제공 예정
+- 실시간 탭 내 하단 또는 별도 "고급" 내부 탭으로 분리 검토
+
 ## Related Documents
 
 - [Extension Overview](overview.md)
