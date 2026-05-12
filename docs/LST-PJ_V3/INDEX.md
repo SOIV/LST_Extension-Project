@@ -61,6 +61,7 @@ Classification: [_classification.md](_classification.md)
 | Status | Document | Purpose |
 |---|---|---|
 | local-only | `sensitive-draft/50_strategy/revenue-model.md` | 수익 모델 초안, 커밋 제외 |
+| local-only | `sensitive-draft/50_strategy/payment-tax-strategy.md` | 결제 PG, 사업자등록, 세무 상담 전략 초안, 커밋 제외 |
 | local-only | `sensitive-draft/50_strategy/funding.md` | 펀딩 전략 초안, 커밋 제외 |
 | active | [Library Architecture](public/50_strategy/library-architecture.md) | 라이브러리 분리 전략 |
 

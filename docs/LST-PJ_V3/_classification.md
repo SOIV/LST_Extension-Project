@@ -56,6 +56,7 @@ Last updated: 2026-05-10
 | Document | Level | Recommended Action |
 |---|---|---|
 | `sensitive-draft/50_strategy/revenue-model.md` | sensitive-draft | 로컬 전용 유지, 커밋 제외 |
+| `sensitive-draft/50_strategy/payment-tax-strategy.md` | sensitive-draft | 로컬 전용 유지, 커밋 제외. 결제/사업자/세무 판단은 전문가 확인 필요 |
 | `sensitive-draft/50_strategy/funding.md` | sensitive-draft | 로컬 전용 유지, 커밋 제외 |
 | `sensitive-draft/20_platform/outsourcing-draft.md` | sensitive-draft | 로컬 전용 유지, 커밋 제외 |
 | `sensitive-draft/99_archive/2026-05/revenue-strategy-legacy.md` | sensitive-draft | 로컬 전용 유지, 커밋 제외 |
