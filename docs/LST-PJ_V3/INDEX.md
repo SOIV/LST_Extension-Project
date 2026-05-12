@@ -33,6 +33,7 @@ Classification: [_classification.md](_classification.md)
 | in_progress | [Creator Workflow](public/20_platform/creator-workflow.md) | 크리에이터 연동과 승인 흐름 |
 | active | [Account & Trust System](planning/20_platform/account-trust-system.md) | 계정/신뢰도 시스템 |
 | draft | [Reviewer Test Design](planning/20_platform/reviewer-test-design.md) | 언어 시험/검수자 설계 |
+| draft | [Official Artist Lyric Localization](planning/20_platform/official-artist-lyric-localization.md) | 공식 아티스트 음악 영상 다국어 가사 자막 장기 아이디어 |
 | local-only | `sensitive-draft/20_platform/outsourcing-draft.md` | 번역 외주 시스템 초안, 커밋 제외 |
 
 ## Desktop App

@@ -48,6 +48,7 @@ Last updated: 2026-05-10
 | `planning/00_core/roadmap.md` | planning | 공개 가능하지만 확정 약속으로 보이지 않게 주의 |
 | `planning/20_platform/account-trust-system.md` | planning | 정책 초안. 악용 대응/운영 세부는 공개 범위 주의 |
 | `planning/20_platform/reviewer-test-design.md` | planning | 검수자/언어 시험 초안 |
+| `planning/20_platform/official-artist-lyric-localization.md` | planning | 공식 아티스트 음악 영상 다국어 가사 자막 장기 아이디어 |
 | `planning/90_ideas/subtitle-experiments.md` | planning | 실험 아이디어 |
 
 ## Sensitive Drafts
