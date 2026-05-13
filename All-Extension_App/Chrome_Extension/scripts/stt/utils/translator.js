@@ -4,9 +4,10 @@
  */
 
 export const TRANSLATION_ENGINES = {
-  GOOGLE: 'google',
-  PAPAGO: 'papago',
-  DEEPL: 'deepl'
+  GOOGLE:        'google',
+  GOOGLE_SCRIPT: 'google_script',
+  PAPAGO:        'papago',
+  DEEPL:         'deepl'
 };
 
 /**
@@ -244,26 +245,21 @@ export async function translate(text, sourceLang = 'auto', targetLang = 'ko', op
   try {
     switch (engine) {
       case TRANSLATION_ENGINES.GOOGLE:
-        if (apiKey && apiKey.includes('script.google.com')) {
-          // Google Apps Script API
-          translatedText = await translateWithGoogleScript(text, sourceLang, targetLang, apiKey);
-        } else {
-          // Google Public API (기본)
-          translatedText = await translateWithGoogle(text, sourceLang, targetLang);
-        }
+        translatedText = await translateWithGoogle(text, sourceLang, targetLang);
+        break;
+
+      case TRANSLATION_ENGINES.GOOGLE_SCRIPT:
+        if (!apiKey) throw new Error('Google Script URL is required');
+        translatedText = await translateWithGoogleScript(text, sourceLang, targetLang, apiKey);
         break;
 
       case TRANSLATION_ENGINES.PAPAGO:
-        if (!apiKey || !apiSecret) {
-          throw new Error('Papago API requires apiKey and apiSecret');
-        }
+        if (!apiKey || !apiSecret) throw new Error('Papago requires apiKey and apiSecret');
         translatedText = await translateWithPapago(text, sourceLang, targetLang, apiKey, apiSecret);
         break;
 
       case TRANSLATION_ENGINES.DEEPL:
-        if (!apiKey) {
-          throw new Error('DeepL API requires apiKey');
-        }
+        if (!apiKey) throw new Error('DeepL requires apiKey');
         translatedText = await translateWithDeepL(text, sourceLang, targetLang, apiKey);
         break;
 

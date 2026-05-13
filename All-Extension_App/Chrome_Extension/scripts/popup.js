@@ -60,12 +60,19 @@ const elements = {
   windowOpacityValue: document.getElementById('windowOpacityValue'),
   resetDisplayBtn:    document.getElementById('resetDisplayBtn'),
 
-  // 실시간 탭
-  sttBtn:        document.getElementById('sttBtn'),
-  sttSource:     document.getElementById('sttSource'),
-  sttEngine:     document.getElementById('sttEngine'),
-  openaiApiKey:  document.getElementById('openaiApiKey'),
+  // 실시간 탭 - STT
+  sttBtn:         document.getElementById('sttBtn'),
+  sttSource:      document.getElementById('sttSource'),
+  sttEngine:      document.getElementById('sttEngine'),
+  openaiApiKey:   document.getElementById('openaiApiKey'),
   openaiKeyGroup: document.getElementById('openaiKeyGroup'),
+
+  // 실시간 탭 - 번역
+  translationEngine: document.getElementById('translationEngine'),
+  googleScriptUrl:   document.getElementById('googleScriptUrl'),
+  papagoApiKey:      document.getElementById('papagoApiKey'),
+  papagoApiSecret:   document.getElementById('papagoApiSecret'),
+  deeplApiKey:       document.getElementById('deeplApiKey'),
 
   // 표시 탭 - 실시간
   showOriginal:    document.getElementById('showOriginal'),
@@ -238,6 +245,14 @@ async function loadSettings() {
       if (elements.openaiApiKey) elements.openaiApiKey.value = settings.openaiApiKey || '';
       updateSttEngineState(settings.sttSource || 'tab');
 
+      // 번역
+      if (elements.translationEngine) elements.translationEngine.value = settings.translationEngine || 'google';
+      if (elements.googleScriptUrl)   elements.googleScriptUrl.value   = settings.googleScriptUrl   || '';
+      if (elements.papagoApiKey)      elements.papagoApiKey.value      = settings.papagoApiKey      || '';
+      if (elements.papagoApiSecret)   elements.papagoApiSecret.value   = settings.papagoApiSecret   || '';
+      if (elements.deeplApiKey)       elements.deeplApiKey.value       = settings.deeplApiKey       || '';
+      updateTranslationKeyFields(settings.translationEngine || 'google');
+
       resolve(settings);
     });
   });
@@ -269,6 +284,12 @@ async function saveSettings(silent = false) {
     sttSource:    elements.sttSource?.value    || 'tab',
     sttEngine:    elements.sttEngine?.value    || 'whisper',
     openaiApiKey: elements.openaiApiKey?.value || '',
+    // 번역
+    translationEngine: elements.translationEngine?.value || 'google',
+    googleScriptUrl:   elements.googleScriptUrl?.value   || '',
+    papagoApiKey:      elements.papagoApiKey?.value      || '',
+    papagoApiSecret:   elements.papagoApiSecret?.value   || '',
+    deeplApiKey:       elements.deeplApiKey?.value       || '',
   };
 
   return new Promise((resolve) => {
@@ -416,6 +437,16 @@ function updateSttEngineState(source) {
 }
 
 /**
+ * 번역 엔진에 따라 API 키 그룹 표시/숨김
+ */
+function updateTranslationKeyFields(engine) {
+  ['google_script', 'papago', 'deepl'].forEach(e => {
+    const group = document.getElementById(`apiGroup-${e}`);
+    if (group) group.style.display = e === engine ? '' : 'none';
+  });
+}
+
+/**
  * 엔진에 따라 OpenAI API 키 그룹 표시/숨김
  */
 function updateOpenaiKeyVisibility(engine) {
@@ -560,6 +591,12 @@ function setupEventListeners() {
     saveSettings(true);
   });
 
+  // 번역 엔진 변경 시 키 필드 전환
+  elements.translationEngine?.addEventListener('change', () => {
+    updateTranslationKeyFields(elements.translationEngine.value);
+    saveSettings(true);
+  });
+
   // 자동 저장: 토글 & 셀렉트
   [
     elements.subtitleEnabled, elements.subtitleLang,
@@ -567,6 +604,7 @@ function setupEventListeners() {
     elements.bgColor, elements.windowColor,
     elements.showOriginal, elements.overlayPosition, elements.enableCache,
     elements.openaiApiKey,
+    elements.googleScriptUrl, elements.papagoApiKey, elements.papagoApiSecret, elements.deeplApiKey,
   ].forEach(el => el?.addEventListener('change', () => saveSettings(true)));
 
   // 자동 저장: 슬라이더 (500ms debounce)
