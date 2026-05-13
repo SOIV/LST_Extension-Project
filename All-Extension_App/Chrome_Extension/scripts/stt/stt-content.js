@@ -164,9 +164,21 @@
     } else if (message.action === 'tabCaptureInactive') {
       removeOverlay();
       sendResponse({ success: true });
+    } else if (message.action === 'whisperTranscript') {
+      showWhisperResult(message.text, message.translated);
+      sendResponse({ success: true });
     }
     return false;
   });
+
+  /* ─── Whisper 결과 표시 ──────────────────────────────────────── */
+
+  function showWhisperResult(original, translated) {
+    if (!original?.trim()) return;
+    const isSame = !translated || translated.trim() === original.trim();
+    const display = isSame ? original : `${original}\n${translated}`;
+    showSubtitle(display, true);
+  }
 
   console.log('[LST STT] Content script loaded');
 })();

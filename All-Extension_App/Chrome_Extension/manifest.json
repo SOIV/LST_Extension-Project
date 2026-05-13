@@ -15,7 +15,9 @@
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://youtube.com/*",
-    "https://lst-pj.soiv-studio.xyz/*"
+    "https://lst-pj.soiv-studio.xyz/*",
+    "https://api.openai.com/*",
+    "https://translate.googleapis.com/*"
   ],
 
   "background": {

@@ -63,6 +63,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // Whisper 전사 결과 → content script 전달 (offscreen → background → tab)
+  if (message.action === 'whisperTranscript') {
+    if (tabCaptureActiveTabId !== null) {
+      chrome.tabs.sendMessage(tabCaptureActiveTabId, {
+        action:     'whisperTranscript',
+        text:       message.text,
+        translated: message.translated,
+      }).catch(() => {});
+    }
+    sendResponse({ success: true });
+    return;
+  }
+
   // STT 활성 상태 → 배지 업데이트
   if (message.action === 'sttStateChange') {
     const { active, tabId: sttTabId } = message;
@@ -167,6 +180,11 @@ chrome.runtime.onInstalled.addListener(async () => {
     windowOpacity:    '0',
     // 표시 - 실시간
     overlayPosition:  'bottom',
+    // STT
+    sttSource:        'tab',
+    sourceLang:       'auto',
+    targetLang:       'ko',
+    openaiApiKey:     '',
   };
   const missing = {};
   for (const [k, v] of Object.entries(defaults)) {

@@ -1,22 +1,27 @@
 /**
- * LST - Offscreen Document (Tab Audio Capture)
- * 탭 오디오 스트림을 수신하고 재생(음소거 방지) + STT 처리 준비
+ * LST - Offscreen Document (Tab Audio Capture + Whisper STT)
  *
  * 흐름:
  *   background → tabCaptureStream(streamId) → getUserMedia → AudioContext
+ *                                            → MediaRecorder → Whisper API → translate → background
  *   background → tabCaptureStop             → 스트림 정리
- *
- * NOTE: Web Speech API는 마이크 전용이므로 탭 오디오 STT는 외부 API 연동 필요.
- *       현재는 캡처 + 재생만 구현되어 있으며 STT 처리는 TODO 상태.
  */
 
 (function () {
   'use strict';
 
-  let audioCtx    = null;
-  let activeStream = null;
+  // Whisper에 넘길 언어 코드 (ISO 639-1)
+  const LANG_ISO = {
+    'ko': 'ko', 'en': 'en', 'ja': 'ja',
+    'zh-CN': 'zh', 'zh-TW': 'zh',
+    'es': 'es', 'fr': 'fr', 'de': 'de', 'ru': 'ru',
+  };
 
-  /* ─── 메시지 수신 (background → offscreen) ───────────────────────────── */
+  let audioCtx     = null;
+  let activeStream = null;
+  let mediaRecorder = null;
+
+  /* ─── 메시지 수신 ─────────────────────────────────────────────────────────── */
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === 'tabCaptureStream') {
@@ -35,7 +40,7 @@
     }
   });
 
-  /* ─── 캡처 시작 ──────────────────────────────────────────────────────── */
+  /* ─── 캡처 시작 ───────────────────────────────────────────────────────────── */
 
   async function startCapture(streamId) {
     stopCapture();
@@ -53,21 +58,106 @@
     activeStream = stream;
     audioCtx     = new AudioContext();
     const source = audioCtx.createMediaStreamSource(stream);
-
-    // destination에 연결하여 탭 오디오가 음소거되지 않도록 유지
     source.connect(audioCtx.destination);
 
-    // TODO: 외부 STT API 연동 시 아래 패턴으로 오디오 청크 전송
-    // const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
-    // recorder.ondataavailable = (e) => { /* API endpoint로 전송 */ };
-    // recorder.start(1000); // 1초 단위 청크
+    const { openaiApiKey, sourceLang, targetLang } =
+      await chrome.storage.sync.get(['openaiApiKey', 'sourceLang', 'targetLang']);
 
-    console.log('[LST Offscreen] Tab audio capture started, streamId:', streamId);
+    if (openaiApiKey) {
+      startWhisperRecorder(stream, openaiApiKey, sourceLang || 'auto', targetLang || 'ko');
+    } else {
+      console.warn('[LST Offscreen] openaiApiKey not set — Whisper STT disabled');
+    }
+
+    console.log('[LST Offscreen] Tab audio capture started');
   }
 
-  /* ─── 캡처 중지 ──────────────────────────────────────────────────────── */
+  /* ─── Whisper 녹음 ────────────────────────────────────────────────────────── */
+
+  function startWhisperRecorder(stream, apiKey, sourceLang, targetLang) {
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : 'audio/webm';
+
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+    mediaRecorder.ondataavailable = async (e) => {
+      // 너무 작은 청크(묵음 등)는 건너뜀
+      if (e.data.size < 1000) return;
+
+      try {
+        const transcript = await callWhisperApi(e.data, apiKey, sourceLang, mimeType);
+        if (!transcript?.trim()) return;
+
+        const translated = await translateText(transcript, sourceLang, targetLang);
+
+        chrome.runtime.sendMessage({
+          action:     'whisperTranscript',
+          text:       transcript,
+          translated: translated,
+        });
+      } catch (err) {
+        console.error('[LST Offscreen] Whisper error:', err.message);
+      }
+    };
+
+    mediaRecorder.start(3000); // 3초 단위 청크
+    console.log('[LST Offscreen] Whisper recorder started');
+  }
+
+  /* ─── Whisper API 호출 ────────────────────────────────────────────────────── */
+
+  async function callWhisperApi(blob, apiKey, sourceLang, mimeType) {
+    const ext      = mimeType.includes('opus') ? 'webm' : 'webm';
+    const formData = new FormData();
+    formData.append('file', blob, `audio.${ext}`);
+    formData.append('model', 'gpt-4o-mini-transcribe');
+
+    const isoLang = LANG_ISO[sourceLang];
+    if (isoLang) formData.append('language', isoLang);
+
+    const res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body:    formData,
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => res.status);
+      throw new Error(`${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    return data.text ?? '';
+  }
+
+  /* ─── Google Translate (공개 API) ─────────────────────────────────────────── */
+
+  async function translateText(text, sourceLang, targetLang) {
+    if (!targetLang || targetLang === sourceLang) return text;
+
+    const sl  = sourceLang === 'auto' ? 'auto' : (LANG_ISO[sourceLang] || sourceLang);
+    const tl  = LANG_ISO[targetLang] || targetLang;
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+
+    try {
+      const res  = await fetch(url);
+      if (!res.ok) return text;
+      const data = await res.json();
+      return data[0]?.map(i => i[0]).filter(Boolean).join('') || text;
+    } catch {
+      return text;
+    }
+  }
+
+  /* ─── 캡처 중지 ───────────────────────────────────────────────────────────── */
 
   function stopCapture() {
+    if (mediaRecorder?.state !== 'inactive') {
+      mediaRecorder?.stop();
+    }
+    mediaRecorder = null;
+
     activeStream?.getTracks().forEach(t => t.stop());
     activeStream = null;
 
