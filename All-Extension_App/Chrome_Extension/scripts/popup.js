@@ -61,8 +61,11 @@ const elements = {
   resetDisplayBtn:    document.getElementById('resetDisplayBtn'),
 
   // 실시간 탭
-  sttBtn:    document.getElementById('sttBtn'),
-  sttSource: document.getElementById('sttSource'),
+  sttBtn:        document.getElementById('sttBtn'),
+  sttSource:     document.getElementById('sttSource'),
+  sttEngine:     document.getElementById('sttEngine'),
+  openaiApiKey:  document.getElementById('openaiApiKey'),
+  openaiKeyGroup: document.getElementById('openaiKeyGroup'),
 
   // 표시 탭 - 실시간
   showOriginal:    document.getElementById('showOriginal'),
@@ -230,7 +233,10 @@ async function loadSettings() {
       if (elements.showOriginal)    elements.showOriginal.checked    = settings.showOriginal    !== false;
       if (elements.overlayPosition) elements.overlayPosition.value   = settings.overlayPosition || DISPLAY_DEFAULTS.overlayPosition;
       if (elements.enableCache)     elements.enableCache.checked     = settings.enableCache     !== false;
-      if (elements.sttSource)       elements.sttSource.value         = settings.sttSource       || 'tab';
+      if (elements.sttSource)    elements.sttSource.value    = settings.sttSource    || 'tab';
+      if (elements.sttEngine)    elements.sttEngine.value    = settings.sttEngine    || 'whisper';
+      if (elements.openaiApiKey) elements.openaiApiKey.value = settings.openaiApiKey || '';
+      updateSttEngineState(settings.sttSource || 'tab');
 
       resolve(settings);
     });
@@ -260,7 +266,9 @@ async function saveSettings(silent = false) {
     overlayPosition: elements.overlayPosition?.value   || DISPLAY_DEFAULTS.overlayPosition,
     enableCache:     elements.enableCache?.checked     ?? true,
     // 실시간 STT
-    sttSource:       elements.sttSource?.value         || 'tab',
+    sttSource:    elements.sttSource?.value    || 'tab',
+    sttEngine:    elements.sttEngine?.value    || 'whisper',
+    openaiApiKey: elements.openaiApiKey?.value || '',
   };
 
   return new Promise((resolve) => {
@@ -366,8 +374,11 @@ function toggleDebugMode(enabled) {
       c.style.userSelect = 'auto';
       c.querySelectorAll('[disabled]').forEach(el => el.removeAttribute('disabled'));
     });
-    if (elements.sttBtn)    elements.sttBtn.removeAttribute('disabled');
-    if (elements.sttSource) elements.sttSource.removeAttribute('disabled');
+    if (elements.sttBtn)       elements.sttBtn.removeAttribute('disabled');
+    if (elements.sttSource)    elements.sttSource.removeAttribute('disabled');
+    if (elements.openaiApiKey) elements.openaiApiKey.removeAttribute('disabled');
+    // sttEngine은 sttSource 값 기준으로 활성 여부 결정
+    updateSttEngineState(elements.sttSource?.value || 'tab');
     showToast('🔧 디버그 모드 활성화', 'info');
   } else {
     logo.classList.remove('logo--debug');
@@ -383,10 +394,33 @@ function toggleDebugMode(enabled) {
       c.style.userSelect = '';
       c.querySelectorAll('select, input, button').forEach(el => el.setAttribute('disabled', ''));
     });
-    if (elements.sttBtn)    elements.sttBtn.setAttribute('disabled', '');
-    if (elements.sttSource) elements.sttSource.setAttribute('disabled', '');
+    if (elements.sttBtn)       elements.sttBtn.setAttribute('disabled', '');
+    if (elements.sttSource)    elements.sttSource.setAttribute('disabled', '');
+    if (elements.sttEngine)    elements.sttEngine.setAttribute('disabled', '');
+    if (elements.openaiApiKey) elements.openaiApiKey.setAttribute('disabled', '');
     showToast('디버그 모드 비활성화', 'info');
   }
+}
+
+/**
+ * 오디오 소스에 따라 엔진 선택 활성/비활성 및 API 키 그룹 표시/숨김
+ */
+function updateSttEngineState(source) {
+  const isMic = source === 'mic';
+  // 디버그 모드일 때만 disabled 상태 변경 (잠금 상태에서는 건드리지 않음)
+  if (elements.sttEngine && debugMode) {
+    elements.sttEngine.disabled = isMic;
+  }
+  const engine = isMic ? 'webspeech' : (elements.sttEngine?.value || 'whisper');
+  updateOpenaiKeyVisibility(engine);
+}
+
+/**
+ * 엔진에 따라 OpenAI API 키 그룹 표시/숨김
+ */
+function updateOpenaiKeyVisibility(engine) {
+  if (!elements.openaiKeyGroup) return;
+  elements.openaiKeyGroup.style.display = engine === 'webspeech' ? 'none' : '';
 }
 
 /**
@@ -514,13 +548,25 @@ function setupEventListeners() {
     });
   });
 
+  // sttSource 변경 시 엔진 선택 활성/비활성
+  elements.sttSource?.addEventListener('change', () => {
+    updateSttEngineState(elements.sttSource.value);
+    saveSettings(true);
+  });
+
+  // sttEngine 변경 시 API 키 그룹 표시 토글
+  elements.sttEngine?.addEventListener('change', () => {
+    updateOpenaiKeyVisibility(elements.sttEngine.value);
+    saveSettings(true);
+  });
+
   // 자동 저장: 토글 & 셀렉트
   [
     elements.subtitleEnabled, elements.subtitleLang,
     elements.fontFamily, elements.fontColor, elements.edgeStyle,
     elements.bgColor, elements.windowColor,
     elements.showOriginal, elements.overlayPosition, elements.enableCache,
-    elements.sttSource,
+    elements.openaiApiKey,
   ].forEach(el => el?.addEventListener('change', () => saveSettings(true)));
 
   // 자동 저장: 슬라이더 (500ms debounce)

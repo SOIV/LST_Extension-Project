@@ -148,6 +148,7 @@
           <!-- 내부 탭 네비 -->
           <div class="inner-tabs">
             <button class="inner-tab active" data-inner="realtime-language" data-i18n="inner_language">언어</button>
+            <button class="inner-tab" data-inner="realtime-stt" data-i18n="inner_stt">STT</button>
             <button class="inner-tab" data-inner="realtime-translation" data-i18n="inner_translation">번역</button>
             <button class="inner-tab" data-inner="realtime-status" data-i18n="inner_rtStatus">상태</button>
           </div>
@@ -168,14 +169,6 @@
           <div class="inner-content active settings-locked" id="inner-realtime-language">
             <div class="settings-section">
               <h2 data-i18n="heading_speechRecognition">음성 인식 언어</h2>
-              <div class="form-group">
-                <label for="sttSource" data-i18n="label_sttSource">오디오 소스</label>
-                <select id="sttSource" class="form-control" disabled>
-                  <option value="mic" data-i18n="sttSource_mic">마이크 (Web Speech API)</option>
-                  <option value="tab" data-i18n="sttSource_tab" selected>탭 오디오</option>
-                </select>
-                <p class="form-help" data-i18n="help_sttSource">마이크 입력 또는 현재 탭의 오디오를 캡처합니다</p>
-              </div>
               <div class="form-group">
                 <label for="sourceLang" data-i18n="label_sourceLang">원본 언어</label>
                 <select id="sourceLang" class="form-control" disabled>
@@ -204,6 +197,34 @@
                   <option value="de">독일어</option>
                   <option value="ru">러시아어</option>
                 </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- 내부: STT -->
+          <div class="inner-content settings-locked" id="inner-realtime-stt">
+            <div class="settings-section">
+              <h2 data-i18n="heading_sttEngine">STT 엔진</h2>
+              <div class="form-group">
+                <label for="sttSource" data-i18n="label_sttSource">오디오 소스</label>
+                <select id="sttSource" class="form-control" disabled>
+                  <option value="mic" data-i18n="sttSource_mic">마이크 (Web Speech API)</option>
+                  <option value="tab" data-i18n="sttSource_tab" selected>탭 오디오</option>
+                </select>
+                <p class="form-help" data-i18n="help_sttSource">마이크 입력 또는 현재 탭의 오디오를 캡처합니다</p>
+              </div>
+              <div class="form-group">
+                <label for="sttEngine" data-i18n="label_sttEngine">엔진</label>
+                <select id="sttEngine" class="form-control" disabled>
+                  <option value="whisper" data-i18n="sttEngine_whisper">Whisper API (gpt-4o-mini-transcribe)</option>
+                  <option value="realtime" data-i18n="sttEngine_realtime">Realtime API (gpt-realtime-2)</option>
+                </select>
+                <p class="form-help" data-i18n="help_sttEngine">마이크 선택 시 Web Speech API가 자동으로 사용됩니다</p>
+              </div>
+              <div class="form-group" id="openaiKeyGroup">
+                <label for="openaiApiKey" data-i18n="label_openaiApiKey">OpenAI API 키</label>
+                <input type="password" id="openaiApiKey" class="form-control" placeholder="sk-..." disabled>
+                <p class="form-help" data-i18n="help_openaiApiKey">Whisper / Realtime 엔진 사용 시 필요합니다</p>
               </div>
             </div>
           </div>
