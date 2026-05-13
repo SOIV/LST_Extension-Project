@@ -72,23 +72,64 @@
     const source = audioCtx.createMediaStreamSource(stream);
     source.connect(audioCtx.destination);
 
-    const { openaiApiKey, sourceLang, targetLang, sttEngine } =
-      await chrome.storage.sync.get(['openaiApiKey', 'sourceLang', 'targetLang', 'sttEngine']);
+    const stored = await chrome.storage.sync.get([
+      'openaiApiKey', 'sourceLang', 'targetLang', 'sttEngine',
+      'translationEngine', 'googleScriptUrl', 'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
+      'interimTranslationEnabled', 'interimTranslationEngine',
+      'interimGoogleScriptUrl', 'interimPapagoApiKey', 'interimPapagoApiSecret', 'interimDeeplApiKey',
+    ]);
+
+    const {
+      openaiApiKey,
+      sourceLang  = 'auto',
+      targetLang  = 'ko',
+      sttEngine   = 'whisper',
+      translationEngine         = 'google',
+      googleScriptUrl           = '',
+      papagoApiKey              = '',
+      papagoApiSecret           = '',
+      deeplApiKey               = '',
+      interimTranslationEnabled = false,
+      interimTranslationEngine  = 'same',
+      interimGoogleScriptUrl    = '',
+      interimPapagoApiKey       = '',
+      interimPapagoApiSecret    = '',
+      interimDeeplApiKey        = '',
+    } = stored;
+
+    // 메인 번역 옵션
+    const translationOpts = { engine: translationEngine, googleScriptUrl, papagoApiKey, papagoApiSecret, deeplApiKey };
+
+    // 중간 번역 옵션: 비활성 → null / 'same' → 메인과 동일 / 그 외 → 전용 키 사용
+    let interimOpts = null;
+    if (interimTranslationEnabled) {
+      if (interimTranslationEngine === 'same') {
+        interimOpts = translationOpts;
+      } else {
+        interimOpts = {
+          engine:         interimTranslationEngine,
+          googleScriptUrl: interimGoogleScriptUrl,
+          papagoApiKey:    interimPapagoApiKey,
+          papagoApiSecret: interimPapagoApiSecret,
+          deeplApiKey:     interimDeeplApiKey,
+        };
+      }
+    }
 
     if (!openaiApiKey) {
       console.warn('[LST Offscreen] openaiApiKey not set — STT disabled');
     } else if (sttEngine === 'realtime') {
-      await startRealtimeSTT(stream, openaiApiKey, sourceLang || 'auto', targetLang || 'ko');
+      await startRealtimeSTT(stream, openaiApiKey, sourceLang, targetLang, translationOpts, interimOpts);
     } else {
-      startWhisperRecorder(stream, openaiApiKey, sourceLang || 'auto', targetLang || 'ko');
+      startWhisperRecorder(stream, openaiApiKey, sourceLang, targetLang, translationOpts);
     }
 
-    console.log('[LST Offscreen] Tab audio capture started, engine:', sttEngine || 'whisper');
+    console.log('[LST Offscreen] Tab audio capture started, engine:', sttEngine);
   }
 
   /* ─── Whisper 녹음 ────────────────────────────────────────────────────────── */
 
-  function startWhisperRecorder(stream, apiKey, sourceLang, targetLang) {
+  function startWhisperRecorder(stream, apiKey, sourceLang, targetLang, translationOpts) {
     const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
       ? 'audio/webm;codecs=opus'
       : 'audio/webm';
@@ -96,14 +137,13 @@
     mediaRecorder = new MediaRecorder(stream, { mimeType });
 
     mediaRecorder.ondataavailable = async (e) => {
-      // 너무 작은 청크(묵음 등)는 건너뜀
       if (e.data.size < 1000) return;
 
       try {
         const transcript = await callWhisperApi(e.data, apiKey, sourceLang, mimeType);
         if (!transcript?.trim()) return;
 
-        const translated = await translateText(transcript, sourceLang, targetLang);
+        const translated = await translateText(transcript, sourceLang, targetLang, translationOpts);
 
         chrome.runtime.sendMessage({
           action:     'whisperTranscript',
@@ -122,9 +162,8 @@
   /* ─── Whisper API 호출 ────────────────────────────────────────────────────── */
 
   async function callWhisperApi(blob, apiKey, sourceLang, mimeType) {
-    const ext      = mimeType.includes('opus') ? 'webm' : 'webm';
     const formData = new FormData();
-    formData.append('file', blob, `audio.${ext}`);
+    formData.append('file', blob, 'audio.webm');
     formData.append('model', 'gpt-4o-mini-transcribe');
 
     const isoLang = LANG_ISO[sourceLang];
@@ -145,17 +184,39 @@
     return data.text ?? '';
   }
 
-  /* ─── Google Translate (공개 API) ─────────────────────────────────────────── */
+  /* ─── 번역 (다중 엔진) ────────────────────────────────────────────────────── */
 
-  async function translateText(text, sourceLang, targetLang) {
+  async function translateText(text, sourceLang, targetLang, opts = {}) {
     if (!targetLang || targetLang === sourceLang) return text;
 
-    const sl  = sourceLang === 'auto' ? 'auto' : (LANG_ISO[sourceLang] || sourceLang);
-    const tl  = LANG_ISO[targetLang] || targetLang;
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+    const sl = sourceLang === 'auto' ? 'auto' : (LANG_ISO[sourceLang] || sourceLang);
+    const tl = LANG_ISO[targetLang] || targetLang;
 
     try {
-      const res  = await fetch(url);
+      switch (opts.engine) {
+        case 'google_script':
+          if (opts.googleScriptUrl) return await translateWithScript(text, sl, tl, opts.googleScriptUrl);
+          break; // fallthrough to Google
+
+        case 'papago':
+          if (opts.papagoApiKey) return await translateWithPapago(text, sl, tl, opts.papagoApiKey, opts.papagoApiSecret);
+          break;
+
+        case 'deepl':
+          if (opts.deeplApiKey) return await translateWithDeepL(text, sl, tl, opts.deeplApiKey);
+          break;
+      }
+    } catch (err) {
+      console.warn('[LST Offscreen] Translation fallback to Google:', err.message);
+    }
+
+    return translateWithGoogle(text, sl, tl);
+  }
+
+  async function translateWithGoogle(text, sl, tl) {
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+    try {
+      const res = await fetch(url);
       if (!res.ok) return text;
       const data = await res.json();
       return data[0]?.map(i => i[0]).filter(Boolean).join('') || text;
@@ -164,26 +225,73 @@
     }
   }
 
+  async function translateWithScript(text, sl, tl, scriptUrl) {
+    const res = await fetch(scriptUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ text, source: sl, target: tl }),
+    });
+    if (!res.ok) throw new Error(`Script API ${res.status}`);
+    const data = await res.json();
+    return data.translatedText || data.text || text;
+  }
+
+  async function translateWithPapago(text, sl, tl, apiKey, apiSecret) {
+    const res = await fetch('https://naveropenapi.apigw.ntruss.com/nmt/v1/translation', {
+      method:  'POST',
+      headers: {
+        'Content-Type':          'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-NCP-APIGW-API-KEY-ID': apiKey,
+        'X-NCP-APIGW-API-KEY':    apiSecret,
+      },
+      body: `source=${sl}&target=${tl}&text=${encodeURIComponent(text)}`,
+    });
+    if (!res.ok) throw new Error(`Papago API ${res.status}`);
+    const data = await res.json();
+    return data.message.result.translatedText;
+  }
+
+  async function translateWithDeepL(text, sl, tl, apiKey) {
+    const DEEPL_LANG = {
+      'ko': 'KO', 'en': 'EN', 'ja': 'JA', 'zh': 'ZH',
+      'de': 'DE', 'fr': 'FR', 'es': 'ES', 'ru': 'RU',
+    };
+    const targetCode = DEEPL_LANG[tl] || tl.toUpperCase();
+    const sourceCode = (sl && sl !== 'auto') ? (DEEPL_LANG[sl] || sl.toUpperCase()) : '';
+
+    const url = apiKey.includes('free')
+      ? 'https://api-free.deepl.com/v2/translate'
+      : 'https://api.deepl.com/v2/translate';
+
+    const params = new URLSearchParams({ auth_key: apiKey, text, target_lang: targetCode });
+    if (sourceCode) params.append('source_lang', sourceCode);
+
+    const res = await fetch(url, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    params,
+    });
+    if (!res.ok) throw new Error(`DeepL API ${res.status}`);
+    const data = await res.json();
+    return data.translations[0].text;
+  }
+
   /* ─── Realtime WebRTC STT ────────────────────────────────────────────────── */
 
-  async function startRealtimeSTT(stream, apiKey, sourceLang, targetLang) {
+  async function startRealtimeSTT(stream, apiKey, sourceLang, targetLang, translationOpts, interimOpts) {
     const ephemeralKey = await getEphemeralToken(apiKey);
 
     realtimePc = new RTCPeerConnection();
-
-    // OpenAI에서 오는 오디오 트랙 수신 (응답 없는 transcription 모드라도 트랙 등록 필요)
     realtimePc.ontrack = () => {};
 
-    // 탭 오디오 트랙을 OpenAI로 전송
     stream.getAudioTracks().forEach(track => realtimePc.addTrack(track, stream));
 
-    // 이벤트 수신용 데이터 채널
     realtimeDc = realtimePc.createDataChannel('oai-events');
     realtimeDc.onopen  = () => console.log('[LST Realtime] Data channel open');
     realtimeDc.onclose = () => console.log('[LST Realtime] Data channel closed');
     realtimeDc.onmessage = (e) => {
       try {
-        handleRealtimeEvent(JSON.parse(e.data), sourceLang, targetLang);
+        handleRealtimeEvent(JSON.parse(e.data), sourceLang, targetLang, translationOpts, interimOpts);
       } catch (err) {
         console.error('[LST Realtime] Event parse error:', err);
       }
@@ -241,7 +349,7 @@
     return res.text();
   }
 
-  async function handleRealtimeEvent(event, sourceLang, targetLang) {
+  async function handleRealtimeEvent(event, sourceLang, targetLang, translationOpts, interimOpts) {
     switch (event.type) {
       case 'session.created':
         console.log('[LST Realtime] Session ready:', event.session?.id);
@@ -252,12 +360,15 @@
         break;
 
       case 'conversation.item.input_audio_transcription.delta':
-        // interim — 번역 없이 원문만 빠르게 표시
         if (event.delta?.trim()) {
+          let interimTranslated = '';
+          if (interimOpts) {
+            interimTranslated = await translateText(event.delta, sourceLang, targetLang, interimOpts).catch(() => '');
+          }
           chrome.runtime.sendMessage({
             action:     'whisperTranscript',
             text:       event.delta,
-            translated: '',
+            translated: interimTranslated,
             interim:    true,
           });
         }
@@ -267,7 +378,7 @@
         const transcript = event.transcript;
         if (!transcript?.trim()) break;
 
-        const translated = await translateText(transcript, sourceLang, targetLang);
+        const translated = await translateText(transcript, sourceLang, targetLang, translationOpts);
         chrome.runtime.sendMessage({
           action:     'whisperTranscript',
           text:       transcript,

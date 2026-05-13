@@ -67,12 +67,20 @@ const elements = {
   openaiApiKey:   document.getElementById('openaiApiKey'),
   openaiKeyGroup: document.getElementById('openaiKeyGroup'),
 
-  // 실시간 탭 - 번역
-  translationEngine: document.getElementById('translationEngine'),
-  googleScriptUrl:   document.getElementById('googleScriptUrl'),
-  papagoApiKey:      document.getElementById('papagoApiKey'),
-  papagoApiSecret:   document.getElementById('papagoApiSecret'),
-  deeplApiKey:       document.getElementById('deeplApiKey'),
+  // 실시간 탭 - 번역 (메인)
+  translationEngine:          document.getElementById('translationEngine'),
+  googleScriptUrl:            document.getElementById('googleScriptUrl'),
+  papagoApiKey:               document.getElementById('papagoApiKey'),
+  papagoApiSecret:            document.getElementById('papagoApiSecret'),
+  deeplApiKey:                document.getElementById('deeplApiKey'),
+
+  // 실시간 탭 - 번역 (중간)
+  interimTranslationEnabled:  document.getElementById('interimTranslationEnabled'),
+  interimTranslationEngine:   document.getElementById('interimTranslationEngine'),
+  interimGoogleScriptUrl:     document.getElementById('interimGoogleScriptUrl'),
+  interimPapagoApiKey:        document.getElementById('interimPapagoApiKey'),
+  interimPapagoApiSecret:     document.getElementById('interimPapagoApiSecret'),
+  interimDeeplApiKey:         document.getElementById('interimDeeplApiKey'),
 
   // 표시 탭 - 실시간
   showOriginal:    document.getElementById('showOriginal'),
@@ -246,12 +254,26 @@ async function loadSettings() {
       updateSttEngineState(settings.sttSource || 'tab');
 
       // 번역
+      // 메인 번역
       if (elements.translationEngine) elements.translationEngine.value = settings.translationEngine || 'google';
       if (elements.googleScriptUrl)   elements.googleScriptUrl.value   = settings.googleScriptUrl   || '';
       if (elements.papagoApiKey)      elements.papagoApiKey.value      = settings.papagoApiKey      || '';
       if (elements.papagoApiSecret)   elements.papagoApiSecret.value   = settings.papagoApiSecret   || '';
       if (elements.deeplApiKey)       elements.deeplApiKey.value       = settings.deeplApiKey       || '';
       updateTranslationKeyFields(settings.translationEngine || 'google');
+
+      // 중간 번역
+      const interimEnabled = settings.interimTranslationEnabled === true;
+      if (elements.interimTranslationEnabled) elements.interimTranslationEnabled.checked = interimEnabled;
+      const interimEngine = settings.interimTranslationEngine || 'same';
+      if (elements.interimTranslationEngine) elements.interimTranslationEngine.value = interimEngine;
+      if (elements.interimGoogleScriptUrl)  elements.interimGoogleScriptUrl.value  = settings.interimGoogleScriptUrl  || '';
+      if (elements.interimPapagoApiKey)     elements.interimPapagoApiKey.value     = settings.interimPapagoApiKey     || '';
+      if (elements.interimPapagoApiSecret)  elements.interimPapagoApiSecret.value  = settings.interimPapagoApiSecret  || '';
+      if (elements.interimDeeplApiKey)      elements.interimDeeplApiKey.value      = settings.interimDeeplApiKey      || '';
+      const interimEngineGroup = document.getElementById('interimEngineGroup');
+      if (interimEngineGroup) interimEngineGroup.style.display = interimEnabled ? '' : 'none';
+      if (interimEnabled) updateInterimKeyFields(interimEngine);
 
       resolve(settings);
     });
@@ -284,12 +306,19 @@ async function saveSettings(silent = false) {
     sttSource:    elements.sttSource?.value    || 'tab',
     sttEngine:    elements.sttEngine?.value    || 'whisper',
     openaiApiKey: elements.openaiApiKey?.value || '',
-    // 번역
-    translationEngine: elements.translationEngine?.value || 'google',
-    googleScriptUrl:   elements.googleScriptUrl?.value   || '',
-    papagoApiKey:      elements.papagoApiKey?.value      || '',
-    papagoApiSecret:   elements.papagoApiSecret?.value   || '',
-    deeplApiKey:       elements.deeplApiKey?.value       || '',
+    // 번역 - 메인
+    translationEngine:   elements.translationEngine?.value || 'google',
+    googleScriptUrl:     elements.googleScriptUrl?.value   || '',
+    papagoApiKey:        elements.papagoApiKey?.value      || '',
+    papagoApiSecret:     elements.papagoApiSecret?.value   || '',
+    deeplApiKey:         elements.deeplApiKey?.value       || '',
+    // 번역 - 중간
+    interimTranslationEnabled: elements.interimTranslationEnabled?.checked ?? false,
+    interimTranslationEngine:  elements.interimTranslationEngine?.value    || 'same',
+    interimGoogleScriptUrl:    elements.interimGoogleScriptUrl?.value      || '',
+    interimPapagoApiKey:       elements.interimPapagoApiKey?.value         || '',
+    interimPapagoApiSecret:    elements.interimPapagoApiSecret?.value      || '',
+    interimDeeplApiKey:        elements.interimDeeplApiKey?.value          || '',
   };
 
   return new Promise((resolve) => {
@@ -395,9 +424,15 @@ function toggleDebugMode(enabled) {
       c.style.userSelect = 'auto';
       c.querySelectorAll('[disabled]').forEach(el => el.removeAttribute('disabled'));
     });
-    if (elements.sttBtn)       elements.sttBtn.removeAttribute('disabled');
-    if (elements.sttSource)    elements.sttSource.removeAttribute('disabled');
-    if (elements.openaiApiKey) elements.openaiApiKey.removeAttribute('disabled');
+    if (elements.sttBtn)                    elements.sttBtn.removeAttribute('disabled');
+    if (elements.sttSource)                elements.sttSource.removeAttribute('disabled');
+    if (elements.openaiApiKey)             elements.openaiApiKey.removeAttribute('disabled');
+    if (elements.interimTranslationEnabled) elements.interimTranslationEnabled.removeAttribute('disabled');
+    if (elements.interimTranslationEngine)  elements.interimTranslationEngine.removeAttribute('disabled');
+    [
+      elements.interimGoogleScriptUrl, elements.interimPapagoApiKey,
+      elements.interimPapagoApiSecret, elements.interimDeeplApiKey,
+    ].forEach(el => el?.removeAttribute('disabled'));
     // sttEngine은 sttSource 값 기준으로 활성 여부 결정
     updateSttEngineState(elements.sttSource?.value || 'tab');
     showToast('🔧 디버그 모드 활성화', 'info');
@@ -437,11 +472,22 @@ function updateSttEngineState(source) {
 }
 
 /**
- * 번역 엔진에 따라 API 키 그룹 표시/숨김
+ * 메인 번역 엔진에 따라 API 키 그룹 표시/숨김
  */
 function updateTranslationKeyFields(engine) {
   ['google_script', 'papago', 'deepl'].forEach(e => {
     const group = document.getElementById(`apiGroup-${e}`);
+    if (group) group.style.display = e === engine ? '' : 'none';
+  });
+}
+
+/**
+ * 중간 번역 엔진에 따라 API 키 그룹 표시/숨김
+ * 'same' 또는 'google' → 키 불필요
+ */
+function updateInterimKeyFields(engine) {
+  ['google_script', 'papago', 'deepl'].forEach(e => {
+    const group = document.getElementById(`interimApiGroup-${e}`);
     if (group) group.style.display = e === engine ? '' : 'none';
   });
 }
@@ -597,6 +643,21 @@ function setupEventListeners() {
     saveSettings(true);
   });
 
+  // 중간 번역 토글
+  elements.interimTranslationEnabled?.addEventListener('change', () => {
+    const enabled = elements.interimTranslationEnabled.checked;
+    const interimEngineGroup = document.getElementById('interimEngineGroup');
+    if (interimEngineGroup) interimEngineGroup.style.display = enabled ? '' : 'none';
+    if (enabled) updateInterimKeyFields(elements.interimTranslationEngine?.value || 'same');
+    saveSettings(true);
+  });
+
+  // 중간 번역 엔진 변경 시 API 키 그룹 전환
+  elements.interimTranslationEngine?.addEventListener('change', () => {
+    updateInterimKeyFields(elements.interimTranslationEngine.value);
+    saveSettings(true);
+  });
+
   // 자동 저장: 토글 & 셀렉트
   [
     elements.subtitleEnabled, elements.subtitleLang,
@@ -605,6 +666,7 @@ function setupEventListeners() {
     elements.showOriginal, elements.overlayPosition, elements.enableCache,
     elements.openaiApiKey,
     elements.googleScriptUrl, elements.papagoApiKey, elements.papagoApiSecret, elements.deeplApiKey,
+    elements.interimGoogleScriptUrl, elements.interimPapagoApiKey, elements.interimPapagoApiSecret, elements.interimDeeplApiKey,
   ].forEach(el => el?.addEventListener('change', () => saveSettings(true)));
 
   // 자동 저장: 슬라이더 (500ms debounce)

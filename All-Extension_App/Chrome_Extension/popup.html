@@ -233,8 +233,11 @@
           <div class="inner-content settings-locked" id="inner-realtime-translation">
             <div class="settings-section">
               <h2 data-i18n="heading_translationEngine">번역 엔진 선택</h2>
+
+              <!-- ── 메인 번역 ── -->
+              <h3 data-i18n="heading_mainTranslation">메인 번역</h3>
               <div class="form-group">
-                <label for="translationEngine" data-i18n="label_engine">엔진</label>
+                <label for="translationEngine" data-i18n="label_engine">번역 엔진</label>
                 <select id="translationEngine" class="form-control" disabled>
                   <option value="google"        data-i18n="transEngine_google">Google Translate (무료)</option>
                   <option value="google_script" data-i18n="transEngine_googleScript">Google Translate (Script)</option>
@@ -243,7 +246,7 @@
                 </select>
               </div>
 
-              <!-- Google Script URL -->
+              <!-- 메인 번역 API 키 -->
               <div class="api-key-group" id="apiGroup-google_script" style="display:none;">
                 <div class="form-group">
                   <label for="googleScriptUrl" data-i18n="label_googleScriptUrl">Apps Script 배포 URL</label>
@@ -251,8 +254,6 @@
                   <p class="form-help" data-i18n="help_googleScriptUrl">Google Apps Script 웹 앱 배포 URL을 입력하세요</p>
                 </div>
               </div>
-
-              <!-- Papago -->
               <div class="api-key-group" id="apiGroup-papago" style="display:none;">
                 <div class="form-group">
                   <label for="papagoApiKey" data-i18n="label_papagoApiKey">Client ID</label>
@@ -263,14 +264,69 @@
                   <input type="password" id="papagoApiSecret" class="form-control" disabled>
                 </div>
               </div>
-
-              <!-- DeepL -->
               <div class="api-key-group" id="apiGroup-deepl" style="display:none;">
                 <div class="form-group">
                   <label for="deeplApiKey" data-i18n="label_deeplApiKey">API 키</label>
                   <input type="password" id="deeplApiKey" class="form-control" disabled>
                 </div>
               </div>
+
+              <hr class="translation-divider">
+
+              <!-- ── 중간 번역 ── -->
+              <h3 data-i18n="heading_interimTranslation">중간 번역</h3>
+              <div class="form-group">
+                <div class="toggle-row">
+                  <div>
+                    <label data-i18n="label_interimTranslation">중간 번역 사용</label>
+                    <p class="form-help" data-i18n="help_interimTranslation">Realtime STT 중간 결과에도 번역을 표시합니다</p>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="interimTranslationEnabled" disabled>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 중간 번역 엔진 + API 키 (토글 ON 시 표시) -->
+              <div id="interimEngineGroup" style="display:none;">
+                <div class="form-group">
+                  <label for="interimTranslationEngine" data-i18n="label_interimEngine">번역 엔진</label>
+                  <select id="interimTranslationEngine" class="form-control" disabled>
+                    <option value="same"          data-i18n="interimEngine_same">메인 엔진과 동일</option>
+                    <option value="google"        data-i18n="transEngine_google">Google Translate (무료)</option>
+                    <option value="google_script" data-i18n="transEngine_googleScript">Google Translate (Script)</option>
+                    <option value="papago"        data-i18n="transEngine_papago">Papago</option>
+                    <option value="deepl"         data-i18n="transEngine_deepl">DeepL</option>
+                  </select>
+                </div>
+
+                <!-- 중간 번역 API 키 -->
+                <div class="api-key-group" id="interimApiGroup-google_script" style="display:none;">
+                  <div class="form-group">
+                    <label for="interimGoogleScriptUrl" data-i18n="label_googleScriptUrl">Apps Script 배포 URL</label>
+                    <input type="text" id="interimGoogleScriptUrl" class="form-control" placeholder="https://script.google.com/macros/s/..." disabled>
+                    <p class="form-help" data-i18n="help_googleScriptUrl">Google Apps Script 웹 앱 배포 URL을 입력하세요</p>
+                  </div>
+                </div>
+                <div class="api-key-group" id="interimApiGroup-papago" style="display:none;">
+                  <div class="form-group">
+                    <label for="interimPapagoApiKey" data-i18n="label_papagoApiKey">Client ID</label>
+                    <input type="password" id="interimPapagoApiKey" class="form-control" disabled>
+                  </div>
+                  <div class="form-group">
+                    <label for="interimPapagoApiSecret" data-i18n="label_papagoApiSecret">Client Secret</label>
+                    <input type="password" id="interimPapagoApiSecret" class="form-control" disabled>
+                  </div>
+                </div>
+                <div class="api-key-group" id="interimApiGroup-deepl" style="display:none;">
+                  <div class="form-group">
+                    <label for="interimDeeplApiKey" data-i18n="label_deeplApiKey">API 키</label>
+                    <input type="password" id="interimDeeplApiKey" class="form-control" disabled>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
 

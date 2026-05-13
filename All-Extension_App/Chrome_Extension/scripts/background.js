@@ -180,12 +180,19 @@ chrome.runtime.onInstalled.addListener(async () => {
     windowOpacity:    '0',
     // 표시 - 실시간
     overlayPosition:  'bottom',
-    // 번역
-    translationEngine: 'google',
-    googleScriptUrl:   '',
-    papagoApiKey:      '',
-    papagoApiSecret:   '',
-    deeplApiKey:       '',
+    // 번역 - 메인
+    translationEngine:   'google',
+    googleScriptUrl:     '',
+    papagoApiKey:        '',
+    papagoApiSecret:     '',
+    deeplApiKey:         '',
+    // 번역 - 중간
+    interimTranslationEnabled: false,
+    interimTranslationEngine:  'same',
+    interimGoogleScriptUrl:    '',
+    interimPapagoApiKey:       '',
+    interimPapagoApiSecret:    '',
+    interimDeeplApiKey:        '',
     // STT
     sttSource:         'tab',
     sttEngine:         'whisper',
