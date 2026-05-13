@@ -182,6 +182,7 @@ chrome.runtime.onInstalled.addListener(async () => {
     overlayPosition:  'bottom',
     // STT
     sttSource:        'tab',
+    sttEngine:        'whisper',
     sourceLang:       'auto',
     targetLang:       'ko',
     openaiApiKey:     '',
