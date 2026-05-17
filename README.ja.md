@@ -1,6 +1,6 @@
 # Live Stream Translator (LST) Project
 
-YouTube向けのコミュニティ字幕プラットフォーム、Chrome拡張機能、Desktop補助アプリのプロジェクトです。
+YouTube向けのコミュニティ字幕プラットフォーム、ブラウザ拡張機能、Desktop補助アプリのプロジェクトです。
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://www.google.com/chrome/)
@@ -18,7 +18,7 @@ LSTは、YouTube動画やライブ配信でコミュニティ字幕、リアル�
 - **コミュニティ字幕プラットフォーム**: 動画またはチャンネル単位で字幕をアップロード、編集、検索、管理するWebプラットフォーム
 - **Chrome拡張機能**: YouTube上にLSTコミュニティ字幕を独自オーバーレイで表示する拡張機能
 
-また、ブラウザ拡張機能だけでは安定して扱いにくいSTT、オーディオキャプチャ、高度なAI翻訳機能は、**Lite Helper / Desktop App** 側へ分離する方針です。
+また、**STT/翻訳機能**、**Firefoxポート候補**、**Lite Helper / Desktop App** を通じて、ブラウザ拡張機能だけでは安定して扱いにくいSTT、オーディオキャプチャ、高度なAI翻訳機能を分離する方針です。
 
 プラットフォーム: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
 
@@ -27,11 +27,12 @@ LSTは、YouTube動画やライブ配信でコミュニティ字幕、リアル�
 | 領域 | 状態 | メモ |
 |---|---|---|
 | コミュニティ字幕プラットフォーム | 進行中 | ログイン、アップロード、検索、エディタ、クリエイター承認フロー |
-| Chrome拡張機能 | 開発版 | YouTubeコミュニティ字幕の読み込みと独自オーバーレイ表示 |
-| リアルタイムSTT | 設計/計画 | 拡張機能単体STTとDesktop補助STTを分離 |
+| Chrome拡張機能 | 開発版 | YouTubeコミュニティ字幕の読み込み、独自オーバーレイ表示、STT/翻訳機能 |
+| Firefox拡張機能 | 初期ポート | Manifestとロケール中心のポート候補。実際の機能はChrome拡張機能が基準 |
+| リアルタイムSTT | 利用可能/調整中 | 拡張機能単体のWeb Speech/API STTとDesktop補助STTを分離 |
 | Lite Helper | 計画 | ブラウザ制限を補う軽量Desktop補助アプリ |
 | Full Desktop App | 計画 | 高度なSTT、オーディオキャプチャ、AI翻訳、ローカルLLM/Ollama候補 |
-| 公開Docsサイト | 計画 | ユーザー/開発者向けDocsサイトは未作成 |
+| 公開Docsサイト | 計画 | `Docs_web/` 作業領域はあるが、ユーザー/開発者向けDocsサイトは未作成 |
 
 ## 主な機能
 
@@ -48,7 +49,7 @@ LSTは、YouTube動画やライブ配信でコミュニティ字幕、リアル�
 - クリエイターチャンネル連携、ダッシュボード、承認待ちフロー
 - Supabaseによる認証/DBとCloudflare R2によるファイル保存
 
-### Chrome拡張機能
+### ブラウザ拡張機能
 
 - Chrome Extension Manifest V3
 - YouTube動画ページでのコミュニティ字幕検索
@@ -57,11 +58,12 @@ LSTは、YouTube動画やライブ配信でコミュニティ字幕、リアル�
 - YouTube SPAページ遷移の検知
 - ポップアップUIとプレイヤーパネルUI
 - 韓国語、英語、日本語ロケール
-- 今後、リアルタイムSTTと翻訳字幕機能を拡張予定
+- Web Speech、OpenAI Whisper/Realtime、Google Translate、Papago、DeepLベースのSTT/翻訳機能
+- Firefox拡張機能ポート候補フォルダを含む
 
 ### STTと翻訳の方向性
 
-LSTでは、STT/翻訳機能を実行環境ごとに明確に分けます。下の表は現在のリリース状態ではなく、想定する配置方針です。
+LSTでは、STT/翻訳機能を実行環境ごとに明確に分けます。下の表は個別機能の完成度ではなく、想定する配置方針です。
 
 | 機能 | Extension単体 | Lite Helper | Full Desktop App |
 |---|---:|---:|---:|
@@ -79,13 +81,16 @@ LSTでは、STT/翻訳機能を実行環境ごとに明確に分けます。下�
 ```text
 LST_Extension-Project/
 ├── All-Extension_App/
-│   └── Chrome_Extension/          # Chrome拡張機能
+│   ├── Chrome_Extension/          # Chrome拡張機能
+│   │   ├── manifest.json
+│   │   ├── popup.html
+│   │   ├── scripts/community/     # コミュニティ字幕ローダー/パーサー/レンダラー
+│   │   ├── scripts/stt/           # STT/翻訳機能コード
+│   │   ├── styles/
+│   │   └── _locales/              # ko / en / ja
+│   └── Firefox_Extension/         # Firefoxポート候補
 │       ├── manifest.json
-│       ├── popup.html
-│       ├── scripts/community/     # コミュニティ字幕ローダー/パーサー/レンダラー
-│       ├── scripts/stt/           # STT実験/候補コード
-│       ├── styles/
-│       └── _locales/              # ko / en / ja
+│       └── _locales/
 ├── platform/                      # Next.jsコミュニティ字幕プラットフォーム
 │   └── src/app/
 │       ├── [locale]/              # 多言語ページルート
@@ -94,6 +99,7 @@ LST_Extension-Project/
 │       ├── subtitles/
 │       └── upload/
 ├── Desktop_App/                   # Desktop/Lite Helper作業領域
+├── Docs_web/                      # 将来の公開Docsサイト作業領域
 └── docs/
     └── LST-PJ_V3/
         ├── public/                # 公開可能な文書
@@ -128,6 +134,10 @@ LST_Extension-Project/
 | 対象プラットフォーム | YouTube / YouTube Live中心 |
 | 字幕処理 | 独自SRT/VTT/SMI系パーサー |
 | レンダリング | DOMオーバーレイ、requestAnimationFrame同期 |
+| ブラウザSTT | Web Speech API |
+| APIベースSTT | OpenAI Audio API、OpenAI Realtime API |
+| 翻訳エンジン | Google Translate、Papago、DeepL |
+| オーディオキャプチャ | chrome.tabCapture、Offscreen Document |
 | 設定保存 | chrome.storage.sync |
 | ロケール | Chrome `_locales` |
 
@@ -143,6 +153,32 @@ npm run dev
 
 プラットフォームの実行にはSupabase、Cloudflare R2、YouTube APIなどの環境変数が必要です。ローカル開発では `platform/.env.local` を設定してください。
 
+主な環境変数:
+
+| 変数 | 用途 |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | プラットフォーム公開URL |
+| `NEXT_PUBLIC_SUPABASE_URL` | SupabaseプロジェクトURL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `NEXT_PUBLIC_R2_PUBLIC_URL` | 公開字幕ファイルURL |
+| `R2_ENDPOINT` | Cloudflare R2 S3互換エンドポイント |
+| `R2_ACCESS_KEY_ID` | R2 access key |
+| `R2_SECRET_ACCESS_KEY` | R2 secret key |
+| `R2_BUCKET_NAME` | R2バケット名 |
+| `YOUTUBE_API_KEY` | 動画/チャンネルメタデータ取得 |
+| `YOUTUBE_CLIENT_ID` | クリエイターチャンネルOAuth |
+| `YOUTUBE_CLIENT_SECRET` | クリエイターチャンネルOAuth |
+| `YOUTUBE_TOKEN_CIPHER_KEY` | YouTube OAuthトークン暗号化 |
+| `CRON_SECRET` | 内部cron API保護 |
+
+検証コマンド:
+
+```bash
+cd platform
+npm run lint
+npm run build
+```
+
 ### Chrome拡張機能
 
 Chromeウェブストア配布前は、開発者モードでインストールします。
@@ -151,6 +187,8 @@ Chromeウェブストア配布前は、開発者モードでインストール�
 2. **デベロッパーモード** を有効化
 3. **パッケージ化されていない拡張機能を読み込む** を選択
 4. `All-Extension_App/Chrome_Extension` を選択
+
+Firefox拡張機能は現在ポート候補の状態です。実際の開発とテストは `All-Extension_App/Chrome_Extension` を基準に進めます。
 
 ## ドキュメント
 

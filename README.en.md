@@ -1,6 +1,6 @@
 # Live Stream Translator (LST) Project
 
-Community subtitle platform, Chrome extension, and planned desktop helper for YouTube-centered subtitle workflows.
+Community subtitle platform, browser extension, and planned desktop helper for YouTube-centered subtitle workflows.
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://www.google.com/chrome/)
@@ -18,7 +18,7 @@ The current project focus is:
 - **Community subtitle platform**: a web platform for uploading, editing, searching, and managing subtitles by video or channel
 - **Chrome extension**: a browser extension that displays LST community subtitles on YouTube with its own overlay renderer
 
-The project also plans a **Lite Helper / Desktop App** split for STT, audio capture, and advanced AI translation features that are difficult to run reliably inside a browser extension alone.
+The project also includes **STT/translation features**, a **Firefox port candidate**, and a planned **Lite Helper / Desktop App** split for STT, audio capture, and advanced AI translation features that are difficult to run reliably inside a browser extension alone.
 
 Platform: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
 
@@ -27,11 +27,12 @@ Platform: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
 | Area | Status | Notes |
 |---|---|---|
 | Community subtitle platform | In progress | Login, upload, search, editor, creator approval flow |
-| Chrome extension | Developer build | YouTube community subtitle loading and custom overlay rendering |
-| Real-time STT | Design/planned | Split between extension-only STT and desktop-assisted STT |
+| Chrome extension | Developer build | YouTube community subtitle loading, custom overlay rendering, and STT/translation features |
+| Firefox extension | Early port | Manifest and locale-centered port candidate. Actual functionality follows the Chrome extension |
+| Real-time STT | Available/tuning | Split between extension-only Web Speech/API STT and desktop-assisted STT |
 | Lite Helper | Planned | Lightweight desktop helper for browser limitations |
 | Full Desktop App | Planned | Advanced STT, audio capture, AI translation, local LLM/Ollama candidates |
-| Public docs site | Planned | User/developer docs site has not been scaffolded yet |
+| Public docs site | Planned | `Docs_web/` workspace exists, but the user/developer docs site has not been scaffolded yet |
 
 ## Features
 
@@ -48,7 +49,7 @@ Platform: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
 - Creator channel connection, dashboard, and pending approval flow
 - Supabase-backed auth/database and Cloudflare R2 file storage
 
-### Chrome Extension
+### Browser Extension
 
 - Chrome Extension Manifest V3
 - Community subtitle lookup on YouTube video pages
@@ -57,11 +58,12 @@ Platform: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
 - YouTube SPA navigation detection
 - Popup UI and in-player panel UI
 - Korean, English, and Japanese locales
-- Planned expansion for real-time STT and translated subtitles
+- STT/translation features based on Web Speech, OpenAI Whisper/Realtime, Google Translate, Papago, and DeepL
+- Firefox extension port candidate directory included
 
 ### STT and Translation Direction
 
-LST separates STT/translation features by runtime boundary. The table below describes the intended placement, not the current release status.
+LST separates STT/translation features by runtime boundary. The table below describes the intended placement rather than the completion level of each feature.
 
 | Feature | Extension only | Lite Helper | Full Desktop App |
 |---|---:|---:|---:|
@@ -79,13 +81,16 @@ The extension should stay lightweight and immediately usable. Features that requ
 ```text
 LST_Extension-Project/
 ├── All-Extension_App/
-│   └── Chrome_Extension/          # Chrome extension
+│   ├── Chrome_Extension/          # Chrome extension
+│   │   ├── manifest.json
+│   │   ├── popup.html
+│   │   ├── scripts/community/     # Community subtitle loader/parser/renderer
+│   │   ├── scripts/stt/           # STT/translation feature code
+│   │   ├── styles/
+│   │   └── _locales/              # ko / en / ja
+│   └── Firefox_Extension/         # Firefox port candidate
 │       ├── manifest.json
-│       ├── popup.html
-│       ├── scripts/community/     # Community subtitle loader/parser/renderer
-│       ├── scripts/stt/           # STT experiments/candidates
-│       ├── styles/
-│       └── _locales/              # ko / en / ja
+│       └── _locales/
 ├── platform/                      # Next.js community subtitle platform
 │   └── src/app/
 │       ├── [locale]/              # Localized page routes
@@ -94,6 +99,7 @@ LST_Extension-Project/
 │       ├── subtitles/
 │       └── upload/
 ├── Desktop_App/                   # Desktop/Lite Helper workspace
+├── Docs_web/                      # Future public docs site workspace
 └── docs/
     └── LST-PJ_V3/
         ├── public/                # Public-safe documents
@@ -128,6 +134,10 @@ Sensitive business or operations drafts are kept under `docs/LST-PJ_V3/sensitive
 | Target platform | YouTube / YouTube Live first |
 | Subtitle handling | Custom SRT/VTT/SMI-family parser |
 | Rendering | DOM overlay, requestAnimationFrame synchronization |
+| Browser STT | Web Speech API |
+| API-based STT | OpenAI Audio API, OpenAI Realtime API |
+| Translation engines | Google Translate, Papago, DeepL |
+| Audio capture | chrome.tabCapture, Offscreen Document |
 | Settings storage | chrome.storage.sync |
 | Locales | Chrome `_locales` |
 
@@ -143,6 +153,32 @@ npm run dev
 
 The platform requires environment variables for Supabase, Cloudflare R2, YouTube API, and related services. Configure `platform/.env.local` for local development.
 
+Key environment variables:
+
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | Public platform URL |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `NEXT_PUBLIC_R2_PUBLIC_URL` | Public subtitle file URL |
+| `R2_ENDPOINT` | Cloudflare R2 S3-compatible endpoint |
+| `R2_ACCESS_KEY_ID` | R2 access key |
+| `R2_SECRET_ACCESS_KEY` | R2 secret key |
+| `R2_BUCKET_NAME` | R2 bucket name |
+| `YOUTUBE_API_KEY` | Video/channel metadata lookup |
+| `YOUTUBE_CLIENT_ID` | Creator channel OAuth |
+| `YOUTUBE_CLIENT_SECRET` | Creator channel OAuth |
+| `YOUTUBE_TOKEN_CIPHER_KEY` | YouTube OAuth token encryption |
+| `CRON_SECRET` | Internal cron API protection |
+
+Validation commands:
+
+```bash
+cd platform
+npm run lint
+npm run build
+```
+
 ### Chrome Extension
 
 Before Chrome Web Store distribution, install the extension in developer mode.
@@ -151,6 +187,8 @@ Before Chrome Web Store distribution, install the extension in developer mode.
 2. Enable **Developer mode**
 3. Click **Load unpacked**
 4. Select `All-Extension_App/Chrome_Extension`
+
+The Firefox extension is currently a port candidate. Actual development and testing are based on `All-Extension_App/Chrome_Extension`.
 
 ## Documentation
 
