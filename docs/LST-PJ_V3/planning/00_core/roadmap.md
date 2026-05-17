@@ -145,9 +145,9 @@ Last updated: 2026-05-17
 - [x] 팝업: 번역 엔진 선택 / API 키
 - [x] 팝업: 중간 번역 토글 / 엔진
 - [x] 패널 실시간 탭: 침묵 감지 시간 / 최소 표시 시간 (엔진별 조건부 표시)
-- [ ] 팝업/패널: Whisper 모델 선택 (현재 gpt-4o-mini-transcribe 고정)
-- [ ] 팝업/패널: Realtime 모델 선택 (현재 gpt-realtime-whisper 고정)
-- [ ] 팝업 Realtime 모델명 불일치 수정
+- [x] 팝업/패널: Whisper 모델 선택
+- [x] 팝업/패널: Realtime 모델 선택
+- [x] 팝업 Realtime 모델명 불일치 수정
 
 #### 검증
 - [ ] 중간 번역 실제 동작 확인
