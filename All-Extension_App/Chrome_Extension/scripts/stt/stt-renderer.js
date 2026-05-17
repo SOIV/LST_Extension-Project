@@ -231,7 +231,9 @@ const SttRenderer = (() => {
           bottom.style.bottom  = getBottomValue();
           bottom.style.display = 'flex';
           startControlsObserver();
-        } else {
+        } else if (!isInterim) {
+          // 최종 결과에 번역 없을 때만 하단 숨김
+          // interim + 번역 없음: 이전 번역 그대로 유지 (깜빡임 방지)
           bottom.style.display = 'none';
         }
       }

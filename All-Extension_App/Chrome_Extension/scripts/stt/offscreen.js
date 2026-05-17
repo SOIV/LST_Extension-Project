@@ -30,11 +30,12 @@
   let mediaRecorder = null;
 
   // Realtime WebRTC
-  let realtimePc            = null;
-  let realtimeDc            = null;
+  let realtimePc                    = null;
+  let realtimeDc                    = null;
   let realtimeInterimBuffer = '';
-  let realtimeSilenceTimer  = null;
+  let realtimeSilenceTimer  = null;  // 폴백용 수동 침묵 타이머
   let realtimeSilenceMs     = 1500;
+
 
   /* ─── 메시지 수신 ─────────────────────────────────────────────────────────── */
 
@@ -232,7 +233,7 @@
           break;
       }
     } catch (err) {
-      console.warn('[LST Offscreen] Translation fallback to Google:', err.message);
+      console.debug('[LST Offscreen] Translation fallback to Google:', err.message);
     }
 
     return translateWithGoogle(text, sl, tl);
@@ -389,18 +390,44 @@
         console.log('[LST Realtime] Speech detected');
         break;
 
+      case 'input_audio_buffer.speech_stopped': {
+        // 서버 VAD가 발화 끝 감지 → 모든 타이머 취소 후 즉시 flush
+        // completed 이벤트가 곧 도착하면 버퍼가 비어 있어 중복 처리 방지
+        clearTimeout(realtimeSilenceTimer);
+        realtimeSilenceTimer = null;
+        const vadText = realtimeInterimBuffer.trim();
+        realtimeInterimBuffer = '';
+        console.log('[LST Realtime] Speech stopped (server VAD)');
+        if (!vadText) break;
+        const vadTranslated = await translateText(vadText, sourceLang, targetLang, translationOpts);
+        chrome.runtime.sendMessage({ action: 'whisperTranscript', text: vadText, translated: vadTranslated, interim: false });
+        break;
+      }
+
       case 'conversation.item.input_audio_transcription.delta':
         if (event.delta) {
           realtimeInterimBuffer += event.delta;
-          if (realtimeInterimBuffer.trim()) {
-            chrome.runtime.sendMessage({
-              action:     'whisperTranscript',
-              text:       realtimeInterimBuffer,
-              translated: '',
-              interim:    true,
-            });
+          const currentText = realtimeInterimBuffer;
+          if (!currentText.trim()) break;
+
+          // 원문 즉시 표시
+          chrome.runtime.sendMessage({
+            action: 'whisperTranscript', text: currentText, translated: '', interim: true,
+          });
+
+          // 중간 번역: 매 delta마다 즉시 실행 (실시간)
+          // stale 체크로 오래된 결과는 자동 폐기
+          if (interimOpts) {
+            const interimText = currentText;
+            translateText(interimText, sourceLang, targetLang, interimOpts)
+              .then((translated) => {
+                if (interimText !== realtimeInterimBuffer) return; // 스테일 방지
+                chrome.runtime.sendMessage({ action: 'whisperTranscript', text: interimText, translated, interim: true });
+              })
+              .catch(() => {});
           }
-          // 침묵 타이머: VAD 없는 모델(gpt-realtime-whisper)에서 자동 문장 완성
+
+          // 폴백 침묵 타이머 (server VAD가 speech_stopped를 못 보낼 경우 대비)
           clearTimeout(realtimeSilenceTimer);
           realtimeSilenceTimer = setTimeout(async () => {
             const text = realtimeInterimBuffer.trim();
@@ -414,19 +441,16 @@
         break;
 
       case 'conversation.item.input_audio_transcription.completed': {
-        const transcript = event.transcript;
+        // speech_stopped가 이미 flush했으면 buffer가 비어 있음 → 중복 방지
         clearTimeout(realtimeSilenceTimer);
-        realtimeSilenceTimer  = null;
+        realtimeSilenceTimer = null;
+        const remaining = realtimeInterimBuffer.trim();
         realtimeInterimBuffer = '';
-        if (!transcript?.trim()) break;
-
-        const translated = await translateText(transcript, sourceLang, targetLang, translationOpts);
-        chrome.runtime.sendMessage({
-          action:     'whisperTranscript',
-          text:       transcript,
-          translated: translated,
-          interim:    false,
-        });
+        // buffer에 아직 남은 텍스트가 있으면 completed transcript로 최종 처리
+        const finalText = event.transcript?.trim() || remaining;
+        if (!finalText) break;
+        const translated = await translateText(finalText, sourceLang, targetLang, translationOpts);
+        chrome.runtime.sendMessage({ action: 'whisperTranscript', text: finalText, translated, interim: false });
         break;
       }
 
@@ -439,11 +463,11 @@
   function stopRealtimeSTT() {
     realtimeDc?.close();
     realtimePc?.close();
-    realtimeDc            = null;
-    realtimePc            = null;
-    realtimeInterimBuffer = '';
+    realtimeDc                    = null;
+    realtimePc                    = null;
+    realtimeInterimBuffer         = '';
     clearTimeout(realtimeSilenceTimer);
-    realtimeSilenceTimer  = null;
+    realtimeSilenceTimer = null;
     console.log('[LST Realtime] WebRTC connection closed');
   }
 
