@@ -1,6 +1,6 @@
 # Extension Realtime STT
 
-Status: planned
+Status: in_progress (2026-05-17)
 
 Chrome Extension에서 처리하는 실시간 STT 자막 기능을 다룬다.
 Desktop App 없이 Extension 단독으로 사용할 수 있는 STT 경로를 포함한다.

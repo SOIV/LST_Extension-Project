@@ -33,7 +33,7 @@ YouTube 영상/라이브를 대상으로 한 **커뮤니티 자막 플랫폼 + C
 | P3 | 플랫폼 MVP 코어 | in_progress | 70% | 로그인, 업로드/조회, 버전관리, 기본 편집기 동작 |
 | P4 | 플랫폼 MVP 크리에이터 | in_progress | 60% | 채널 연동 + 승인/공개 워크플로우 완료 |
 | P5 | 통합 & 안정화 | planned | 10% | 장애 대응/회귀 방지/성능 기준 충족 |
-| P6 | 실시간 STT (Web Speech) | planned | 0% | 실시간 파이프라인 MVP 검증 |
+| P6 | 실시간 STT | in_progress | 60% | 전체 STT 파이프라인 안정화 + 렌더러/설정 UI 완성 |
 | P7 | 타 플랫폼 지원 | planned | 0% | 1개 추가 플랫폼 MVP 완료 |
 | P8 | 모더레이터 시스템 | planned | 0% | 신고/검수 운영 플로우 구축 |
 | P9 | 성장 기능 | planned | 0% | 신뢰도/팀/검수 자동화/수익화 도입 |
@@ -110,13 +110,48 @@ Status: `planned`
   - [ ] API 사용 범위에 대한(youtube.force-ssl) 데모 영상 녹화
   - [ ] Data access status 처리
 
-### P6. 실시간 STT (Web Speech API)
+### P6. 실시간 STT
 
-Status: `planned`
+Status: `in_progress`
 
-- [ ] 지연시간 목표 정의 (target: 0.5~2s)
-- [ ] STT -> 번역 -> 렌더 파이프라인 연결
-- [ ] 언어별 정확도/지연 비교 리포트
+Last updated: 2026-05-17
+
+#### 파이프라인 — 탭 오디오 캡처
+- [x] 탭 오디오 캡처 (offscreen document, Chrome tabCapture)
+- [x] Whisper API 연동 (3s 청크, stop/restart 완전한 webm 보장)
+- [x] Realtime API 연동 (WebRTC, gpt-realtime-whisper)
+- [x] Realtime API GA 마이그레이션 (/v1/realtime/client_secrets)
+- [x] 침묵 감지 타이머 (gpt-realtime-whisper VAD 미지원 대응)
+- [x] Delta 누적 표시 (Realtime interim 텍스트 자연스럽게 성장)
+- [x] 번역 파이프라인 연결 (Google / Papago / DeepL / Google Script)
+- [x] CORS 허용 (manifest host_permissions — DeepL, Papago)
+
+#### 파이프라인 — 마이크 (Web Speech API)
+- [x] Web Speech API 연동
+- [ ] Web Speech API + 번역 연동 (현재 번역 미적용)
+
+#### 자막 렌더러 (SttRenderer)
+- [x] STT 전용 렌더러 — 상단(원어) / 하단(번역) 2패널
+- [x] 커뮤니티 자막 공통 스타일 시스템 공유
+- [x] 팝업/패널 설정 즉시 반영 (updateSettings)
+- [x] 컨트롤바 자동 회피 (ytp-autohide 감지)
+- [x] 최소 표시 시간 잠금 (completed 자막 → interim 억제)
+
+#### 설정 UI
+- [x] 팝업: 엔진 선택 (Whisper / Realtime)
+- [x] 팝업: 오디오 소스 선택 (탭 / 마이크)
+- [x] 팝업: OpenAI API 키
+- [x] 팝업: 번역 엔진 선택 / API 키
+- [x] 팝업: 중간 번역 토글 / 엔진
+- [x] 패널 실시간 탭: 침묵 감지 시간 / 최소 표시 시간 (엔진별 조건부 표시)
+- [ ] 팝업/패널: Whisper 모델 선택 (현재 gpt-4o-mini-transcribe 고정)
+- [ ] 팝업/패널: Realtime 모델 선택 (현재 gpt-realtime-whisper 고정)
+- [ ] 팝업 Realtime 모델명 불일치 수정
+
+#### 검증
+- [ ] 중간 번역 실제 동작 확인
+- [ ] 언어별 정확도/지연 비교
+- [ ] 지연시간 목표 달성 확인 (target: 0.5~2s)
 
 ### P7. 타 플랫폼 지원
 
