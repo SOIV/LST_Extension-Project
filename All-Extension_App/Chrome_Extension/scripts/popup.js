@@ -10,6 +10,18 @@ let debugMode = false;
 let logoClickCount = 0;
 let logoClickTimer = null;
 
+const SENSITIVE_SETTING_KEYS = [
+  'openaiApiKey',
+  'googleScriptUrl',
+  'papagoApiKey',
+  'papagoApiSecret',
+  'deeplApiKey',
+  'interimGoogleScriptUrl',
+  'interimPapagoApiKey',
+  'interimPapagoApiSecret',
+  'interimDeeplApiKey',
+];
+
 /**
  * i18n 메시지 가져오기
  */
@@ -177,7 +189,6 @@ let sttListening = false;
 
 function setSttState(listening) {
   sttListening = listening;
-  chrome.storage.local.set({ sttListening: listening });
   if (!elements.sttBtn) return;
   if (listening) {
     elements.sttBtn.textContent = 'STOP LISTENING';
@@ -214,13 +225,15 @@ const DISPLAY_DEFAULTS = {
 async function loadSettings() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(null, (settings) => {
-      // 커뮤니티 자막 설정
-      if (elements.subtitleEnabled) {
-        elements.subtitleEnabled.checked = settings.subtitleEnabled !== false;
-      }
-      if (elements.subtitleLang) {
-        elements.subtitleLang.value = settings.subtitleLang || 'auto';
-      }
+      chrome.storage.local.get(SENSITIVE_SETTING_KEYS, (localSettings) => {
+        settings = { ...(settings || {}), ...(localSettings || {}) };
+        // 커뮤니티 자막 설정
+        if (elements.subtitleEnabled) {
+          elements.subtitleEnabled.checked = settings.subtitleEnabled !== false;
+        }
+        if (elements.subtitleLang) {
+          elements.subtitleLang.value = settings.subtitleLang || 'auto';
+        }
 
       // 표시 - 공통
       if (elements.fontFamily)  elements.fontFamily.value  = settings.fontFamily || DISPLAY_DEFAULTS.fontFamily;
@@ -287,7 +300,8 @@ async function loadSettings() {
       if (interimEngineGroup) interimEngineGroup.style.display = interimEnabled ? '' : 'none';
       if (interimEnabled) updateInterimKeyFields(interimEngine);
 
-      resolve(settings);
+        resolve(settings);
+      });
     });
   });
 }
@@ -339,18 +353,35 @@ async function saveSettings(silent = false) {
   };
 
   return new Promise((resolve) => {
-    chrome.storage.sync.set(settings, () => {
-      // 활성 탭에 설정 변경 알림
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          chrome.tabs.sendMessage(tabs[0].id, { action: 'updateSettings', settings })
-            .catch(() => {});
-        }
+    const { syncSettings, localSettings } = splitSettings(settings);
+    chrome.storage.local.set(localSettings, () => {
+      chrome.storage.sync.set(syncSettings, () => {
+        chrome.storage.sync.remove(SENSITIVE_SETTING_KEYS, () => {
+          // 활성 탭에 설정 변경 알림
+          chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs[0]) {
+              chrome.tabs.sendMessage(tabs[0].id, { action: 'updateSettings', settings: syncSettings })
+                .catch(() => {});
+            }
+          });
+          if (!silent) showToast(getMessage('toast_saved', '설정이 저장되었습니다.'), 'success');
+          resolve(settings);
+        });
       });
-      if (!silent) showToast(getMessage('toast_saved', '설정이 저장되었습니다.'), 'success');
-      resolve(settings);
     });
   });
+}
+
+function splitSettings(settings) {
+  const syncSettings = { ...settings };
+  const localSettings = {};
+  for (const key of SENSITIVE_SETTING_KEYS) {
+    if (key in syncSettings) {
+      localSettings[key] = syncSettings[key];
+      delete syncSettings[key];
+    }
+  }
+  return { syncSettings, localSettings };
 }
 
 /**
@@ -658,16 +689,23 @@ function setupEventListeners() {
         chrome.runtime.sendMessage({ action: 'startTabCapture', tabId: tab.id }, (response) => {
           if (response?.success) {
             setSttState(true);
-            chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id }).catch(() => {});
+            chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source }).catch(() => {});
           } else {
             showToast('탭 오디오 캡처 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
           }
         });
       } else {
         // 마이크 (Web Speech API) → content script 경유
-        setSttState(true);
-        chrome.tabs.sendMessage(tab.id, { action: 'startSttCapture' }).catch(() => {});
-        chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id }).catch(() => {});
+        chrome.tabs.sendMessage(tab.id, { action: 'startSttCapture' })
+          .then((response) => {
+            if (response?.success) {
+              setSttState(true);
+              chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source }).catch(() => {});
+            } else {
+              showToast('마이크 STT 시작 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
+            }
+          })
+          .catch((e) => showToast('마이크 STT 시작 실패: ' + (e.message || '알 수 없는 오류'), 'error'));
       }
     });
   });
@@ -738,10 +776,16 @@ async function init() {
   setupEventListeners();
   checkSubtitleStatus();
 
-  // 디버그 모드 및 STT 상태 복원
-  chrome.storage.local.get(['debugMode', 'sttListening'], (result) => {
+  // 디버그 모드 및 현재 탭 STT 상태 복원
+  chrome.storage.local.get(['debugMode'], (result) => {
     if (result.debugMode) toggleDebugMode(true);
-    if (result.sttListening) setSttState(true);
+  });
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    if (!tab) return;
+    chrome.runtime.sendMessage({ action: 'getSttState' }, (state) => {
+      setSttState(!!state?.active && state.tabId === tab.id);
+    });
   });
 }
 

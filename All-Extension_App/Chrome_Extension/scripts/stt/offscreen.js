@@ -34,6 +34,7 @@
   let realtimeDc                    = null;
   let realtimeInterimBuffer = '';
   let realtimeSilenceTimer  = null;  // 폴백용 수동 침묵 타이머
+  let realtimeInterimTranslateTimer = null;
   let realtimeSilenceMs     = 1500;
 
 
@@ -394,7 +395,9 @@
         // 서버 VAD가 발화 끝 감지 → 모든 타이머 취소 후 즉시 flush
         // completed 이벤트가 곧 도착하면 버퍼가 비어 있어 중복 처리 방지
         clearTimeout(realtimeSilenceTimer);
+        clearTimeout(realtimeInterimTranslateTimer);
         realtimeSilenceTimer = null;
+        realtimeInterimTranslateTimer = null;
         const vadText = realtimeInterimBuffer.trim();
         realtimeInterimBuffer = '';
         console.log('[LST Realtime] Speech stopped (server VAD)');
@@ -415,16 +418,20 @@
             action: 'whisperTranscript', text: currentText, translated: '', interim: true,
           });
 
-          // 중간 번역: 매 delta마다 즉시 실행 (실시간)
+          // 중간 번역: delta 폭주를 막기 위해 짧게 디바운스
           // stale 체크로 오래된 결과는 자동 폐기
           if (interimOpts) {
-            const interimText = currentText;
-            translateText(interimText, sourceLang, targetLang, interimOpts)
-              .then((translated) => {
-                if (interimText !== realtimeInterimBuffer) return; // 스테일 방지
-                chrome.runtime.sendMessage({ action: 'whisperTranscript', text: interimText, translated, interim: true });
-              })
-              .catch(() => {});
+            clearTimeout(realtimeInterimTranslateTimer);
+            realtimeInterimTranslateTimer = setTimeout(() => {
+              const interimText = realtimeInterimBuffer;
+              if (!interimText.trim()) return;
+              translateText(interimText, sourceLang, targetLang, interimOpts)
+                .then((translated) => {
+                  if (interimText !== realtimeInterimBuffer) return; // 스테일 방지
+                  chrome.runtime.sendMessage({ action: 'whisperTranscript', text: interimText, translated, interim: true });
+                })
+                .catch(() => {});
+            }, 400);
           }
 
           // 폴백 침묵 타이머 (server VAD가 speech_stopped를 못 보낼 경우 대비)
@@ -443,7 +450,9 @@
       case 'conversation.item.input_audio_transcription.completed': {
         // speech_stopped가 이미 flush했으면 buffer가 비어 있음 → 중복 방지
         clearTimeout(realtimeSilenceTimer);
+        clearTimeout(realtimeInterimTranslateTimer);
         realtimeSilenceTimer = null;
+        realtimeInterimTranslateTimer = null;
         const remaining = realtimeInterimBuffer.trim();
         realtimeInterimBuffer = '';
         // buffer에 아직 남은 텍스트가 있으면 completed transcript로 최종 처리
@@ -467,7 +476,9 @@
     realtimePc                    = null;
     realtimeInterimBuffer         = '';
     clearTimeout(realtimeSilenceTimer);
+    clearTimeout(realtimeInterimTranslateTimer);
     realtimeSilenceTimer = null;
+    realtimeInterimTranslateTimer = null;
     console.log('[LST Realtime] WebRTC connection closed');
   }
 

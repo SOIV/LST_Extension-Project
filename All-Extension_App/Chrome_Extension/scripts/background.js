@@ -12,6 +12,25 @@
 
 /** 탭별 자막 상태: 'loading' | 'available' | 'unavailable' | 'not_youtube' */
 const tabSubtitleStatus = new Map();
+let sttState = { active: false, tabId: null, source: null };
+
+const SENSITIVE_SETTING_KEYS = [
+  'openaiApiKey',
+  'googleScriptUrl',
+  'papagoApiKey',
+  'papagoApiSecret',
+  'deeplApiKey',
+  'interimGoogleScriptUrl',
+  'interimPapagoApiKey',
+  'interimPapagoApiSecret',
+  'interimDeeplApiKey',
+];
+
+const LANG_ISO = {
+  'ko': 'ko', 'en': 'en', 'ja': 'ja',
+  'zh-CN': 'zh', 'zh-TW': 'zh',
+  'es': 'es', 'fr': 'fr', 'de': 'de', 'ru': 'ru',
+};
 
 // ─── 배지 ─────────────────────────────────────────────────────────────────────
 
@@ -63,6 +82,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.action === 'translateText') {
+    translateForContentScript(message)
+      .then(translated => sendResponse({ success: true, translated }))
+      .catch(e => sendResponse({ success: false, error: e.message }));
+    return true;
+  }
+
   // Whisper 전사 결과 → content script 전달 (offscreen → background → tab)
   if (message.action === 'whisperTranscript') {
     if (tabCaptureActiveTabId !== null) {
@@ -79,11 +105,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // STT 활성 상태 → 배지 업데이트
   if (message.action === 'sttStateChange') {
-    const { active, tabId: sttTabId } = message;
+    const { active, tabId: sttTabId, source } = message;
     if (sttTabId) {
       if (active) {
+        if (sttState.active && sttState.tabId !== sttTabId) {
+          const prevTabId = sttState.tabId;
+          chrome.tabs.sendMessage(prevTabId, { action: 'stopCapture' }).catch(() => {});
+          if (tabCaptureActiveTabId === prevTabId) {
+            stopTabCapture().catch(() => {});
+          }
+          updateBadge(prevTabId, tabSubtitleStatus.get(prevTabId) || 'not_youtube');
+        }
+        sttState = { active: true, tabId: sttTabId, source: source || null };
         updateBadge(sttTabId, 'stt_active');
       } else {
+        if (sttState.tabId === sttTabId) {
+          sttState = { active: false, tabId: null, source: null };
+        }
         const prevStatus = tabSubtitleStatus.get(sttTabId) || 'not_youtube';
         updateBadge(sttTabId, prevStatus);
       }
@@ -91,11 +129,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ success: true });
     return;
   }
+
+  if (message.action === 'getSttState') {
+    sendResponse({ success: true, ...sttState });
+    return;
+  }
 });
 
 // ─── 탭 오디오 캡처 ───────────────────────────────────────────────────────────
 
 let tabCaptureActiveTabId = null;
+
+async function getStoredSettings(keys = null) {
+  const syncSettings = await chrome.storage.sync.get(keys);
+  const localSettings = await chrome.storage.local.get(SENSITIVE_SETTING_KEYS);
+  return { ...syncSettings, ...localSettings };
+}
 
 async function hasOffscreenDocument() {
   try {
@@ -109,6 +158,18 @@ async function hasOffscreenDocument() {
 }
 
 async function startTabCapture(tabId) {
+  const settings = await getStoredSettings([
+    'openaiApiKey', 'sourceLang', 'targetLang', 'sttEngine',
+    'translationEngine', 'googleScriptUrl', 'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
+    'interimTranslationEnabled', 'interimTranslationEngine',
+    'interimGoogleScriptUrl', 'interimPapagoApiKey', 'interimPapagoApiSecret', 'interimDeeplApiKey',
+    'sttSilenceMs', 'sttMinDisplayMs', 'whisperModel', 'realtimeModel',
+  ]);
+
+  if (!settings.openaiApiKey) {
+    throw new Error('OpenAI API key is required for tab audio STT');
+  }
+
   const streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId });
 
   if (!(await hasOffscreenDocument())) {
@@ -119,15 +180,14 @@ async function startTabCapture(tabId) {
     });
   }
 
-  const settings = await chrome.storage.sync.get([
-    'openaiApiKey', 'sourceLang', 'targetLang', 'sttEngine',
-    'translationEngine', 'googleScriptUrl', 'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
-    'interimTranslationEnabled', 'interimTranslationEngine',
-    'interimGoogleScriptUrl', 'interimPapagoApiKey', 'interimPapagoApiSecret', 'interimDeeplApiKey',
-    'sttSilenceMs', 'sttMinDisplayMs', 'whisperModel', 'realtimeModel',
-  ]);
+  const response = await chrome.runtime.sendMessage({ action: 'tabCaptureStream', streamId, settings });
+  if (!response?.success) {
+    if (await hasOffscreenDocument()) {
+      chrome.offscreen.closeDocument().catch(() => {});
+    }
+    throw new Error(response?.error || 'Failed to start tab audio capture');
+  }
 
-  await chrome.runtime.sendMessage({ action: 'tabCaptureStream', streamId, settings });
   tabCaptureActiveTabId = tabId;
 
   chrome.tabs.sendMessage(tabId, { action: 'tabCaptureActive' }).catch(() => {});
@@ -142,14 +202,151 @@ async function stopTabCapture() {
 
   if (tabCaptureActiveTabId !== null) {
     chrome.tabs.sendMessage(tabCaptureActiveTabId, { action: 'tabCaptureInactive' }).catch(() => {});
+    if (sttState.tabId === tabCaptureActiveTabId) {
+      sttState = { active: false, tabId: null, source: null };
+    }
     tabCaptureActiveTabId = null;
   }
+}
+
+// ─── 번역 프록시 (content script CORS 회피) ───────────────────────────────────
+
+async function translateForContentScript(message) {
+  const text = message.text || '';
+  if (!text.trim()) return text;
+
+  const settings = await getStoredSettings([
+    'translationEngine', 'interimTranslationEngine',
+    'googleScriptUrl', 'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
+    'interimGoogleScriptUrl', 'interimPapagoApiKey', 'interimPapagoApiSecret', 'interimDeeplApiKey',
+  ]);
+  return translateText(text, message.sourceLang || 'auto', message.targetLang || 'ko', message.opts || {}, settings);
+}
+
+async function translateText(text, sourceLang, targetLang, opts = {}, settings = {}) {
+  if (!targetLang || targetLang === sourceLang) return text;
+
+  const sl = sourceLang === 'auto' ? 'auto' : (LANG_ISO[sourceLang] || sourceLang);
+  const tl = LANG_ISO[targetLang] || targetLang;
+  const scope = opts.scope === 'interim' ? 'interim' : 'main';
+  const engine = opts.engine || (scope === 'interim'
+    ? settings.interimTranslationEngine
+    : settings.translationEngine) || 'google';
+
+  const credentials = getTranslationCredentials(engine, scope, settings);
+
+  try {
+    switch (engine) {
+      case 'google_script':
+        if (credentials.googleScriptUrl) {
+          return await translateWithScript(text, sl, tl, credentials.googleScriptUrl);
+        }
+        break;
+      case 'papago':
+        if (credentials.papagoApiKey && credentials.papagoApiSecret) {
+          return await translateWithPapago(text, sl, tl, credentials.papagoApiKey, credentials.papagoApiSecret);
+        }
+        break;
+      case 'deepl':
+        if (credentials.deeplApiKey) {
+          return await translateWithDeepL(text, sl, tl, credentials.deeplApiKey);
+        }
+        break;
+    }
+  } catch (err) {
+    console.debug('[LST Background] Translation fallback to Google:', err.message);
+  }
+
+  return translateWithGoogle(text, sl, tl);
+}
+
+function getTranslationCredentials(engine, scope, settings) {
+  if (scope === 'interim') {
+    return {
+      googleScriptUrl: settings.interimGoogleScriptUrl || '',
+      papagoApiKey:    settings.interimPapagoApiKey || '',
+      papagoApiSecret: settings.interimPapagoApiSecret || '',
+      deeplApiKey:     settings.interimDeeplApiKey || '',
+    };
+  }
+  return {
+    googleScriptUrl: settings.googleScriptUrl || '',
+    papagoApiKey:    settings.papagoApiKey || '',
+    papagoApiSecret: settings.papagoApiSecret || '',
+    deeplApiKey:     settings.deeplApiKey || '',
+  };
+}
+
+async function translateWithGoogle(text, sl, tl) {
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return text;
+    const data = await res.json();
+    return data[0]?.map(i => i[0]).filter(Boolean).join('') || text;
+  } catch {
+    return text;
+  }
+}
+
+async function translateWithScript(text, sl, tl, scriptUrl) {
+  const res = await fetch(scriptUrl, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ text, source: sl, target: tl }),
+  });
+  if (!res.ok) throw new Error(`Script API ${res.status}`);
+  const data = await res.json();
+  return data.translatedText || data.text || text;
+}
+
+async function translateWithPapago(text, sl, tl, apiKey, apiSecret) {
+  const res = await fetch('https://naveropenapi.apigw.ntruss.com/nmt/v1/translation', {
+    method:  'POST',
+    headers: {
+      'Content-Type':           'application/x-www-form-urlencoded; charset=UTF-8',
+      'X-NCP-APIGW-API-KEY-ID': apiKey,
+      'X-NCP-APIGW-API-KEY':    apiSecret,
+    },
+    body: `source=${sl}&target=${tl}&text=${encodeURIComponent(text)}`,
+  });
+  if (!res.ok) throw new Error(`Papago API ${res.status}`);
+  const data = await res.json();
+  return data.message.result.translatedText;
+}
+
+async function translateWithDeepL(text, sl, tl, apiKey) {
+  const DEEPL_LANG = {
+    'ko': 'KO', 'en': 'EN', 'ja': 'JA', 'zh': 'ZH',
+    'de': 'DE', 'fr': 'FR', 'es': 'ES', 'ru': 'RU',
+  };
+  const targetCode = DEEPL_LANG[tl] || tl.toUpperCase();
+  const sourceCode = (sl && sl !== 'auto') ? (DEEPL_LANG[sl] || sl.toUpperCase()) : '';
+  const url = apiKey.includes(':fx')
+    ? 'https://api-free.deepl.com/v2/translate'
+    : 'https://api.deepl.com/v2/translate';
+  const params = new URLSearchParams({ auth_key: apiKey, text, target_lang: targetCode });
+  if (sourceCode) params.append('source_lang', sourceCode);
+  const res = await fetch(url, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body:    params,
+  });
+  if (!res.ok) throw new Error(`DeepL API ${res.status}`);
+  const data = await res.json();
+  return data.translations[0].text;
 }
 
 // ─── 탭 정리 ──────────────────────────────────────────────────────────────────
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   tabSubtitleStatus.delete(tabId);
+  if (tabCaptureActiveTabId === tabId) {
+    stopTabCapture().catch(() => {});
+  }
+  if (sttState.tabId === tabId) {
+    sttState = { active: false, tabId: null, source: null };
+  }
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -173,6 +370,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.runtime.onInstalled.addListener(async () => {
   // 없는 키만 기본값으로 채워줌 (기존 사용자 설정 보존)
   const existing = await chrome.storage.sync.get(null);
+  const existingLocal = await chrome.storage.local.get(SENSITIVE_SETTING_KEYS);
   const defaults = {
     subtitleEnabled:  true,
     subtitleLang:     'auto',
@@ -191,23 +389,14 @@ chrome.runtime.onInstalled.addListener(async () => {
     overlayPosition:  'bottom',
     // 번역 - 메인
     translationEngine:   'google',
-    googleScriptUrl:     '',
-    papagoApiKey:        '',
-    papagoApiSecret:     '',
-    deeplApiKey:         '',
     // 번역 - 중간
     interimTranslationEnabled: false,
     interimTranslationEngine:  'same',
-    interimGoogleScriptUrl:    '',
-    interimPapagoApiKey:       '',
-    interimPapagoApiSecret:    '',
-    interimDeeplApiKey:        '',
     // STT
     sttSource:         'tab',
     sttEngine:         'whisper',
     sourceLang:        'auto',
     targetLang:        'ko',
-    openaiApiKey:      '',
     sttSilenceMs:      1500,
     sttMinDisplayMs:   4000,
     whisperModel:      'gpt-4o-mini-transcribe',
@@ -220,5 +409,15 @@ chrome.runtime.onInstalled.addListener(async () => {
   if (Object.keys(missing).length > 0) {
     await chrome.storage.sync.set(missing);
   }
+  const migratedSensitive = {};
+  for (const key of SENSITIVE_SETTING_KEYS) {
+    if (existing[key] && !existingLocal[key]) {
+      migratedSensitive[key] = existing[key];
+    }
+  }
+  if (Object.keys(migratedSensitive).length > 0) {
+    await chrome.storage.local.set(migratedSensitive);
+  }
+  await chrome.storage.sync.remove(SENSITIVE_SETTING_KEYS);
   console.log('[LST] onInstalled — settings checked');
 });

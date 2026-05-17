@@ -17,13 +17,6 @@
     'es': 'es-ES', 'fr': 'fr-FR', 'de': 'de-DE', 'ru': 'ru-RU',
   };
 
-  // ISO 639-1 언어 코드 (번역 API용)
-  const LANG_ISO = {
-    'ko': 'ko', 'en': 'en', 'ja': 'ja',
-    'zh-CN': 'zh', 'zh-TW': 'zh',
-    'es': 'es', 'fr': 'fr', 'de': 'de', 'ru': 'ru',
-  };
-
   let recognition      = null;
   let isRecognizing    = false;
   let autoRestart      = false;
@@ -50,92 +43,20 @@
   async function translateText(text, sourceLang, targetLang, opts = {}) {
     if (!targetLang || targetLang === sourceLang) return text;
 
-    const sl = sourceLang === 'auto' ? 'auto' : (LANG_ISO[sourceLang] || sourceLang);
-    const tl = LANG_ISO[targetLang] || targetLang;
-
     try {
-      switch (opts.engine) {
-        case 'google_script':
-          if (opts.googleScriptUrl) return await translateWithScript(text, sl, tl, opts.googleScriptUrl);
-          break;
-
-        case 'papago':
-          if (opts.papagoApiKey) return await translateWithPapago(text, sl, tl, opts.papagoApiKey, opts.papagoApiSecret);
-          break;
-
-        case 'deepl':
-          if (opts.deeplApiKey) return await translateWithDeepL(text, sl, tl, opts.deeplApiKey);
-          break;
-      }
+      const response = await chrome.runtime.sendMessage({
+        action: 'translateText',
+        text,
+        sourceLang,
+        targetLang,
+        opts,
+      });
+      if (response?.success) return response.translated || text;
     } catch (err) {
-      // fetch 취소(중단) 등 예상 가능한 실패는 debug 레벨로만 기록
-      console.debug('[LST STT] Translation fallback to Google:', err.message);
+      console.debug('[LST STT] Background translation failed:', err.message);
     }
 
-    return translateWithGoogle(text, sl, tl);
-  }
-
-  async function translateWithGoogle(text, sl, tl) {
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
-    try {
-      const res = await fetch(url);
-      if (!res.ok) return text;
-      const data = await res.json();
-      return data[0]?.map(i => i[0]).filter(Boolean).join('') || text;
-    } catch {
-      return text;
-    }
-  }
-
-  async function translateWithScript(text, sl, tl, scriptUrl) {
-    const res = await fetch(scriptUrl, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ text, source: sl, target: tl }),
-    });
-    if (!res.ok) throw new Error(`Script API ${res.status}`);
-    const data = await res.json();
-    return data.translatedText || data.text || text;
-  }
-
-  async function translateWithPapago(text, sl, tl, apiKey, apiSecret) {
-    const res = await fetch('https://naveropenapi.apigw.ntruss.com/nmt/v1/translation', {
-      method:  'POST',
-      headers: {
-        'Content-Type':           'application/x-www-form-urlencoded; charset=UTF-8',
-        'X-NCP-APIGW-API-KEY-ID': apiKey,
-        'X-NCP-APIGW-API-KEY':    apiSecret,
-      },
-      body: `source=${sl}&target=${tl}&text=${encodeURIComponent(text)}`,
-    });
-    if (!res.ok) throw new Error(`Papago API ${res.status}`);
-    const data = await res.json();
-    return data.message.result.translatedText;
-  }
-
-  async function translateWithDeepL(text, sl, tl, apiKey) {
-    const DEEPL_LANG = {
-      'ko': 'KO', 'en': 'EN', 'ja': 'JA', 'zh': 'ZH',
-      'de': 'DE', 'fr': 'FR', 'es': 'ES', 'ru': 'RU',
-    };
-    const targetCode = DEEPL_LANG[tl] || tl.toUpperCase();
-    const sourceCode = (sl && sl !== 'auto') ? (DEEPL_LANG[sl] || sl.toUpperCase()) : '';
-
-    const url = apiKey.includes(':fx')
-      ? 'https://api-free.deepl.com/v2/translate'
-      : 'https://api.deepl.com/v2/translate';
-
-    const params = new URLSearchParams({ auth_key: apiKey, text, target_lang: targetCode });
-    if (sourceCode) params.append('source_lang', sourceCode);
-
-    const res = await fetch(url, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body:    params,
-    });
-    if (!res.ok) throw new Error(`DeepL API ${res.status}`);
-    const data = await res.json();
-    return data.translations[0].text;
+    return text;
   }
 
   /* ─── 버퍼 정리 헬퍼 ────────────────────────────────────── */
@@ -157,24 +78,27 @@
 
   /* ─── STT 시작/중지 ─────────────────────────────────────── */
 
-  function startRecognition() {
+  function getSyncSettings(keys) {
+    return new Promise((resolve) => {
+      chrome.storage.sync.get(keys, (settings) => resolve(settings || {}));
+    });
+  }
+
+  async function startRecognition() {
     if (!SpeechRecognition) {
       console.warn('[LST STT] Web Speech API not supported');
-      return;
+      return false;
     }
-    if (isRecognizing) return;
+    if (isRecognizing) return true;
 
     const storageKeys = [
       'sourceLang', 'targetLang',
-      'translationEngine', 'googleScriptUrl',
-      'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
+      'translationEngine',
       'sttSilenceMs',
       'interimTranslationEnabled', 'interimTranslationEngine',
-      'interimGoogleScriptUrl',
-      'interimPapagoApiKey', 'interimPapagoApiSecret', 'interimDeeplApiKey',
     ];
 
-    chrome.storage.sync.get(storageKeys, (s) => {
+    const s = await getSyncSettings(storageKeys);
       const sourceLang = s.sourceLang || 'auto';
       const targetLang = s.targetLang || 'ko';
       const lang       = LANG_BCP47[sourceLang] || '';
@@ -184,11 +108,8 @@
 
       // 메인 번역 옵션
       const translationOpts = {
-        engine:          s.translationEngine || 'google',
-        googleScriptUrl: s.googleScriptUrl   || '',
-        papagoApiKey:    s.papagoApiKey      || '',
-        papagoApiSecret: s.papagoApiSecret   || '',
-        deeplApiKey:     s.deeplApiKey       || '',
+        engine: s.translationEngine || 'google',
+        scope:  'main',
       };
 
       // 중간 번역 옵션
@@ -198,11 +119,8 @@
           interimOpts = translationOpts;
         } else {
           interimOpts = {
-            engine:          s.interimTranslationEngine || 'google',
-            googleScriptUrl: s.interimGoogleScriptUrl   || '',
-            papagoApiKey:    s.interimPapagoApiKey      || '',
-            papagoApiSecret: s.interimPapagoApiSecret   || '',
-            deeplApiKey:     s.interimDeeplApiKey       || '',
+            engine: s.interimTranslationEngine || 'google',
+            scope:  'interim',
           };
         }
       }
@@ -312,9 +230,15 @@
       };
 
       autoRestart = true;
-      try { recognition.start(); }
-      catch (e) { console.error('[LST STT] Failed to start:', e); }
-    });
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error('[LST STT] Failed to start:', e);
+        autoRestart = false;
+        recognition = null;
+        return false;
+      }
+    return true;
   }
 
   function stopRecognition() {
@@ -331,8 +255,13 @@
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === 'startSttCapture') {
-      startRecognition();
-      sendResponse({ success: true });
+      startRecognition()
+        .then(started => sendResponse({
+          success: !!started,
+          error: started ? undefined : 'Web Speech API failed to start',
+        }))
+        .catch(e => sendResponse({ success: false, error: e.message }));
+      return true;
 
     } else if (message.action === 'stopCapture') {
       stopRecognition();
