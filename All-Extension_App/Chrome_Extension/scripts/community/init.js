@@ -28,6 +28,12 @@
       bgOpacity:     currentSettings.bgOpacity     || '75',
       windowColor:   currentSettings.windowColor   || 'black',
       windowOpacity: currentSettings.windowOpacity || '0',
+      // STT 설정
+      sttEngine:       currentSettings.sttEngine       || 'whisper',
+      whisperModel:    currentSettings.whisperModel    || 'gpt-4o-mini-transcribe',
+      realtimeModel:   currentSettings.realtimeModel   || 'gpt-realtime-whisper',
+      sttSilenceMs:    currentSettings.sttSilenceMs    ?? 1500,
+      sttMinDisplayMs: currentSettings.sttMinDisplayMs ?? 4000,
       // 콜백
       onToggle: (enabled) => {
         currentSettings.subtitleEnabled = enabled;
@@ -43,6 +49,8 @@
         Object.assign(currentSettings, changed);
         if (chrome.runtime?.id) chrome.storage.sync.set(changed);
         SubtitleLoader.updateSettings(changed);
+        // STT 렌더러가 로드된 경우 공통 설정 즉시 반영
+        if (typeof SttRenderer !== 'undefined') SttRenderer.updateSettings(changed);
       },
     });
   }
@@ -126,7 +134,7 @@
         if (message.settings) {
           Object.assign(currentSettings, message.settings);
           SubtitleLoader.updateSettings(message.settings);
-          // 패널 토글/언어 표시 동기화
+          if (typeof SttRenderer !== 'undefined') SttRenderer.updateSettings(message.settings);
           syncPanel(subtitleStatus, subtitleLanguages, subtitleTrackInfo);
         }
         sendResponse({ success: true });

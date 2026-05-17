@@ -61,11 +61,15 @@ const elements = {
   resetDisplayBtn:    document.getElementById('resetDisplayBtn'),
 
   // 실시간 탭 - STT
-  sttBtn:         document.getElementById('sttBtn'),
-  sttSource:      document.getElementById('sttSource'),
-  sttEngine:      document.getElementById('sttEngine'),
-  openaiApiKey:   document.getElementById('openaiApiKey'),
-  openaiKeyGroup: document.getElementById('openaiKeyGroup'),
+  sttBtn:              document.getElementById('sttBtn'),
+  sttSource:           document.getElementById('sttSource'),
+  sttEngine:           document.getElementById('sttEngine'),
+  whisperModel:        document.getElementById('whisperModel'),
+  whisperModelGroup:   document.getElementById('whisperModelGroup'),
+  realtimeModel:       document.getElementById('realtimeModel'),
+  realtimeModelGroup:  document.getElementById('realtimeModelGroup'),
+  openaiApiKey:        document.getElementById('openaiApiKey'),
+  openaiKeyGroup:      document.getElementById('openaiKeyGroup'),
 
   // 실시간 탭 - 번역 (메인)
   translationEngine:          document.getElementById('translationEngine'),
@@ -250,8 +254,12 @@ async function loadSettings() {
       if (elements.enableCache)     elements.enableCache.checked     = settings.enableCache     !== false;
       if (elements.sttSource)    elements.sttSource.value    = settings.sttSource    || 'tab';
       if (elements.sttEngine)    elements.sttEngine.value    = settings.sttEngine    || 'whisper';
+      if (elements.whisperModel) elements.whisperModel.value = settings.whisperModel || 'gpt-4o-mini-transcribe';
+      if (elements.realtimeModel)elements.realtimeModel.value= settings.realtimeModel|| 'gpt-realtime-whisper';
       if (elements.openaiApiKey) elements.openaiApiKey.value = settings.openaiApiKey || '';
       updateSttEngineState(settings.sttSource || 'tab');
+      updateModelVisibility(settings.sttEngine || 'whisper');
+      updateEngineHelp(settings.sttEngine || 'whisper');
 
       // 번역
       // 메인 번역
@@ -303,9 +311,11 @@ async function saveSettings(silent = false) {
     overlayPosition: elements.overlayPosition?.value   || DISPLAY_DEFAULTS.overlayPosition,
     enableCache:     elements.enableCache?.checked     ?? true,
     // 실시간 STT
-    sttSource:    elements.sttSource?.value    || 'tab',
-    sttEngine:    elements.sttEngine?.value    || 'whisper',
-    openaiApiKey: elements.openaiApiKey?.value || '',
+    sttSource:     elements.sttSource?.value     || 'tab',
+    sttEngine:     elements.sttEngine?.value     || 'whisper',
+    whisperModel:  elements.whisperModel?.value  || 'gpt-4o-mini-transcribe',
+    realtimeModel: elements.realtimeModel?.value || 'gpt-realtime-whisper',
+    openaiApiKey:  elements.openaiApiKey?.value  || '',
     // 번역 - 메인
     translationEngine:   elements.translationEngine?.value || 'google',
     googleScriptUrl:     elements.googleScriptUrl?.value   || '',
@@ -435,6 +445,7 @@ function toggleDebugMode(enabled) {
     ].forEach(el => el?.removeAttribute('disabled'));
     // sttEngine은 sttSource 값 기준으로 활성 여부 결정
     updateSttEngineState(elements.sttSource?.value || 'tab');
+    updateModelVisibility(elements.sttEngine?.value || 'whisper');
     showToast('🔧 디버그 모드 활성화', 'info');
   } else {
     logo.classList.remove('logo--debug');
@@ -498,6 +509,22 @@ function updateInterimKeyFields(engine) {
 function updateOpenaiKeyVisibility(engine) {
   if (!elements.openaiKeyGroup) return;
   elements.openaiKeyGroup.style.display = engine === 'webspeech' ? 'none' : '';
+}
+
+function updateEngineHelp(engine) {
+  const helpWhisper  = document.getElementById('sttEngineHelp-whisper');
+  const helpRealtime = document.getElementById('sttEngineHelp-realtime');
+  if (!helpWhisper || !helpRealtime) return;
+  helpWhisper.style.display  = engine === 'realtime' ? 'none' : '';
+  helpRealtime.style.display = engine === 'realtime' ? '' : 'none';
+}
+
+function updateModelVisibility(engine) {
+  if (elements.whisperModelGroup)  elements.whisperModelGroup.style.display  = engine === 'whisper'  ? '' : 'none';
+  if (elements.realtimeModelGroup) elements.realtimeModelGroup.style.display = engine === 'realtime' ? '' : 'none';
+  // 모델 select disabled 상태도 팝업 잠금 상태에 맞게 동기화
+  if (elements.whisperModel  && debugMode) elements.whisperModel.disabled  = engine !== 'whisper';
+  if (elements.realtimeModel && debugMode) elements.realtimeModel.disabled = engine !== 'realtime';
 }
 
 /**
@@ -631,9 +658,11 @@ function setupEventListeners() {
     saveSettings(true);
   });
 
-  // sttEngine 변경 시 API 키 그룹 표시 토글
+  // sttEngine 변경 시 API 키 그룹 + 모델 선택 + 설명 전환
   elements.sttEngine?.addEventListener('change', () => {
     updateOpenaiKeyVisibility(elements.sttEngine.value);
+    updateModelVisibility(elements.sttEngine.value);
+    updateEngineHelp(elements.sttEngine.value);
     saveSettings(true);
   });
 

@@ -55,6 +55,21 @@ const LSTPanel = (() => {
   const SIZE_STEPS    = ['50','75','100','150','200','300','400'];
   const OPACITY_STEPS = ['0','25','50','75','100'];
 
+  const SILENCE_OPTIONS = [
+    { value: '500',  label: '0.5초' },
+    { value: '1000', label: '1초' },
+    { value: '1500', label: '1.5초' },
+    { value: '2000', label: '2초' },
+    { value: '3000', label: '3초' },
+  ];
+  const MIN_DISPLAY_OPTIONS = [
+    { value: '2000', label: '2초' },
+    { value: '3000', label: '3초' },
+    { value: '4000', label: '4초' },
+    { value: '5000', label: '5초' },
+    { value: '6000', label: '6초' },
+  ];
+
   const DISPLAY_DEFAULTS = {
     fontFamily:    'proportional-sans-serif',
     fontColor:     'white',
@@ -76,6 +91,12 @@ const LSTPanel = (() => {
     info:         null,
     // 표시 설정
     ...DISPLAY_DEFAULTS,
+    // 실시간 STT 설정
+    sttEngine:       'whisper',
+    whisperModel:    'gpt-4o-mini-transcribe',
+    realtimeModel:   'gpt-realtime-whisper',
+    sttSilenceMs:    1500,
+    sttMinDisplayMs: 4000,
     // 콜백
     onToggle:        null,
     onLangChange:    null,
@@ -272,81 +293,146 @@ const LSTPanel = (() => {
     if (!body) return;
 
     body.innerHTML = `
-      <div class="lst-setting-group">
-        <div class="lst-setting-item">
-          <span class="lst-setting-label">글꼴 모음</span>
-          <select class="lst-setting-select" id="lst-set-fontFamily">
-            ${buildOptions(FONT_FAMILY_OPTIONS, state.fontFamily)}
-          </select>
-        </div>
-        <div class="lst-setting-item">
-          <span class="lst-setting-label">글꼴 색상</span>
-          <select class="lst-setting-select" id="lst-set-fontColor">
-            ${buildOptions(COLOR_OPTIONS, state.fontColor)}
-          </select>
-        </div>
-        <div class="lst-setting-item">
-          <div class="lst-setting-row-top">
-            <span class="lst-setting-label">글꼴 불투명도</span>
-            <span class="lst-setting-val" id="lst-set-fontOpacity-val">${state.fontOpacity}%</span>
+      <!-- 탭 헤더 -->
+      <div class="lst-settings-tabs">
+        <button class="lst-settings-tab lst-settings-tab--active" data-tab="common">공통</button>
+        <button class="lst-settings-tab" data-tab="realtime">실시간</button>
+      </div>
+
+      <!-- 공통 탭 -->
+      <div class="lst-settings-tab-body" id="lst-tab-common">
+        <div class="lst-setting-group">
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">글꼴 모음</span>
+            <select class="lst-setting-select" id="lst-set-fontFamily">
+              ${buildOptions(FONT_FAMILY_OPTIONS, state.fontFamily)}
+            </select>
           </div>
-          <input type="range" class="lst-setting-range" id="lst-set-fontOpacity"
-            min="0" max="4" step="1" value="${opacityToIndex(state.fontOpacity)}">
-        </div>
-        <div class="lst-setting-item">
-          <div class="lst-setting-row-top">
-            <span class="lst-setting-label">글꼴 크기</span>
-            <span class="lst-setting-val" id="lst-set-overlaySize-val">${state.overlaySize}%</span>
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">글꼴 색상</span>
+            <select class="lst-setting-select" id="lst-set-fontColor">
+              ${buildOptions(COLOR_OPTIONS, state.fontColor)}
+            </select>
           </div>
-          <input type="range" class="lst-setting-range" id="lst-set-overlaySize"
-            min="0" max="6" step="1" value="${sizeToIndex(state.overlaySize)}">
+          <div class="lst-setting-item">
+            <div class="lst-setting-row-top">
+              <span class="lst-setting-label">글꼴 불투명도</span>
+              <span class="lst-setting-val" id="lst-set-fontOpacity-val">${state.fontOpacity}%</span>
+            </div>
+            <input type="range" class="lst-setting-range" id="lst-set-fontOpacity"
+              min="0" max="4" step="1" value="${opacityToIndex(state.fontOpacity)}">
+          </div>
+          <div class="lst-setting-item">
+            <div class="lst-setting-row-top">
+              <span class="lst-setting-label">글꼴 크기</span>
+              <span class="lst-setting-val" id="lst-set-overlaySize-val">${state.overlaySize}%</span>
+            </div>
+            <input type="range" class="lst-setting-range" id="lst-set-overlaySize"
+              min="0" max="6" step="1" value="${sizeToIndex(state.overlaySize)}">
+          </div>
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">글자 테두리</span>
+            <select class="lst-setting-select" id="lst-set-edgeStyle">
+              ${buildOptions(EDGE_STYLE_OPTIONS, state.edgeStyle)}
+            </select>
+          </div>
         </div>
-        <div class="lst-setting-item">
-          <span class="lst-setting-label">글자 테두리</span>
-          <select class="lst-setting-select" id="lst-set-edgeStyle">
-            ${buildOptions(EDGE_STYLE_OPTIONS, state.edgeStyle)}
-          </select>
+        <div class="lst-panel-divider"></div>
+        <div class="lst-setting-group">
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">배경 색상</span>
+            <select class="lst-setting-select" id="lst-set-bgColor">
+              ${buildOptions(COLOR_OPTIONS, state.bgColor)}
+            </select>
+          </div>
+          <div class="lst-setting-item">
+            <div class="lst-setting-row-top">
+              <span class="lst-setting-label">배경 불투명도</span>
+              <span class="lst-setting-val" id="lst-set-bgOpacity-val">${state.bgOpacity}%</span>
+            </div>
+            <input type="range" class="lst-setting-range" id="lst-set-bgOpacity"
+              min="0" max="4" step="1" value="${opacityToIndex(state.bgOpacity)}">
+          </div>
+        </div>
+        <div class="lst-panel-divider"></div>
+        <div class="lst-setting-group">
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">창 색상</span>
+            <select class="lst-setting-select" id="lst-set-windowColor">
+              ${buildOptions(COLOR_OPTIONS, state.windowColor)}
+            </select>
+          </div>
+          <div class="lst-setting-item">
+            <div class="lst-setting-row-top">
+              <span class="lst-setting-label">창 불투명도</span>
+              <span class="lst-setting-val" id="lst-set-windowOpacity-val">${state.windowOpacity}%</span>
+            </div>
+            <input type="range" class="lst-setting-range" id="lst-set-windowOpacity"
+              min="0" max="4" step="1" value="${opacityToIndex(state.windowOpacity)}">
+          </div>
+        </div>
+        <div class="lst-panel-divider"></div>
+        <div class="lst-setting-group">
+          <button class="lst-reset-btn" id="lst-set-reset">재설정</button>
         </div>
       </div>
-      <div class="lst-panel-divider"></div>
-      <div class="lst-setting-group">
-        <div class="lst-setting-item">
-          <span class="lst-setting-label">배경 색상</span>
-          <select class="lst-setting-select" id="lst-set-bgColor">
-            ${buildOptions(COLOR_OPTIONS, state.bgColor)}
-          </select>
-        </div>
-        <div class="lst-setting-item">
-          <div class="lst-setting-row-top">
-            <span class="lst-setting-label">배경 불투명도</span>
-            <span class="lst-setting-val" id="lst-set-bgOpacity-val">${state.bgOpacity}%</span>
+
+      <!-- 실시간 탭 -->
+      <div class="lst-settings-tab-body lst-hidden" id="lst-tab-realtime">
+        ${state.sttEngine === 'realtime' ? `
+        <div class="lst-setting-group">
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">Realtime 모델</span>
+            <select class="lst-setting-select" id="lst-set-realtimeModel">
+              <option value="gpt-realtime-whisper"${state.realtimeModel === 'gpt-realtime-whisper' ? ' selected' : ''}>gpt-realtime-whisper (전사 전용)</option>
+              <option value="gpt-realtime"${state.realtimeModel === 'gpt-realtime' ? ' selected' : ''}>gpt-realtime</option>
+              <option value="gpt-realtime-mini"${state.realtimeModel === 'gpt-realtime-mini' ? ' selected' : ''}>gpt-realtime-mini</option>
+              <option value="gpt-realtime-translate"${state.realtimeModel === 'gpt-realtime-translate' ? ' selected' : ''}>gpt-realtime-translate (음성 번역)</option>
+            </select>
           </div>
-          <input type="range" class="lst-setting-range" id="lst-set-bgOpacity"
-            min="0" max="4" step="1" value="${opacityToIndex(state.bgOpacity)}">
-        </div>
-      </div>
-      <div class="lst-panel-divider"></div>
-      <div class="lst-setting-group">
-        <div class="lst-setting-item">
-          <span class="lst-setting-label">창 색상</span>
-          <select class="lst-setting-select" id="lst-set-windowColor">
-            ${buildOptions(COLOR_OPTIONS, state.windowColor)}
-          </select>
-        </div>
-        <div class="lst-setting-item">
-          <div class="lst-setting-row-top">
-            <span class="lst-setting-label">창 불투명도</span>
-            <span class="lst-setting-val" id="lst-set-windowOpacity-val">${state.windowOpacity}%</span>
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">침묵 감지 시간</span>
+            <select class="lst-setting-select" id="lst-set-sttSilenceMs">
+              ${buildOptions(SILENCE_OPTIONS, String(state.sttSilenceMs))}
+            </select>
           </div>
-          <input type="range" class="lst-setting-range" id="lst-set-windowOpacity"
-            min="0" max="4" step="1" value="${opacityToIndex(state.windowOpacity)}">
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">최소 표시 시간</span>
+            <select class="lst-setting-select" id="lst-set-sttMinDisplayMs">
+              ${buildOptions(MIN_DISPLAY_OPTIONS, String(state.sttMinDisplayMs))}
+            </select>
+          </div>
         </div>
-      </div>
-      <div class="lst-panel-divider"></div>
-      <div class="lst-setting-group">
-        <button class="lst-reset-btn" id="lst-set-reset">재설정</button>
+        ` : `
+        <div class="lst-setting-group">
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">Whisper 모델</span>
+            <select class="lst-setting-select" id="lst-set-whisperModel">
+              <option value="gpt-4o-mini-transcribe"${state.whisperModel === 'gpt-4o-mini-transcribe' ? ' selected' : ''}>gpt-4o-mini-transcribe</option>
+              <option value="gpt-4o-transcribe"${state.whisperModel === 'gpt-4o-transcribe' ? ' selected' : ''}>gpt-4o-transcribe</option>
+              <option value="whisper-1"${state.whisperModel === 'whisper-1' ? ' selected' : ''}>whisper-1</option>
+            </select>
+          </div>
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">최소 표시 시간</span>
+            <select class="lst-setting-select" id="lst-set-sttMinDisplayMs">
+              ${buildOptions(MIN_DISPLAY_OPTIONS, String(state.sttMinDisplayMs))}
+            </select>
+          </div>
+        </div>
+        `}
       </div>
     `;
+
+    // 탭 전환
+    body.querySelectorAll('.lst-settings-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        body.querySelectorAll('.lst-settings-tab').forEach(t => t.classList.remove('lst-settings-tab--active'));
+        body.querySelectorAll('.lst-settings-tab-body').forEach(t => t.classList.add('lst-hidden'));
+        tab.classList.add('lst-settings-tab--active');
+        body.querySelector(`#lst-tab-${tab.dataset.tab}`)?.classList.remove('lst-hidden');
+      });
+    });
 
     bindSettingsEvents(body);
   }
@@ -379,6 +465,30 @@ const LSTPanel = (() => {
         state[key] = val;
         body.querySelector(`#${id}-val`).textContent = val + '%';
         dispatchSetting(key, val);
+      });
+    });
+
+    // 실시간 STT select (정수값)
+    const sttIntSelectMap = {
+      'lst-set-sttSilenceMs':    'sttSilenceMs',
+      'lst-set-sttMinDisplayMs': 'sttMinDisplayMs',
+    };
+    Object.entries(sttIntSelectMap).forEach(([id, key]) => {
+      body.querySelector(`#${id}`)?.addEventListener('change', (e) => {
+        state[key] = parseInt(e.target.value, 10);
+        dispatchSetting(key, parseInt(e.target.value, 10));
+      });
+    });
+
+    // 실시간 STT select (문자열값 — 모델명)
+    const sttStrSelectMap = {
+      'lst-set-whisperModel':  'whisperModel',
+      'lst-set-realtimeModel': 'realtimeModel',
+    };
+    Object.entries(sttStrSelectMap).forEach(([id, key]) => {
+      body.querySelector(`#${id}`)?.addEventListener('change', (e) => {
+        state[key] = e.target.value;
+        dispatchSetting(key, e.target.value);
       });
     });
 

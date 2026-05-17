@@ -30,14 +30,17 @@
   let mediaRecorder = null;
 
   // Realtime WebRTC
-  let realtimePc = null;
-  let realtimeDc = null;
+  let realtimePc            = null;
+  let realtimeDc            = null;
+  let realtimeInterimBuffer = '';
+  let realtimeSilenceTimer  = null;
+  let realtimeSilenceMs     = 1500;
 
   /* ─── 메시지 수신 ─────────────────────────────────────────────────────────── */
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === 'tabCaptureStream') {
-      startCapture(message.streamId)
+      startCapture(message.streamId, message.settings || {})
         .then(() => sendResponse({ success: true }))
         .catch(e => {
           console.error('[LST Offscreen] Capture failed:', e);
@@ -54,7 +57,7 @@
 
   /* ─── 캡처 시작 ───────────────────────────────────────────────────────────── */
 
-  async function startCapture(streamId) {
+  async function startCapture(streamId, stored) {
     stopCapture();
 
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -72,18 +75,14 @@
     const source = audioCtx.createMediaStreamSource(stream);
     source.connect(audioCtx.destination);
 
-    const stored = await chrome.storage.sync.get([
-      'openaiApiKey', 'sourceLang', 'targetLang', 'sttEngine',
-      'translationEngine', 'googleScriptUrl', 'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
-      'interimTranslationEnabled', 'interimTranslationEngine',
-      'interimGoogleScriptUrl', 'interimPapagoApiKey', 'interimPapagoApiSecret', 'interimDeeplApiKey',
-    ]);
-
     const {
       openaiApiKey,
       sourceLang  = 'auto',
       targetLang  = 'ko',
-      sttEngine   = 'whisper',
+      sttEngine    = 'whisper',
+      whisperModel  = 'gpt-4o-mini-transcribe',
+      realtimeModel = 'gpt-realtime-whisper',
+      sttSilenceMs: silenceMs = 1500,
       translationEngine         = 'google',
       googleScriptUrl           = '',
       papagoApiKey              = '',
@@ -116,12 +115,14 @@
       }
     }
 
+    realtimeSilenceMs = silenceMs;
+
     if (!openaiApiKey) {
       console.warn('[LST Offscreen] openaiApiKey not set — STT disabled');
     } else if (sttEngine === 'realtime') {
-      await startRealtimeSTT(stream, openaiApiKey, sourceLang, targetLang, translationOpts, interimOpts);
+      await startRealtimeSTT(stream, openaiApiKey, sourceLang, targetLang, translationOpts, interimOpts, realtimeModel);
     } else {
-      startWhisperRecorder(stream, openaiApiKey, sourceLang, targetLang, translationOpts);
+      startWhisperRecorder(stream, openaiApiKey, sourceLang, targetLang, translationOpts, whisperModel);
     }
 
     console.log('[LST Offscreen] Tab audio capture started, engine:', sttEngine);
@@ -129,42 +130,66 @@
 
   /* ─── Whisper 녹음 ────────────────────────────────────────────────────────── */
 
-  function startWhisperRecorder(stream, apiKey, sourceLang, targetLang, translationOpts) {
+  function startWhisperRecorder(stream, apiKey, sourceLang, targetLang, translationOpts, model = 'gpt-4o-mini-transcribe') {
     const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
       ? 'audio/webm;codecs=opus'
       : 'audio/webm';
 
-    mediaRecorder = new MediaRecorder(stream, { mimeType });
+    let chunks = [];
 
-    mediaRecorder.ondataavailable = async (e) => {
-      if (e.data.size < 1000) return;
+    // stop() 호출 시 ondataavailable + onstop 순서로 완전한 webm 파일이 만들어짐.
+    // start(timeslice) 방식은 첫 청크 이후 헤더가 없어 Whisper가 파싱 불가.
+    function next() {
+      const rec = new MediaRecorder(stream, { mimeType });
 
-      try {
-        const transcript = await callWhisperApi(e.data, apiKey, sourceLang, mimeType);
-        if (!transcript?.trim()) return;
+      rec.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
 
-        const translated = await translateText(transcript, sourceLang, targetLang, translationOpts);
+      rec.onstop = async () => {
+        const blob = new Blob(chunks, { type: mimeType });
+        chunks = [];
 
-        chrome.runtime.sendMessage({
-          action:     'whisperTranscript',
-          text:       transcript,
-          translated: translated,
-        });
-      } catch (err) {
-        console.error('[LST Offscreen] Whisper error:', err.message);
-      }
-    };
+        if (blob.size >= 1000) {
+          try {
+            const transcript = await callWhisperApi(blob, apiKey, sourceLang, mimeType, model);
+            if (transcript?.trim()) {
+              const translated = await translateText(transcript, sourceLang, targetLang, translationOpts);
+              chrome.runtime.sendMessage({
+                action:     'whisperTranscript',
+                text:       transcript,
+                translated: translated,
+              });
+            }
+          } catch (err) {
+            console.error('[LST Offscreen] Whisper error:', err.message);
+          }
+        }
 
-    mediaRecorder.start(3000); // 3초 단위 청크
+        // mediaRecorder가 null이면 stopCapture()가 호출된 것 → 재시작 안 함
+        if (mediaRecorder !== null) {
+          mediaRecorder = next();
+        }
+      };
+
+      rec.start();
+      setTimeout(() => {
+        if (rec.state === 'recording') rec.stop();
+      }, 3000);
+
+      return rec;
+    }
+
+    mediaRecorder = next();
     console.log('[LST Offscreen] Whisper recorder started');
   }
 
   /* ─── Whisper API 호출 ────────────────────────────────────────────────────── */
 
-  async function callWhisperApi(blob, apiKey, sourceLang, mimeType) {
+  async function callWhisperApi(blob, apiKey, sourceLang, mimeType, model = 'gpt-4o-mini-transcribe') {
     const formData = new FormData();
     formData.append('file', blob, 'audio.webm');
-    formData.append('model', 'gpt-4o-mini-transcribe');
+    formData.append('model', model);
 
     const isoLang = LANG_ISO[sourceLang];
     if (isoLang) formData.append('language', isoLang);
@@ -259,7 +284,7 @@
     const targetCode = DEEPL_LANG[tl] || tl.toUpperCase();
     const sourceCode = (sl && sl !== 'auto') ? (DEEPL_LANG[sl] || sl.toUpperCase()) : '';
 
-    const url = apiKey.includes('free')
+    const url = apiKey.includes(':fx')
       ? 'https://api-free.deepl.com/v2/translate'
       : 'https://api.deepl.com/v2/translate';
 
@@ -278,8 +303,8 @@
 
   /* ─── Realtime WebRTC STT ────────────────────────────────────────────────── */
 
-  async function startRealtimeSTT(stream, apiKey, sourceLang, targetLang, translationOpts, interimOpts) {
-    const ephemeralKey = await getEphemeralToken(apiKey);
+  async function startRealtimeSTT(stream, apiKey, sourceLang, targetLang, translationOpts, interimOpts, model = 'gpt-realtime-whisper') {
+    const ephemeralKey = await getEphemeralToken(apiKey, sourceLang, model);
 
     realtimePc = new RTCPeerConnection();
     realtimePc.ontrack = () => {};
@@ -306,16 +331,24 @@
     console.log('[LST Realtime] WebRTC connection established');
   }
 
-  async function getEphemeralToken(apiKey) {
-    const res = await fetch('https://api.openai.com/v1/realtime/sessions', {
+  async function getEphemeralToken(apiKey, sourceLang, model = 'gpt-realtime-whisper') {
+    const transcription = { model };
+    const isoLang = LANG_ISO[sourceLang];
+    if (isoLang && sourceLang !== 'auto') transcription.language = isoLang;
+
+    const res = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
       method:  'POST',
       headers: {
         Authorization:  `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-realtime-2',
-        input_audio_transcription: { model: 'gpt-realtime-whisper' },
+        session: {
+          type: 'transcription',
+          audio: {
+            input: { transcription },
+          },
+        },
       }),
     });
 
@@ -325,21 +358,18 @@
     }
 
     const data = await res.json();
-    return data.client_secret.value;
+    return data.value;
   }
 
   async function sendSdpOffer(sdp, ephemeralKey) {
-    const res = await fetch(
-      'https://api.openai.com/v1/realtime?model=gpt-realtime-2&intent=transcription',
-      {
-        method:  'POST',
-        headers: {
-          Authorization:  `Bearer ${ephemeralKey}`,
-          'Content-Type': 'application/sdp',
-        },
-        body: sdp,
-      }
-    );
+    const res = await fetch('https://api.openai.com/v1/realtime/calls', {
+      method:  'POST',
+      headers: {
+        Authorization:  `Bearer ${ephemeralKey}`,
+        'Content-Type': 'application/sdp',
+      },
+      body: sdp,
+    });
 
     if (!res.ok) {
       const err = await res.text().catch(() => String(res.status));
@@ -360,22 +390,34 @@
         break;
 
       case 'conversation.item.input_audio_transcription.delta':
-        if (event.delta?.trim()) {
-          let interimTranslated = '';
-          if (interimOpts) {
-            interimTranslated = await translateText(event.delta, sourceLang, targetLang, interimOpts).catch(() => '');
+        if (event.delta) {
+          realtimeInterimBuffer += event.delta;
+          if (realtimeInterimBuffer.trim()) {
+            chrome.runtime.sendMessage({
+              action:     'whisperTranscript',
+              text:       realtimeInterimBuffer,
+              translated: '',
+              interim:    true,
+            });
           }
-          chrome.runtime.sendMessage({
-            action:     'whisperTranscript',
-            text:       event.delta,
-            translated: interimTranslated,
-            interim:    true,
-          });
+          // 침묵 타이머: VAD 없는 모델(gpt-realtime-whisper)에서 자동 문장 완성
+          clearTimeout(realtimeSilenceTimer);
+          realtimeSilenceTimer = setTimeout(async () => {
+            const text = realtimeInterimBuffer.trim();
+            realtimeInterimBuffer = '';
+            realtimeSilenceTimer  = null;
+            if (!text) return;
+            const translated = await translateText(text, sourceLang, targetLang, translationOpts);
+            chrome.runtime.sendMessage({ action: 'whisperTranscript', text, translated, interim: false });
+          }, realtimeSilenceMs);
         }
         break;
 
       case 'conversation.item.input_audio_transcription.completed': {
         const transcript = event.transcript;
+        clearTimeout(realtimeSilenceTimer);
+        realtimeSilenceTimer  = null;
+        realtimeInterimBuffer = '';
         if (!transcript?.trim()) break;
 
         const translated = await translateText(transcript, sourceLang, targetLang, translationOpts);
@@ -397,8 +439,11 @@
   function stopRealtimeSTT() {
     realtimeDc?.close();
     realtimePc?.close();
-    realtimeDc = null;
-    realtimePc = null;
+    realtimeDc            = null;
+    realtimePc            = null;
+    realtimeInterimBuffer = '';
+    clearTimeout(realtimeSilenceTimer);
+    realtimeSilenceTimer  = null;
     console.log('[LST Realtime] WebRTC connection closed');
   }
 

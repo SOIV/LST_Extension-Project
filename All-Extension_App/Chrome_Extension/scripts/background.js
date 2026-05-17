@@ -70,6 +70,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         action:     'whisperTranscript',
         text:       message.text,
         translated: message.translated,
+        interim:    message.interim,
       }).catch(() => {});
     }
     sendResponse({ success: true });
@@ -118,7 +119,15 @@ async function startTabCapture(tabId) {
     });
   }
 
-  await chrome.runtime.sendMessage({ action: 'tabCaptureStream', streamId });
+  const settings = await chrome.storage.sync.get([
+    'openaiApiKey', 'sourceLang', 'targetLang', 'sttEngine',
+    'translationEngine', 'googleScriptUrl', 'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
+    'interimTranslationEnabled', 'interimTranslationEngine',
+    'interimGoogleScriptUrl', 'interimPapagoApiKey', 'interimPapagoApiSecret', 'interimDeeplApiKey',
+    'sttSilenceMs', 'sttMinDisplayMs', 'whisperModel', 'realtimeModel',
+  ]);
+
+  await chrome.runtime.sendMessage({ action: 'tabCaptureStream', streamId, settings });
   tabCaptureActiveTabId = tabId;
 
   chrome.tabs.sendMessage(tabId, { action: 'tabCaptureActive' }).catch(() => {});
@@ -199,6 +208,10 @@ chrome.runtime.onInstalled.addListener(async () => {
     sourceLang:        'auto',
     targetLang:        'ko',
     openaiApiKey:      '',
+    sttSilenceMs:      1500,
+    sttMinDisplayMs:   4000,
+    whisperModel:      'gpt-4o-mini-transcribe',
+    realtimeModel:     'gpt-realtime-whisper',
   };
   const missing = {};
   for (const [k, v] of Object.entries(defaults)) {

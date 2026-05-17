@@ -17,7 +17,10 @@
     "https://youtube.com/*",
     "https://lst-pj.soiv-studio.xyz/*",
     "https://api.openai.com/*",
-    "https://translate.googleapis.com/*"
+    "https://translate.googleapis.com/*",
+    "https://api.deepl.com/*",
+    "https://api-free.deepl.com/*",
+    "https://naveropenapi.apigw.ntruss.com/*"
   ],
 
   "background": {
@@ -45,7 +48,7 @@
         "https://www.youtube.com/*",
         "https://youtube.com/*"
       ],
-      "js": ["scripts/stt/stt-content.js"],
+      "js": ["scripts/stt/stt-renderer.js", "scripts/stt/stt-content.js"],
       "run_at": "document_end"
     }
   ],
