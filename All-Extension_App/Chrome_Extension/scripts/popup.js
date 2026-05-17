@@ -9,6 +9,7 @@ const LOCKED_TABS = ['language', 'translation', 'status'];
 let debugMode = false;
 let logoClickCount = 0;
 let logoClickTimer = null;
+let currentSettings = {};
 
 const SENSITIVE_SETTING_KEYS = [
   'openaiApiKey',
@@ -16,10 +17,18 @@ const SENSITIVE_SETTING_KEYS = [
   'papagoApiKey',
   'papagoApiSecret',
   'deeplApiKey',
+];
+
+const LEGACY_SENSITIVE_SETTING_KEYS = [
   'interimGoogleScriptUrl',
   'interimPapagoApiKey',
   'interimPapagoApiSecret',
   'interimDeeplApiKey',
+];
+
+const SENSITIVE_SYNC_CLEANUP_KEYS = [
+  ...SENSITIVE_SETTING_KEYS,
+  ...LEGACY_SENSITIVE_SETTING_KEYS,
 ];
 
 /**
@@ -97,15 +106,18 @@ const elements = {
   // 실시간 탭 - 번역 (중간)
   interimTranslationEnabled:  document.getElementById('interimTranslationEnabled'),
   interimTranslationEngine:   document.getElementById('interimTranslationEngine'),
-  interimGoogleScriptUrl:     document.getElementById('interimGoogleScriptUrl'),
-  interimPapagoApiKey:        document.getElementById('interimPapagoApiKey'),
-  interimPapagoApiSecret:     document.getElementById('interimPapagoApiSecret'),
-  interimDeeplApiKey:         document.getElementById('interimDeeplApiKey'),
 
   // 표시 탭 - 실시간
   showOriginal:    document.getElementById('showOriginal'),
   overlayPosition: document.getElementById('overlayPosition'),
   enableCache:     document.getElementById('enableCache'),
+
+  // 실시간 탭 - 상태
+  webSpeechStatus:     document.getElementById('webSpeechStatus'),
+  openaiStatus:        document.getElementById('openaiStatus'),
+  sttRuntimeStatus:    document.getElementById('sttRuntimeStatus'),
+  translationApiStatus: document.getElementById('translationApiStatus'),
+  refreshStatusBtn:    document.getElementById('refreshStatusBtn'),
 
   // 공통
   navItems: document.querySelectorAll('.nav-item:not(.locked)'),
@@ -118,6 +130,7 @@ const TAB_TITLE_KEYS = {
   community: 'title_community',
   realtime: 'title_realtime',
   display: 'title_display',
+  integration: 'title_integration',
   about: 'title_about',
 };
 
@@ -183,6 +196,10 @@ function switchInnerTab(tabEl) {
   tabEl.classList.add('active');
   const content = document.getElementById(`inner-${innerName}`);
   if (content) content.classList.add('active');
+
+  if (innerName === 'realtime-status') {
+    updateRealtimeStatus();
+  }
 }
 
 let sttListening = false;
@@ -292,14 +309,11 @@ async function loadSettings() {
       if (elements.interimTranslationEnabled) elements.interimTranslationEnabled.checked = interimEnabled;
       const interimEngine = settings.interimTranslationEngine || 'same';
       if (elements.interimTranslationEngine) elements.interimTranslationEngine.value = interimEngine;
-      if (elements.interimGoogleScriptUrl)  elements.interimGoogleScriptUrl.value  = settings.interimGoogleScriptUrl  || '';
-      if (elements.interimPapagoApiKey)     elements.interimPapagoApiKey.value     = settings.interimPapagoApiKey     || '';
-      if (elements.interimPapagoApiSecret)  elements.interimPapagoApiSecret.value  = settings.interimPapagoApiSecret  || '';
-      if (elements.interimDeeplApiKey)      elements.interimDeeplApiKey.value      = settings.interimDeeplApiKey      || '';
       const interimEngineGroup = document.getElementById('interimEngineGroup');
       if (interimEngineGroup) interimEngineGroup.style.display = interimEnabled ? '' : 'none';
       if (interimEnabled) updateInterimKeyFields(interimEngine);
 
+        currentSettings = settings;
         resolve(settings);
       });
     });
@@ -346,17 +360,17 @@ async function saveSettings(silent = false) {
     // 번역 - 중간
     interimTranslationEnabled: elements.interimTranslationEnabled?.checked ?? false,
     interimTranslationEngine:  elements.interimTranslationEngine?.value    || 'same',
-    interimGoogleScriptUrl:    elements.interimGoogleScriptUrl?.value      || '',
-    interimPapagoApiKey:       elements.interimPapagoApiKey?.value         || '',
-    interimPapagoApiSecret:    elements.interimPapagoApiSecret?.value      || '',
-    interimDeeplApiKey:        elements.interimDeeplApiKey?.value          || '',
   };
 
   return new Promise((resolve) => {
     const { syncSettings, localSettings } = splitSettings(settings);
     chrome.storage.local.set(localSettings, () => {
       chrome.storage.sync.set(syncSettings, () => {
-        chrome.storage.sync.remove(SENSITIVE_SETTING_KEYS, () => {
+        chrome.storage.sync.remove(SENSITIVE_SYNC_CLEANUP_KEYS, () => {
+          currentSettings = settings;
+          if (document.getElementById('inner-realtime-status')?.classList.contains('active')) {
+            updateRealtimeStatus();
+          }
           // 활성 탭에 설정 변경 알림
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs[0]) {
@@ -432,6 +446,85 @@ function setSubtitleStatus(status, languages = []) {
   }
 }
 
+function getEngineStatus(engine, settings) {
+  switch (engine) {
+    case 'google':
+      return { ready: true, key: 'status_freeEngine' };
+    case 'google_script':
+      return { ready: !!settings.googleScriptUrl, key: settings.googleScriptUrl ? 'status_ready' : 'status_missingConfig' };
+    case 'papago':
+      return {
+        ready: !!settings.papagoApiKey && !!settings.papagoApiSecret,
+        key: settings.papagoApiKey && settings.papagoApiSecret ? 'status_ready' : 'status_missingConfig',
+      };
+    case 'deepl':
+      return { ready: !!settings.deeplApiKey, key: settings.deeplApiKey ? 'status_ready' : 'status_missingConfig' };
+    default:
+      return { ready: true, key: 'status_ready' };
+  }
+}
+
+function getTranslationApiStatus(settings) {
+  const mainEngine = settings.translationEngine || 'google';
+  const mainStatus = getEngineStatus(mainEngine, settings);
+
+  if (!mainStatus.ready) return mainStatus.key;
+
+  if (settings.interimTranslationEnabled) {
+    const interimEngine = settings.interimTranslationEngine === 'same'
+      ? mainEngine
+      : (settings.interimTranslationEngine || mainEngine);
+    const interimStatus = getEngineStatus(interimEngine, settings);
+    if (!interimStatus.ready) return interimStatus.key;
+  }
+
+  return mainStatus.key;
+}
+
+function setStatusText(el, key, fallback) {
+  if (el) el.textContent = getMessage(key, fallback);
+}
+
+function updateRealtimeStatus() {
+  const speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  setStatusText(
+    elements.webSpeechStatus,
+    speechRecognition ? 'status_supported' : 'status_notSupported',
+    speechRecognition ? '지원됨' : '미지원'
+  );
+
+  const hasOpenAiKey = !!(elements.openaiApiKey?.value || currentSettings.openaiApiKey || '').trim();
+  setStatusText(
+    elements.openaiStatus,
+    hasOpenAiKey ? 'status_registered' : 'status_notRegistered',
+    hasOpenAiKey ? '등록됨' : '미등록'
+  );
+
+  setStatusText(elements.translationApiStatus, getTranslationApiStatus(currentSettings), '확인됨');
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    if (!tab) {
+      setStatusText(elements.sttRuntimeStatus, 'status_stopped', '중지됨');
+      return;
+    }
+
+    chrome.runtime.sendMessage({ action: 'getSttState' }, (state) => {
+      if (chrome.runtime.lastError || !state?.success) {
+        setStatusText(elements.sttRuntimeStatus, 'status_error', '확인 실패');
+        return;
+      }
+
+      const isCurrentTabActive = !!state.active && state.tabId === tab.id;
+      setStatusText(
+        elements.sttRuntimeStatus,
+        isCurrentTabActive ? 'status_running' : 'status_stopped',
+        isCurrentTabActive ? '실행 중' : '중지됨'
+      );
+    });
+  });
+}
+
 /**
  * 토스트 알림
  */
@@ -474,13 +567,8 @@ function toggleDebugMode(enabled) {
     });
     if (elements.sttBtn)                    elements.sttBtn.removeAttribute('disabled');
     if (elements.sttSource)                elements.sttSource.removeAttribute('disabled');
-    if (elements.openaiApiKey)             elements.openaiApiKey.removeAttribute('disabled');
     if (elements.interimTranslationEnabled) elements.interimTranslationEnabled.removeAttribute('disabled');
     if (elements.interimTranslationEngine)  elements.interimTranslationEngine.removeAttribute('disabled');
-    [
-      elements.interimGoogleScriptUrl, elements.interimPapagoApiKey,
-      elements.interimPapagoApiSecret, elements.interimDeeplApiKey,
-    ].forEach(el => el?.removeAttribute('disabled'));
     // sttEngine은 sttSource 값 기준으로 활성 여부 결정 (내부에서 모델/도움말도 처리)
     updateSttEngineState(elements.sttSource?.value || 'tab');
     showToast('🔧 디버그 모드 활성화', 'info');
@@ -501,7 +589,6 @@ function toggleDebugMode(enabled) {
     if (elements.sttBtn)       elements.sttBtn.setAttribute('disabled', '');
     if (elements.sttSource)    elements.sttSource.setAttribute('disabled', '');
     if (elements.sttEngine)    elements.sttEngine.setAttribute('disabled', '');
-    if (elements.openaiApiKey) elements.openaiApiKey.setAttribute('disabled', '');
     showToast('디버그 모드 비활성화', 'info');
   }
 }
@@ -528,7 +615,7 @@ function updateSttEngineState(source) {
 function updateTranslationKeyFields(engine) {
   ['google_script', 'papago', 'deepl'].forEach(e => {
     const group = document.getElementById(`apiGroup-${e}`);
-    if (group) group.style.display = e === engine ? '' : 'none';
+    if (group) group.style.display = '';
   });
 }
 
@@ -537,10 +624,7 @@ function updateTranslationKeyFields(engine) {
  * 'same' 또는 'google' → 키 불필요
  */
 function updateInterimKeyFields(engine) {
-  ['google_script', 'papago', 'deepl'].forEach(e => {
-    const group = document.getElementById(`interimApiGroup-${e}`);
-    if (group) group.style.display = e === engine ? '' : 'none';
-  });
+  return engine;
 }
 
 /**
@@ -548,7 +632,7 @@ function updateInterimKeyFields(engine) {
  */
 function updateOpenaiKeyVisibility(engine) {
   if (!elements.openaiKeyGroup) return;
-  elements.openaiKeyGroup.style.display = engine === 'webspeech' ? 'none' : '';
+  elements.openaiKeyGroup.style.display = '';
 }
 
 /**
@@ -616,6 +700,8 @@ function setupEventListeners() {
     });
   });
 
+  elements.refreshStatusBtn?.addEventListener('click', updateRealtimeStatus);
+
   // 크기 슬라이더
   elements.overlaySize?.addEventListener('input', () => {
     const percent = sliderToPercent(elements.overlaySize.value);
@@ -680,7 +766,9 @@ function setupEventListeners() {
         setSttState(false);
         chrome.tabs.sendMessage(tab.id, { action: 'stopCapture' }).catch(() => {});
         chrome.runtime.sendMessage({ action: 'stopTabCapture' }).catch(() => {});
-        chrome.runtime.sendMessage({ action: 'sttStateChange', active: false, tabId: tab.id }).catch(() => {});
+        chrome.runtime.sendMessage({ action: 'sttStateChange', active: false, tabId: tab.id })
+          .catch(() => {})
+          .finally(updateRealtimeStatus);
         return;
       }
 
@@ -689,7 +777,9 @@ function setupEventListeners() {
         chrome.runtime.sendMessage({ action: 'startTabCapture', tabId: tab.id }, (response) => {
           if (response?.success) {
             setSttState(true);
-            chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source }).catch(() => {});
+            chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source })
+              .catch(() => {})
+              .finally(updateRealtimeStatus);
           } else {
             showToast('탭 오디오 캡처 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
           }
@@ -700,7 +790,9 @@ function setupEventListeners() {
           .then((response) => {
             if (response?.success) {
               setSttState(true);
-              chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source }).catch(() => {});
+              chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source })
+                .catch(() => {})
+                .finally(updateRealtimeStatus);
             } else {
               showToast('마이크 STT 시작 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
             }
@@ -759,7 +851,6 @@ function setupEventListeners() {
     elements.showOriginal, elements.overlayPosition, elements.enableCache,
     elements.openaiApiKey,
     elements.googleScriptUrl, elements.papagoApiKey, elements.papagoApiSecret, elements.deeplApiKey,
-    elements.interimGoogleScriptUrl, elements.interimPapagoApiKey, elements.interimPapagoApiSecret, elements.interimDeeplApiKey,
   ].forEach(el => el?.addEventListener('change', () => saveSettings(true)));
 
   // 자동 저장: 슬라이더 (500ms debounce)
@@ -785,6 +876,7 @@ async function init() {
     if (!tab) return;
     chrome.runtime.sendMessage({ action: 'getSttState' }, (state) => {
       setSttState(!!state?.active && state.tabId === tab.id);
+      updateRealtimeStatus();
     });
   });
 }

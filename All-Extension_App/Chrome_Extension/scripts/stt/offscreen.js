@@ -92,10 +92,6 @@
       deeplApiKey               = '',
       interimTranslationEnabled = false,
       interimTranslationEngine  = 'same',
-      interimGoogleScriptUrl    = '',
-      interimPapagoApiKey       = '',
-      interimPapagoApiSecret    = '',
-      interimDeeplApiKey        = '',
     } = stored;
 
     // 메인 번역 옵션
@@ -109,10 +105,10 @@
       } else {
         interimOpts = {
           engine:         interimTranslationEngine,
-          googleScriptUrl: interimGoogleScriptUrl,
-          papagoApiKey:    interimPapagoApiKey,
-          papagoApiSecret: interimPapagoApiSecret,
-          deeplApiKey:     interimDeeplApiKey,
+          googleScriptUrl,
+          papagoApiKey,
+          papagoApiSecret,
+          deeplApiKey,
         };
       }
     }

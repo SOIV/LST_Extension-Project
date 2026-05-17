@@ -20,10 +20,18 @@ const SENSITIVE_SETTING_KEYS = [
   'papagoApiKey',
   'papagoApiSecret',
   'deeplApiKey',
+];
+
+const LEGACY_SENSITIVE_SETTING_KEYS = [
   'interimGoogleScriptUrl',
   'interimPapagoApiKey',
   'interimPapagoApiSecret',
   'interimDeeplApiKey',
+];
+
+const SENSITIVE_SYNC_CLEANUP_KEYS = [
+  ...SENSITIVE_SETTING_KEYS,
+  ...LEGACY_SENSITIVE_SETTING_KEYS,
 ];
 
 const LANG_ISO = {
@@ -162,7 +170,6 @@ async function startTabCapture(tabId) {
     'openaiApiKey', 'sourceLang', 'targetLang', 'sttEngine',
     'translationEngine', 'googleScriptUrl', 'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
     'interimTranslationEnabled', 'interimTranslationEngine',
-    'interimGoogleScriptUrl', 'interimPapagoApiKey', 'interimPapagoApiSecret', 'interimDeeplApiKey',
     'sttSilenceMs', 'sttMinDisplayMs', 'whisperModel', 'realtimeModel',
   ]);
 
@@ -218,7 +225,6 @@ async function translateForContentScript(message) {
   const settings = await getStoredSettings([
     'translationEngine', 'interimTranslationEngine',
     'googleScriptUrl', 'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
-    'interimGoogleScriptUrl', 'interimPapagoApiKey', 'interimPapagoApiSecret', 'interimDeeplApiKey',
   ]);
   return translateText(text, message.sourceLang || 'auto', message.targetLang || 'ko', message.opts || {}, settings);
 }
@@ -261,14 +267,8 @@ async function translateText(text, sourceLang, targetLang, opts = {}, settings =
 }
 
 function getTranslationCredentials(engine, scope, settings) {
-  if (scope === 'interim') {
-    return {
-      googleScriptUrl: settings.interimGoogleScriptUrl || '',
-      papagoApiKey:    settings.interimPapagoApiKey || '',
-      papagoApiSecret: settings.interimPapagoApiSecret || '',
-      deeplApiKey:     settings.interimDeeplApiKey || '',
-    };
-  }
+  void engine;
+  void scope;
   return {
     googleScriptUrl: settings.googleScriptUrl || '',
     papagoApiKey:    settings.papagoApiKey || '',
@@ -418,6 +418,6 @@ chrome.runtime.onInstalled.addListener(async () => {
   if (Object.keys(migratedSensitive).length > 0) {
     await chrome.storage.local.set(migratedSensitive);
   }
-  await chrome.storage.sync.remove(SENSITIVE_SETTING_KEYS);
+  await chrome.storage.sync.remove(SENSITIVE_SYNC_CLEANUP_KEYS);
   console.log('[LST] onInstalled — settings checked');
 });

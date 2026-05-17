@@ -19,6 +19,10 @@
     "message": "表示",
     "description": "Navigation label for display settings"
   },
+  "nav_integration": {
+    "message": "連携",
+    "description": "Navigation label for API integration settings"
+  },
   "nav_status": {
     "message": "ステータス",
     "description": "Navigation label for status page"
@@ -42,6 +46,10 @@
   "title_display": {
     "message": "表示設定",
     "description": "Page title for display settings"
+  },
+  "title_integration": {
+    "message": "連携",
+    "description": "Page title for API integration settings"
   },
   "title_status": {
     "message": "システムステータス",
@@ -115,6 +123,18 @@
     "message": "翻訳エンジンの選択",
     "description": "Heading for translation engine section"
   },
+  "heading_apiIntegration": {
+    "message": "APIキー連携",
+    "description": "API integration section heading"
+  },
+  "heading_translationApi": {
+    "message": "翻訳API",
+    "description": "Translation API section heading"
+  },
+  "help_apiLocalStorage": {
+    "message": "APIキーはこのブラウザのローカルストレージにのみ保存されます。",
+    "description": "Local storage notice for API keys"
+  },
   "label_engine": {
     "message": "エンジン",
     "description": "Label for translation engine dropdown"
@@ -146,6 +166,58 @@
   "label_apiSecret": {
     "message": "APIシークレット（Papago）",
     "description": "Label for API secret input"
+  },
+  "label_openaiApiKey": {
+    "message": "OpenAI APIキー",
+    "description": "Label for OpenAI API key input"
+  },
+  "help_openaiApiKey": {
+    "message": "Whisper / Realtimeエンジンの使用時に必要です",
+    "description": "Help text for OpenAI API key"
+  },
+  "label_googleScriptUrl": {
+    "message": "Apps ScriptデプロイURL",
+    "description": "Label for Google Apps Script URL input"
+  },
+  "help_googleScriptUrl": {
+    "message": "Google Apps ScriptのWebアプリURLを入力してください",
+    "description": "Help text for Google Apps Script URL"
+  },
+  "label_papagoApiKey": {
+    "message": "Papago Client ID",
+    "description": "Label for Papago API key input"
+  },
+  "label_papagoApiSecret": {
+    "message": "Papago Client Secret",
+    "description": "Label for Papago API secret input"
+  },
+  "label_deeplApiKey": {
+    "message": "DeepL APIキー",
+    "description": "Label for DeepL API key input"
+  },
+  "transEngine_google": {
+    "message": "Google Translate (無料)",
+    "description": "Google Translate option"
+  },
+  "transEngine_googleScript": {
+    "message": "Google Translate (Script)",
+    "description": "Google Apps Script translation option"
+  },
+  "transEngine_papago": {
+    "message": "Papago",
+    "description": "Papago translation option"
+  },
+  "transEngine_deepl": {
+    "message": "DeepL",
+    "description": "DeepL translation option"
+  },
+  "label_interimEngine": {
+    "message": "翻訳エンジン",
+    "description": "Label for interim translation engine dropdown"
+  },
+  "interimEngine_same": {
+    "message": "メインエンジンと同じ",
+    "description": "Use same engine as main translation"
   },
   "placeholder_apiKey": {
     "message": "APIキーを入力してください",
@@ -239,25 +311,65 @@
     "message": "Web Speech API",
     "description": "Label for Web Speech API status"
   },
-  "status_translationCache": {
-    "message": "翻訳キャッシュ",
-    "description": "Label for translation cache status"
+  "status_openaiApiKey": {
+    "message": "OpenAI APIキー",
+    "description": "Label for OpenAI API key status"
+  },
+  "status_sttRuntime": {
+    "message": "リアルタイムSTT",
+    "description": "Label for real-time STT runtime status"
+  },
+  "status_translationApi": {
+    "message": "翻訳API",
+    "description": "Label for translation API status"
   },
   "status_checking": {
     "message": "確認中...",
     "description": "Checking status text"
   },
-  "status_cacheItems": {
-    "message": "件",
-    "description": "Cache items unit"
+  "status_supported": {
+    "message": "対応",
+    "description": "Supported status text"
   },
-  "btn_clearCache": {
-    "message": "キャッシュをクリア",
-    "description": "Clear cache button text"
+  "status_notSupported": {
+    "message": "未対応",
+    "description": "Not supported status text"
   },
-  "btn_resetSettings": {
-    "message": "設定をリセット",
-    "description": "Reset settings button text"
+  "status_registered": {
+    "message": "登録済み",
+    "description": "Registered status text"
+  },
+  "status_notRegistered": {
+    "message": "未登録",
+    "description": "Not registered status text"
+  },
+  "status_running": {
+    "message": "実行中",
+    "description": "Running status text"
+  },
+  "status_stopped": {
+    "message": "停止中",
+    "description": "Stopped status text"
+  },
+  "status_ready": {
+    "message": "準備完了",
+    "description": "Ready status text"
+  },
+  "status_missingConfig": {
+    "message": "設定が必要",
+    "description": "Missing configuration status text"
+  },
+  "status_freeEngine": {
+    "message": "無料エンジン",
+    "description": "Free engine status text"
+  },
+  "status_error": {
+    "message": "確認失敗",
+    "description": "Status check failed text"
+  },
+  "btn_refreshStatus": {
+    "message": "ステータスを更新",
+    "description": "Refresh status button text"
   },
   "about_description": {
     "message": "リアルタイムストリーミングプラットフォームの統合翻訳システム",

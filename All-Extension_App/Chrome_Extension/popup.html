@@ -49,6 +49,14 @@
           <span class="nav-label" data-i18n="nav_display">표시</span>
         </div>
 
+        <div class="nav-item" data-tab="integration">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10.9 5.03"/>
+            <path d="M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07l1.22-1.22"/>
+          </svg>
+          <span class="nav-label" data-i18n="nav_integration">연동</span>
+        </div>
+
         <div class="nav-item" data-tab="about">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
@@ -243,11 +251,6 @@
                   <option value="gpt-realtime-translate">gpt-realtime-translate (음성 번역)</option>
                 </select>
               </div>
-              <div class="form-group" id="openaiKeyGroup">
-                <label for="openaiApiKey" data-i18n="label_openaiApiKey">OpenAI API 키</label>
-                <input type="password" id="openaiApiKey" class="form-control" placeholder="sk-..." disabled>
-                <p class="form-help" data-i18n="help_openaiApiKey">Whisper / Realtime 엔진 사용 시 필요합니다</p>
-              </div>
             </div>
           </div>
 
@@ -267,33 +270,6 @@
                   <option value="deepl"         data-i18n="transEngine_deepl">DeepL</option>
                 </select>
               </div>
-
-              <!-- 메인 번역 API 키 -->
-              <div class="api-key-group" id="apiGroup-google_script" style="display:none;">
-                <div class="form-group">
-                  <label for="googleScriptUrl" data-i18n="label_googleScriptUrl">Apps Script 배포 URL</label>
-                  <input type="text" id="googleScriptUrl" class="form-control" placeholder="https://script.google.com/macros/s/..." disabled>
-                  <p class="form-help" data-i18n="help_googleScriptUrl">Google Apps Script 웹 앱 배포 URL을 입력하세요</p>
-                </div>
-              </div>
-              <div class="api-key-group" id="apiGroup-papago" style="display:none;">
-                <div class="form-group">
-                  <label for="papagoApiKey" data-i18n="label_papagoApiKey">Client ID</label>
-                  <input type="password" id="papagoApiKey" class="form-control" disabled>
-                </div>
-                <div class="form-group">
-                  <label for="papagoApiSecret" data-i18n="label_papagoApiSecret">Client Secret</label>
-                  <input type="password" id="papagoApiSecret" class="form-control" disabled>
-                </div>
-              </div>
-              <div class="api-key-group" id="apiGroup-deepl" style="display:none;">
-                <div class="form-group">
-                  <label for="deeplApiKey" data-i18n="label_deeplApiKey">API 키</label>
-                  <input type="password" id="deeplApiKey" class="form-control" disabled>
-                </div>
-              </div>
-
-              <hr class="translation-divider">
 
               <!-- ── 중간 번역 ── -->
               <h3 data-i18n="heading_interimTranslation">중간 번역</h3>
@@ -323,30 +299,6 @@
                   </select>
                 </div>
 
-                <!-- 중간 번역 API 키 -->
-                <div class="api-key-group" id="interimApiGroup-google_script" style="display:none;">
-                  <div class="form-group">
-                    <label for="interimGoogleScriptUrl" data-i18n="label_googleScriptUrl">Apps Script 배포 URL</label>
-                    <input type="text" id="interimGoogleScriptUrl" class="form-control" placeholder="https://script.google.com/macros/s/..." disabled>
-                    <p class="form-help" data-i18n="help_googleScriptUrl">Google Apps Script 웹 앱 배포 URL을 입력하세요</p>
-                  </div>
-                </div>
-                <div class="api-key-group" id="interimApiGroup-papago" style="display:none;">
-                  <div class="form-group">
-                    <label for="interimPapagoApiKey" data-i18n="label_papagoApiKey">Client ID</label>
-                    <input type="password" id="interimPapagoApiKey" class="form-control" disabled>
-                  </div>
-                  <div class="form-group">
-                    <label for="interimPapagoApiSecret" data-i18n="label_papagoApiSecret">Client Secret</label>
-                    <input type="password" id="interimPapagoApiSecret" class="form-control" disabled>
-                  </div>
-                </div>
-                <div class="api-key-group" id="interimApiGroup-deepl" style="display:none;">
-                  <div class="form-group">
-                    <label for="interimDeeplApiKey" data-i18n="label_deeplApiKey">API 키</label>
-                    <input type="password" id="interimDeeplApiKey" class="form-control" disabled>
-                  </div>
-                </div>
               </div>
 
             </div>
@@ -372,17 +324,83 @@
                 <div class="status-item">
                   <div class="status-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M15 7a2 2 0 1 1 2 2m-2-2a2 2 0 0 0-2-2m2 2L9 13"/>
+                      <path d="M7 13a2 2 0 1 0 2 2m-2-2a2 2 0 0 1 2 2"/>
+                    </svg>
+                  </div>
+                  <div class="status-info">
+                    <span class="status-label" data-i18n="status_openaiApiKey">OpenAI API 키</span>
+                    <span class="status-value" id="openaiStatus" data-i18n="status_checking">확인 중...</span>
+                  </div>
+                </div>
+                <div class="status-item">
+                  <div class="status-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M4 5h16v10H4z"/>
+                      <path d="M8 19h8M12 15v4"/>
+                    </svg>
+                  </div>
+                  <div class="status-info">
+                    <span class="status-label" data-i18n="status_sttRuntime">실시간 STT</span>
+                    <span class="status-value" id="sttRuntimeStatus" data-i18n="status_checking">확인 중...</span>
+                  </div>
+                </div>
+                <div class="status-item">
+                  <div class="status-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
                     </svg>
                   </div>
                   <div class="status-info">
-                    <span class="status-label" data-i18n="status_translationCache">번역 캐시</span>
-                    <span class="status-value" id="cacheStatus">0개 항목</span>
+                    <span class="status-label" data-i18n="status_translationApi">번역 API</span>
+                    <span class="status-value" id="translationApiStatus" data-i18n="status_checking">확인 중...</span>
                   </div>
                 </div>
               </div>
-              <button class="btn btn-secondary btn-full" id="clearCacheBtn" disabled data-i18n="btn_clearCache">캐시 지우기</button>
-              <button class="btn btn-warning btn-full" id="resetSettingsBtn" disabled style="margin-top: 12px;" data-i18n="btn_resetSettings">설정 초기화</button>
+              <button class="btn btn-secondary btn-full" id="refreshStatusBtn" disabled data-i18n="btn_refreshStatus">상태 새로고침</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================
+             연동
+             ============================ -->
+        <div class="tab-content" id="tab-integration">
+          <div class="settings-section">
+            <h2 data-i18n="heading_apiIntegration">API 키 연동</h2>
+            <p class="form-help" data-i18n="help_apiLocalStorage">API 키는 이 브라우저의 로컬 저장소에만 저장됩니다.</p>
+
+            <div class="form-group" id="openaiKeyGroup">
+              <label for="openaiApiKey" data-i18n="label_openaiApiKey">OpenAI API 키</label>
+              <input type="password" id="openaiApiKey" class="form-control" placeholder="sk-...">
+              <p class="form-help" data-i18n="help_openaiApiKey">Whisper / Realtime 엔진 사용 시 필요합니다</p>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h2 data-i18n="heading_translationApi">번역 API</h2>
+            <div class="api-key-group" id="apiGroup-google_script">
+              <div class="form-group">
+                <label for="googleScriptUrl" data-i18n="label_googleScriptUrl">Apps Script 배포 URL</label>
+                <input type="text" id="googleScriptUrl" class="form-control" placeholder="https://script.google.com/macros/s/...">
+                <p class="form-help" data-i18n="help_googleScriptUrl">Google Apps Script 웹 앱 배포 URL을 입력하세요</p>
+              </div>
+            </div>
+            <div class="api-key-group" id="apiGroup-papago">
+              <div class="form-group">
+                <label for="papagoApiKey" data-i18n="label_papagoApiKey">Papago Client ID</label>
+                <input type="password" id="papagoApiKey" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="papagoApiSecret" data-i18n="label_papagoApiSecret">Papago Client Secret</label>
+                <input type="password" id="papagoApiSecret" class="form-control">
+              </div>
+            </div>
+            <div class="api-key-group" id="apiGroup-deepl">
+              <div class="form-group">
+                <label for="deeplApiKey" data-i18n="label_deeplApiKey">DeepL API 키</label>
+                <input type="password" id="deeplApiKey" class="form-control">
+              </div>
             </div>
           </div>
         </div>
