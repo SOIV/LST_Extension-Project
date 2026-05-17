@@ -60,6 +60,10 @@ const elements = {
   windowOpacityValue: document.getElementById('windowOpacityValue'),
   resetDisplayBtn:    document.getElementById('resetDisplayBtn'),
 
+  // 실시간 탭 - 언어
+  sourceLang:          document.getElementById('sourceLang'),
+  targetLang:          document.getElementById('targetLang'),
+
   // 실시간 탭 - STT
   sttBtn:              document.getElementById('sttBtn'),
   sttSource:           document.getElementById('sttSource'),
@@ -252,14 +256,14 @@ async function loadSettings() {
       if (elements.showOriginal)    elements.showOriginal.checked    = settings.showOriginal    !== false;
       if (elements.overlayPosition) elements.overlayPosition.value   = settings.overlayPosition || DISPLAY_DEFAULTS.overlayPosition;
       if (elements.enableCache)     elements.enableCache.checked     = settings.enableCache     !== false;
+      if (elements.sourceLang) elements.sourceLang.value = settings.sourceLang || 'auto';
+      if (elements.targetLang) elements.targetLang.value = settings.targetLang || 'ko';
       if (elements.sttSource)    elements.sttSource.value    = settings.sttSource    || 'tab';
       if (elements.sttEngine)    elements.sttEngine.value    = settings.sttEngine    || 'whisper';
       if (elements.whisperModel) elements.whisperModel.value = settings.whisperModel || 'gpt-4o-mini-transcribe';
       if (elements.realtimeModel)elements.realtimeModel.value= settings.realtimeModel|| 'gpt-realtime-whisper';
       if (elements.openaiApiKey) elements.openaiApiKey.value = settings.openaiApiKey || '';
       updateSttEngineState(settings.sttSource || 'tab');
-      updateModelVisibility(settings.sttEngine || 'whisper');
-      updateEngineHelp(settings.sttEngine || 'whisper');
 
       // 번역
       // 메인 번역
@@ -310,6 +314,9 @@ async function saveSettings(silent = false) {
     showOriginal:    elements.showOriginal?.checked    ?? true,
     overlayPosition: elements.overlayPosition?.value   || DISPLAY_DEFAULTS.overlayPosition,
     enableCache:     elements.enableCache?.checked     ?? true,
+    // 언어
+    sourceLang: elements.sourceLang?.value || 'auto',
+    targetLang: elements.targetLang?.value || 'ko',
     // 실시간 STT
     sttSource:     elements.sttSource?.value     || 'tab',
     sttEngine:     elements.sttEngine?.value     || 'whisper',
@@ -443,9 +450,8 @@ function toggleDebugMode(enabled) {
       elements.interimGoogleScriptUrl, elements.interimPapagoApiKey,
       elements.interimPapagoApiSecret, elements.interimDeeplApiKey,
     ].forEach(el => el?.removeAttribute('disabled'));
-    // sttEngine은 sttSource 값 기준으로 활성 여부 결정
+    // sttEngine은 sttSource 값 기준으로 활성 여부 결정 (내부에서 모델/도움말도 처리)
     updateSttEngineState(elements.sttSource?.value || 'tab');
-    updateModelVisibility(elements.sttEngine?.value || 'whisper');
     showToast('🔧 디버그 모드 활성화', 'info');
   } else {
     logo.classList.remove('logo--debug');
@@ -480,6 +486,9 @@ function updateSttEngineState(source) {
   }
   const engine = isMic ? 'webspeech' : (elements.sttEngine?.value || 'whisper');
   updateOpenaiKeyVisibility(engine);
+  updateModelVisibility(engine);
+  updateEngineHelp(engine);
+  updateWebSpeechWarn();
 }
 
 /**
@@ -511,11 +520,22 @@ function updateOpenaiKeyVisibility(engine) {
   elements.openaiKeyGroup.style.display = engine === 'webspeech' ? 'none' : '';
 }
 
+/**
+ * 마이크 + 자동 감지 조합 시 경고 표시
+ */
+function updateWebSpeechWarn() {
+  const warn = document.getElementById('webSpeechAutoWarn');
+  if (!warn) return;
+  const isMic  = elements.sttSource?.value === 'mic';
+  const isAuto = elements.sourceLang?.value === 'auto';
+  warn.style.display = (isMic && isAuto) ? '' : 'none';
+}
+
 function updateEngineHelp(engine) {
   const helpWhisper  = document.getElementById('sttEngineHelp-whisper');
   const helpRealtime = document.getElementById('sttEngineHelp-realtime');
   if (!helpWhisper || !helpRealtime) return;
-  helpWhisper.style.display  = engine === 'realtime' ? 'none' : '';
+  helpWhisper.style.display  = engine === 'whisper'  ? '' : 'none';
   helpRealtime.style.display = engine === 'realtime' ? '' : 'none';
 }
 
@@ -658,6 +678,11 @@ function setupEventListeners() {
     saveSettings(true);
   });
 
+  // sourceLang 변경 시 Web Speech API 경고 갱신
+  elements.sourceLang?.addEventListener('change', () => {
+    updateWebSpeechWarn();
+  });
+
   // sttEngine 변경 시 API 키 그룹 + 모델 선택 + 설명 전환
   elements.sttEngine?.addEventListener('change', () => {
     updateOpenaiKeyVisibility(elements.sttEngine.value);
@@ -690,6 +715,7 @@ function setupEventListeners() {
   // 자동 저장: 토글 & 셀렉트
   [
     elements.subtitleEnabled, elements.subtitleLang,
+    elements.sourceLang, elements.targetLang,
     elements.fontFamily, elements.fontColor, elements.edgeStyle,
     elements.bgColor, elements.windowColor,
     elements.showOriginal, elements.overlayPosition, elements.enableCache,

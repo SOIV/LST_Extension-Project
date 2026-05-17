@@ -78,6 +78,10 @@
   line-height: 1.4;
 }
 
+.form-help--warn {
+  color: #e8a020;
+}
+
 /* 체크박스 */
 .checkbox-label {
   display: flex;

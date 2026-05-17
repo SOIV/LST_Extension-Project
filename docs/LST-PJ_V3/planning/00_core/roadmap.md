@@ -1,6 +1,6 @@
 # LST 프로젝트 로드맵
 
-Last updated: 2026-05-06 (code sync)
+Last updated: 2026-05-17
 
 ## 1) 프로젝트 방향
 
@@ -128,7 +128,8 @@ Last updated: 2026-05-17
 
 #### 파이프라인 — 마이크 (Web Speech API)
 - [x] Web Speech API 연동
-- [ ] Web Speech API + 번역 연동 (현재 번역 미적용)
+- [x] Web Speech API + 번역 연동
+- [ ] **[V1 불안정]** Web Speech API 추가 조정 필요 — 기능 다수 미구현/미검증 상태로 V1은 불안정 버전으로 배포
 
 #### 자막 렌더러 (SttRenderer)
 - [x] STT 전용 렌더러 — 상단(원어) / 하단(번역) 2패널
