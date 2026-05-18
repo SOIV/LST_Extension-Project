@@ -2,15 +2,15 @@
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Live Stream Translator Docs',
+  title: 'LST Project Docs',
   tagline: 'STT 기반 실시간 자막/번역 확장 프로그램 사용자 문서',
   favicon: 'img/favicon.ico',
 
   url: 'https://lst-docs.vercel.app',
   baseUrl: '/',
 
-  organizationName: 'LST-Project',
-  projectName: 'Live-Stream-Translator',
+  organizationName: 'SOIV Studio',
+  projectName: 'LST-Project',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -41,7 +41,7 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'LST Docs',
+        title: 'LST Project Docs',
         items: [
           {
             type: 'docSidebar',
@@ -77,7 +77,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Live Stream Translator.`,
+        copyright: `Copyright © 2025 ~ ${new Date().getFullYear()} SOIV Studio. All Rights Reserved.`,
       },
       prism: {
         additionalLanguages: ['bash', 'json'],
