@@ -51,9 +51,10 @@ const BADGE = {
 };
 
 function updateBadge(tabId, status) {
+  if (!tabId) return;
   const b = BADGE[status] ?? BADGE.unavailable;
-  chrome.action.setBadgeText({ tabId, text: b.text });
-  chrome.action.setBadgeBackgroundColor({ tabId, color: b.color });
+  chrome.action.setBadgeText({ tabId, text: b.text }).catch(() => {});
+  chrome.action.setBadgeBackgroundColor({ tabId, color: b.color }).catch(() => {});
 }
 
 // ─── 메시지 수신 (content script → background) ────────────────────────────────
