@@ -371,6 +371,10 @@
     "message": "상태 새로고침",
     "description": "Refresh status button text"
   },
+  "btn_shortcutSettings": {
+    "message": "단축키",
+    "description": "Open Chrome extension shortcut settings button text"
+  },
   "about_description": {
     "message": "실시간 스트리밍 플랫폼을 위한 통합 번역 시스템",
     "description": "About page description"

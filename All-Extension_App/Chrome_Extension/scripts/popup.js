@@ -123,6 +123,7 @@ const elements = {
   navItems: document.querySelectorAll('.nav-item:not(.locked)'),
   tabContents: document.querySelectorAll('.tab-content'),
   pageTitle: document.getElementById('pageTitle'),
+  shortcutSettingsBtn: document.getElementById('shortcutSettingsBtn'),
 };
 
 // 탭 제목 i18n 키 맵
@@ -131,6 +132,7 @@ const TAB_TITLE_KEYS = {
   realtime: 'title_realtime',
   display: 'title_display',
   integration: 'title_integration',
+  status: 'title_status',
   about: 'title_about',
 };
 
@@ -178,6 +180,10 @@ function switchTab(tabName) {
   const headerSttToggle = document.getElementById('headerSttToggle');
   if (headerSttToggle) {
     headerSttToggle.style.display = tabName === 'realtime' ? 'flex' : 'none';
+  }
+
+  if (tabName === 'status') {
+    updateRealtimeStatus();
   }
 }
 
@@ -368,7 +374,7 @@ async function saveSettings(silent = false) {
       chrome.storage.sync.set(syncSettings, () => {
         chrome.storage.sync.remove(SENSITIVE_SYNC_CLEANUP_KEYS, () => {
           currentSettings = settings;
-          if (document.getElementById('inner-realtime-status')?.classList.contains('active')) {
+          if (document.getElementById('tab-status')?.classList.contains('active')) {
             updateRealtimeStatus();
           }
           // 활성 탭에 설정 변경 알림
@@ -523,6 +529,10 @@ function updateRealtimeStatus() {
       );
     });
   });
+}
+
+function openShortcutSettings() {
+  chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
 }
 
 /**
@@ -701,6 +711,7 @@ function setupEventListeners() {
   });
 
   elements.refreshStatusBtn?.addEventListener('click', updateRealtimeStatus);
+  elements.shortcutSettingsBtn?.addEventListener('click', openShortcutSettings);
 
   // 크기 슬라이더
   elements.overlaySize?.addEventListener('input', () => {

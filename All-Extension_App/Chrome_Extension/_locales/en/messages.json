@@ -371,6 +371,10 @@
     "message": "Refresh Status",
     "description": "Refresh status button text"
   },
+  "btn_shortcutSettings": {
+    "message": "Shortcuts",
+    "description": "Open Chrome extension shortcut settings button text"
+  },
   "about_description": {
     "message": "Integrated translation system for real-time streaming platforms",
     "description": "About page description"

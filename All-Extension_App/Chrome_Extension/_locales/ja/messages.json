@@ -371,6 +371,10 @@
     "message": "ステータスを更新",
     "description": "Refresh status button text"
   },
+  "btn_shortcutSettings": {
+    "message": "ショートカット",
+    "description": "Open Chrome extension shortcut settings button text"
+  },
   "about_description": {
     "message": "リアルタイムストリーミングプラットフォームの統合翻訳システム",
     "description": "About page description"

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Stream Translator - 설정</title>
-<link rel="stylesheet" href="styles/popup-layout.css">
+  <link rel="stylesheet" href="styles/popup-layout.css">
   <link rel="stylesheet" href="styles/popup-form.css">
   <link rel="stylesheet" href="styles/popup-ui.css">
 </head>
@@ -57,6 +57,14 @@
           <span class="nav-label" data-i18n="nav_integration">연동</span>
         </div>
 
+        <div class="nav-item" data-tab="status">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v18h18"/>
+            <path d="M7 14l3-3 3 2 5-6"/>
+          </svg>
+          <span class="nav-label" data-i18n="nav_status">상태</span>
+        </div>
+
         <div class="nav-item" data-tab="about">
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/>
@@ -64,6 +72,16 @@
           </svg>
           <span class="nav-label" data-i18n="nav_about">정보</span>
         </div>
+      </div>
+
+      <div class="sidebar-actions">
+        <button class="sidebar-action-btn" id="shortcutSettingsBtn" type="button">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10 8h.01M12 12h.01M14 8h.01M16 12h.01M18 8h.01M6 8h.01M8 12h.01M6 16h12"/>
+            <rect x="3" y="4" width="18" height="16" rx="2"/>
+          </svg>
+          <span class="nav-label" data-i18n="btn_shortcutSettings">단축키</span>
+        </button>
       </div>
     </nav>
 
@@ -158,7 +176,6 @@
             <button class="inner-tab active" data-inner="realtime-language" data-i18n="inner_language">언어</button>
             <button class="inner-tab" data-inner="realtime-stt" data-i18n="inner_stt">STT</button>
             <button class="inner-tab" data-inner="realtime-translation" data-i18n="inner_translation">번역</button>
-            <button class="inner-tab" data-inner="realtime-status" data-i18n="inner_rtStatus">상태</button>
           </div>
 
           <!-- 잠금 배너 -->
@@ -303,9 +320,12 @@
 
             </div>
           </div>
+        </div>
 
-          <!-- 내부: 상태 -->
-          <div class="inner-content settings-locked" id="inner-realtime-status">
+        <!-- ============================
+             상태
+             ============================ -->
+        <div class="tab-content" id="tab-status">
             <div class="settings-section">
               <h2 data-i18n="heading_systemStatus">시스템 상태</h2>
               <div class="status-card">
@@ -357,9 +377,8 @@
                   </div>
                 </div>
               </div>
-              <button class="btn btn-secondary btn-full" id="refreshStatusBtn" disabled data-i18n="btn_refreshStatus">상태 새로고침</button>
+              <button class="btn btn-secondary btn-full" id="refreshStatusBtn" data-i18n="btn_refreshStatus">상태 새로고침</button>
             </div>
-          </div>
         </div>
 
         <!-- ============================
