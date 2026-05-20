@@ -1,0 +1,38 @@
+{
+  "appsSidebar": [
+    "intro",
+    {
+      "type": "category",
+      "label": "앱 사용 가이드",
+      "items": [
+        "apps/overview",
+        "apps/extension",
+        "apps/desktop-app"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "설정 및 문제 해결",
+      "items": [
+        "apps/api-keys",
+        "apps/engines",
+        "apps/shortcuts",
+        "apps/troubleshooting",
+        "apps/feature-status"
+      ]
+    }
+  ],
+  "platformSidebar": [
+    {
+      "type": "category",
+      "label": "플랫폼 가이드",
+      "items": [
+        "platform/overview",
+        "platform/community-subtitles",
+        "platform/subtitle-editor",
+        "platform/creator-workflow",
+        "platform/subtitle-format"
+      ]
+    }
+  ]
+}

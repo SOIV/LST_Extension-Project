@@ -28,6 +28,17 @@ const config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.js',
+          lastVersion: 'current',
+          versions: {
+            current: {
+              label: 'Beta',
+              badge: true,
+            },
+            '1.0.0': {
+              label: 'v1.0.0',
+              badge: true,
+            },
+          },
         },
         blog: false,
         theme: {
@@ -48,6 +59,10 @@ const config = {
             sidebarId: 'guideSidebar',
             position: 'left',
             label: 'Guide',
+          },
+          {
+            type: 'docsVersionDropdown',
+            position: 'right',
           },
           {
             href: 'https://github.com/SOIV/LST_Extension-Project',
