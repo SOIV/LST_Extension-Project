@@ -7,7 +7,7 @@ Chrome Extension과는 독립적으로 동작하지만, 필요 시 WebSocket을 
 
 # 📌 1. Desktop App 목적
 
-Desktop App은 Chrome Extension으로 처리하기 어려운 작업을 보조하거나, 전문 자막 제작 기능을 제공하기 위한 데스크탑 실행 환경입니다.
+Desktop App은 Chrome Extension으로 처리하기 어려운 작업을 보조하고, 더 안정적인 오디오 캡처와 로컬 STT/번역 처리를 제공하기 위한 데스크탑 실행 환경입니다.
 Whisper 자체가 Desktop App의 정의는 아니며, 지연/렉 감소, 안정적인 오디오 캡처, 고급 처리 환경 제공이 핵심 목적입니다.
 
 ### 앱 유형
@@ -15,7 +15,7 @@ Whisper 자체가 Desktop App의 정의는 아니며, 지연/렉 감소, 안정�
 | 유형 | 목적 | 설명 |
 |---|---|---|
 | Lite Helper | Extension 보조 | 실시간 시청 중 지연/렉 감소, 오디오 캡처/처리 오프로딩, WebSocket 브릿지 |
-| Full Desktop App | 전문 제작 | 전체 영상 STT, 고급 편집 UI, AI 보정, 내보내기, 커뮤니티 등록 |
+| Full Desktop App | 독립 실행 환경 | 실시간 STT/번역, 로컬 AI 처리, 장치 설정, Extension 연동을 세밀하게 관리 |
 
 ### 주요 목적
 
@@ -24,7 +24,7 @@ Whisper 자체가 Desktop App의 정의는 아니며, 지연/렉 감소, 안정�
 * 필요 시 Whisper 기반 온/오프라인 STT 모델 사용
 * Chrome Extension보다 더 높은 정확도 또는 낮은 부하
 * CPU/GPU 사용 옵션
-* WebSocket을 통해 Extension에게 실시간 번역 결과 전달
+* WebSocket을 통해 Extension에게 실시간 STT/번역 결과 전달
 * 스트리머/프로 방송용 환경 대응
 
 ---

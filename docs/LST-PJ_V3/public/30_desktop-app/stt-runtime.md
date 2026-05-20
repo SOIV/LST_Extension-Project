@@ -27,12 +27,12 @@ Desktop 계열 앱에서 STT 처리를 보조하거나 직접 수행하는 실�
 | Mode | STT Role | Notes |
 |---|---|---|
 | Lite Helper | 보조 처리/오프로딩 | Extension의 지연/렉 감소, 브라우저 밖 오디오/처리 보조 |
-| Full Desktop App | 독립 처리 | 전체 영상 STT, 고급 편집, AI 보정까지 포함 가능 |
+| Full Desktop App | 독립 처리 | 로컬 STT, 장치 설정, CPU/GPU 실행 옵션, Extension 연동을 세밀하게 관리 |
 
 ## Whisper Position
 
 Whisper는 Desktop App의 중요한 선택지지만 Desktop App의 정의 자체는 아니다.
-Desktop App은 더 나은 실시간 처리, 안정적인 오디오 캡처, Extension 연동, 고급 제작 기능을 위한 실행 환경이다.
+Desktop App은 더 나은 실시간 처리, 안정적인 오디오 캡처, Extension 연동, 로컬 AI 실행을 위한 실행 환경이다.
 
 ## Related Documents
 
