@@ -160,6 +160,7 @@ npm run dev
 | `NEXT_PUBLIC_SITE_URL` | 플랫폼 공개 URL |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase 프로젝트 URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | 서버 전용 Supabase service role key. RLS가 켜진 서버 캐시/관리 작업에 사용 |
 | `NEXT_PUBLIC_R2_PUBLIC_URL` | 공개 자막 파일 접근 URL |
 | `R2_ENDPOINT` | Cloudflare R2 S3 호환 엔드포인트 |
 | `R2_ACCESS_KEY_ID` | R2 access key |

@@ -9,7 +9,7 @@
  *   캐시 미스  → search.list 100pt + videos.list 1pt (기존과 동일)
  */
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   getChannelRegularVideos,
   getChannelShorts,
@@ -40,7 +40,7 @@ export async function getChannelVideosCached(
 
   // ── 1. Supabase 캐시 조회 ────────────────────────────────────────────────
   if (!bypassCache) try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("channel_video_cache")
       .select("videos, next_page_token, fetched_at")
@@ -77,7 +77,7 @@ export async function getChannelVideosCached(
   // ── 3. Supabase 캐시 저장 ────────────────────────────────────────────────
   // 실패해도 서비스에 영향 없음 — 다음 요청에서 재시도
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     await supabase.from("channel_video_cache").upsert(
       {
         channel_id: channelId,
