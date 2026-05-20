@@ -3,9 +3,11 @@ sidebar_position: 1
 slug: /
 ---
 
-# Live Stream Translator Project 사용자 문서
+# LST Project 사용자 문서
 
-LST Project는 브라우저 탭 오디오 또는 마이크 음성을 인식해 실시간 자막과 번역을 표시하는 STT 기반 Chrome 확장 프로그램입니다.
+Live Stream Translator(이하 'LST') Project는 커뮤니티 자막 및 실시간 자막을 띄우는 확장 프로그램 및 커뮤니티 자막을 만들고 업로드할 수 있는 플렛폼입니다.
+
+LST Project for Extension은 커뮤니티 자막을 띄우거나 브라우저 탭 오디오 또는 마이크 음성을 인식해 실시간 자막과 번역을 표시하는 STT 기반 Chrome 확장 프로그램입니다.
 
 이 문서는 베타 사용자를 위한 초기 가이드입니다. 현재 문서는 공개 가능한 사용자 안내만 포함하며, 내부 기획 문서나 민감 초안은 포함하지 않습니다.
 
@@ -21,4 +23,4 @@ LST Project는 브라우저 탭 오디오 또는 마이크 음성을 인식해 �
 
 베타에서는 탭 오디오 + OpenAI Transcription API 조합을 우선 권장합니다.
 
-Web Speech API와 Realtime API는 사용할 수 있지만, 브라우저 환경과 VAD 설정에 따라 결과가 달라질 수 있습니다.
+Web Speech API와 Realtime API는 사용할 수 있지만, 브라우저(또는 사용자) 환경과 VAD 설정에 따라 결과가 달라질 수 있습니다.

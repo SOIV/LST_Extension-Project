@@ -6,7 +6,7 @@ const config = {
   tagline: 'STT 기반 실시간 자막/번역 확장 프로그램 사용자 문서',
   favicon: 'img/favicon.ico',
 
-  url: 'https://lst-docs.vercel.app',
+  url: 'https://lst-project-docs.vercel.app',
   baseUrl: '/',
 
   organizationName: 'SOIV Studio',
@@ -51,7 +51,8 @@ const config = {
           },
           {
             href: 'https://github.com/SOIV/LST_Extension-Project',
-            label: 'GitHub',
+            className: 'header-github-link',
+            'aria-label': 'GitHub repository',
             position: 'right',
           },
         ],
