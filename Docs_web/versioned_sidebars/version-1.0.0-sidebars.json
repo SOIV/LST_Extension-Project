@@ -24,6 +24,11 @@
   ],
   "platformSidebar": [
     {
+      "type": "link",
+      "label": "LST Project v1.0.0 사용자 문서",
+      "href": "/1.0.0/"
+    },
+    {
       "type": "category",
       "label": "플랫폼 가이드",
       "items": [
