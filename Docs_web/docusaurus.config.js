@@ -37,6 +37,7 @@ const config = {
             '1.0.0': {
               label: 'v1.0.0',
               badge: true,
+              banner: 'unreleased',
             },
           },
         },
@@ -55,10 +56,8 @@ const config = {
         title: 'LST Project Docs',
         items: [
           {
-            type: 'docSidebar',
-            sidebarId: 'guideSidebar',
+            type: 'custom-versionAwareDocs',
             position: 'left',
-            label: 'Guide',
           },
           {
             type: 'docsVersionDropdown',
