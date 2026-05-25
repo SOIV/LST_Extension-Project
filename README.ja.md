@@ -26,13 +26,15 @@ LSTは、YouTube動画やライブ配信でコミュニティ字幕、リアル�
 
 | 領域 | 状態 | メモ |
 |---|---|---|
-| コミュニティ字幕プラットフォーム | 進行中 | ログイン、アップロード、検索、エディタ、クリエイター承認フロー |
-| Chrome拡張機能 | 開発版 | YouTubeコミュニティ字幕の読み込み、独自オーバーレイ表示、STT/翻訳機能 |
-| Firefox拡張機能 | 初期ポート | Manifestとロケール中心のポート候補。実際の機能はChrome拡張機能が基準 |
-| リアルタイムSTT | 利用可能/調整中 | 拡張機能単体のWeb Speech/API STTとDesktop補助STTを分離 |
-| Lite Helper | 計画 | ブラウザ制限を補う軽量Desktop補助アプリ |
+| コミュニティ字幕プラットフォーム | 開発中 | ログイン、アップロード、エディタ、クリエイターチャンネル連携と承認フロー実装済み。メインホーム、diff比較、Scripting View等作業中 |
+| Chrome拡張機能 | 開発中 | コミュニティ字幕の読み込み/レンダリング、リアルタイムSTT基本経路が動作中。同期補正や高度な機能は作業中 |
+| Firefox拡張機能 | ポート候補 | Manifestとロケール中心。実際の機能はChrome拡張機能が基準 |
+| リアルタイムSTT | 一部利用可能 | Whisper API / OpenAI Realtime API経路が動作中。Web Speech API V1は不安定。サーバー提供STTは未実装 |
+| Lite Helper | 計画 | ブラウザ拡張の限界を補う軽量Desktop補助アプリ |
 | Full Desktop App | 計画 | 高度なSTT、オーディオキャプチャ、AI翻訳、ローカルLLM/Ollama候補 |
-| 公開Docsサイト | 計画 | `Docs_web/` 作業領域はあるが、ユーザー/開発者向けDocsサイトは未作成 |
+| 公開Docsサイト | 作業中 | `Docs_web/` 作業領域で進行中。ユーザー/開発者向けDocsサイト構築中 |
+
+進捗の詳細は[ロードマップ](docs/LST-PJ_V3/planning/00_core/roadmap.md)を参照してください。
 
 ## 主な機能
 
@@ -41,7 +43,7 @@ LSTは、YouTube動画やライブ配信でコミュニティ字幕、リアル�
 - Google OAuthによるサインイン
 - プロフィールとハンドル管理
 - YouTube URLによる字幕アップロード
-- SRT、VTT、SMI/SAMI、TTML系字幕の処理
+- SRT、VTT字幕の処理（SMI/SAMI、TTMLは対応予定）
 - 動画別字幕一覧と検索
 - Web字幕エディタ
 - YouTubeプレイヤー連携プレビュー

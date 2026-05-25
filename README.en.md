@@ -26,13 +26,15 @@ Platform: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
 
 | Area | Status | Notes |
 |---|---|---|
-| Community subtitle platform | In progress | Login, upload, search, editor, creator approval flow |
-| Chrome extension | Developer build | YouTube community subtitle loading, custom overlay rendering, and STT/translation features |
-| Firefox extension | Early port | Manifest and locale-centered port candidate. Actual functionality follows the Chrome extension |
-| Real-time STT | Available/tuning | Split between extension-only Web Speech/API STT and desktop-assisted STT |
-| Lite Helper | Planned | Lightweight desktop helper for browser limitations |
+| Community subtitle platform | In development | Login, upload, editor, creator channel connection and approval flow complete. Main home, diff view, Scripting View in progress |
+| Chrome extension | In development | Community subtitle loading/rendering and realtime STT base paths working. Sync correction and advanced features in progress |
+| Firefox extension | Port candidate | Manifest and locale-centered. Actual functionality follows the Chrome extension |
+| Real-time STT | Partially available | Whisper API / OpenAI Realtime API paths working. Web Speech API V1 unstable. Server-provided STT not yet implemented |
+| Lite Helper | Planned | Lightweight desktop helper to complement browser extension limitations |
 | Full Desktop App | Planned | Advanced STT, audio capture, AI translation, local LLM/Ollama candidates |
-| Public docs site | Planned | `Docs_web/` workspace exists, but the user/developer docs site has not been scaffolded yet |
+| Public docs site | In progress | Work underway in `Docs_web/`. User/developer docs site being built |
+
+For full progress details, see the [Roadmap](docs/LST-PJ_V3/planning/00_core/roadmap.md).
 
 ## Features
 
@@ -41,7 +43,7 @@ Platform: [lst-pj.soiv-studio.xyz](https://lst-pj.soiv-studio.xyz)
 - Google OAuth sign-in
 - Profile and handle management
 - Subtitle upload by YouTube URL
-- SRT, VTT, SMI/SAMI, and TTML-family subtitle handling
+- SRT and VTT subtitle handling (SMI/SAMI and TTML support planned)
 - Video subtitle list and search
 - Web subtitle editor
 - YouTube player preview integration

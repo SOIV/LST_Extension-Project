@@ -26,13 +26,15 @@ LST는 YouTube 영상과 라이브 방송에서 커뮤니티 자막, 실시간 S
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
-| 커뮤니티 자막 플랫폼 | 진행 중 | 로그인, 업로드, 검색, 편집기, 크리에이터 승인 흐름 구현 중 |
-| Chrome 확장 프로그램 | 개발 버전 | YouTube 커뮤니티 자막 로드, 자체 오버레이 렌더러, STT/번역 기능 포함 |
-| Firefox 확장 프로그램 | 초기 포팅 | Manifest와 로케일 중심의 포팅 후보. 실제 기능은 Chrome 확장 프로그램 기준 |
-| 실시간 STT | 사용 가능/조정 중 | Extension 단독 Web Speech/API STT와 Desktop 보조 STT를 분리 |
+| 커뮤니티 자막 플랫폼 | 개발 중 | 로그인, 업로드, 편집기, 크리에이터 채널 연동/승인 구현 완료. 메인 홈, diff 비교, Scripting View 등 작업 중 |
+| Chrome 확장 프로그램 | 개발 중 | 커뮤니티 자막 로드/렌더링, 실시간 STT 기본 경로 동작. 싱크 보정, 고급 기능 작업 중 |
+| Firefox 확장 프로그램 | 포팅 후보 | Manifest와 로케일 중심. 실제 기능은 Chrome 확장 프로그램 기준 |
+| 실시간 STT | 일부 사용 가능 | Whisper API / OpenAI Realtime API 경로 동작. Web Speech API V1 불안정. 서버 제공 STT 미구현 |
 | Lite Helper | 계획 | 브라우저 확장의 한계를 보완하는 경량 Desktop 보조 앱 |
 | Full Desktop App | 계획 | 고급 STT, 오디오 캡처, AI 번역, 로컬 LLM/Ollama 연동 후보 |
-| 공개 Docs 사이트 | 계획 | `Docs_web/` 작업 영역은 있으나 사용자/개발자용 사이트는 아직 생성 전 |
+| 공개 Docs 사이트 | 작업 중 | `Docs_web/` 작업 영역에서 진행 중. 사용자/개발자용 사이트 구성 중 |
+
+전체 진행 상황과 남은 작업은 [로드맵](docs/LST-PJ_V3/planning/00_core/roadmap.md)을 참고하세요.
 
 ## 주요 기능
 
@@ -41,7 +43,7 @@ LST는 YouTube 영상과 라이브 방송에서 커뮤니티 자막, 실시간 S
 - Google OAuth 기반 로그인
 - 프로필/핸들 관리
 - YouTube URL 기반 자막 업로드
-- SRT, VTT, SMI/SAMI, TTML 계열 자막 처리
+- SRT, VTT 자막 처리 (SMI/SAMI, TTML 지원 예정)
 - 영상별 자막 목록과 검색
 - 웹 자막 편집기
 - YouTube 플레이어 연동 미리보기
