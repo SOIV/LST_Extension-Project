@@ -143,12 +143,12 @@ Last updated: 2026-05-26
 - [x] Delta 누적 표시 (Realtime interim 텍스트 자연스럽게 성장)
 - [x] 번역 파이프라인 연결 (Google / Papago / DeepL / Google Script)
 - [x] CORS 허용 (manifest host_permissions — DeepL, Papago)
-- [ ] **[V1 불안정]** OpenAI Realtime API 추가 조정 필요
+- [ ] **[V1 불안정]** OpenAI Realtime API 추가 조정 필요(일본어 특화 ver.)
 
 #### 파이프라인 — 마이크 (Web Speech API)
 - [x] Web Speech API 연동
 - [x] Web Speech API + 번역 연동
-- [ ] **[V1 불안정]** Web Speech API 추가 조정 필요
+- [ ] **[V1 불안정]** Web Speech API 추가 조정 필요(일본어 특화 ver.)
 
 #### 파이프라인 — STT 엔진 확장
 - [ ] 서버 제공 STT (할당량/플랜 시스템)
