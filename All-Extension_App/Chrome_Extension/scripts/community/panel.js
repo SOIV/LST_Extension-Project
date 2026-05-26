@@ -197,6 +197,7 @@ const LSTPanel = (() => {
     // 이벤트 바인딩
     el.querySelector('#lst-toggle-chk').addEventListener('change', (e) => {
       state.enabled = e.target.checked;
+      updateBtnEnabled();
       if (state.onToggle) state.onToggle(state.enabled);
     });
 
@@ -607,11 +608,8 @@ const LSTPanel = (() => {
     btn.className = 'ytp-button lst-panel-btn';
     btn.title     = 'LST 커뮤니티 자막';
     btn.setAttribute('aria-label', 'LST 커뮤니티 자막 패널 열기');
-    btn.innerHTML = `
-      <svg viewBox="0 0 36 36" width="100%" height="100%" aria-hidden="true">
-        <text x="18" y="25" text-anchor="middle" font-size="12" font-weight="700"
-              fill="white" font-family="Arial, sans-serif" letter-spacing="0.5">LST</text>
-      </svg>`;
+    btn.innerHTML = `<svg viewBox="0 0 36 36" width="100%" height="100%" aria-hidden="true">${ICON_SVG.off}</svg>`;
+    updateBtnEnabled();
     btn.addEventListener('click', e => { e.stopPropagation(); togglePanel(); });
     settingsBtn.parentElement.insertBefore(btn, settingsBtn);
 
@@ -624,8 +622,38 @@ const LSTPanel = (() => {
 
   // ─── 공개 API ────────────────────────────────────────────
 
+  const ICON_SVG = {
+    // C1 (A4 필름 스트립 스타일) — YouTube 자막 토글 아이콘 박스 기준
+    off: `
+      <path class="lst-icon-frame" d="M4.5 4.5 H31.5 Q34.5 4.5 34.5 7.5 V28.5 Q34.5 31.5 31.5 31.5 H4.5 Q1.5 31.5 1.5 28.5 V7.5 Q1.5 4.5 4.5 4.5 Z" fill="none" stroke="white" stroke-width="2.2"/>
+      <path class="lst-icon-rule" d="M1.5 10.5 H34.5 M1.5 25.5 H34.5 M1.5 10.5 V25.5 M34.5 10.5 V25.5" fill="none" stroke="white" stroke-width="1.4"/>
+      <path class="lst-icon-caption" d="M9 20.5 H16.5 M19.5 20.5 H27" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round"/>`,
+    on: `
+      <path class="lst-icon-frame lst-icon-frame--filled" fill="white" fill-rule="evenodd" d="
+        M4.5 4.5 H31.5 Q34.5 4.5 34.5 7.5 V28.5 Q34.5 31.5 31.5 31.5 H4.5 Q1.5 31.5 1.5 28.5 V7.5 Q1.5 4.5 4.5 4.5 Z
+        M4.5 9.8 H31.5 V11.2 H4.5 Z
+        M4.5 24.8 H31.5 V26.2 H4.5 Z
+        M8.2 20.5 Q8.2 19.7 9 19.7 H16.5 Q17.3 19.7 17.3 20.5 Q17.3 21.3 16.5 21.3 H9 Q8.2 21.3 8.2 20.5 Z
+        M18.7 20.5 Q18.7 19.7 19.5 19.7 H27 Q27.8 19.7 27.8 20.5 Q27.8 21.3 27 21.3 H19.5 Q18.7 21.3 18.7 20.5 Z"/>`,
+  };
+
+  function updateBtnEnabled() {
+    const btn = document.getElementById(BUTTON_ID);
+    if (!btn) return;
+    const enabled = !!state.enabled;
+    btn.classList.toggle('lst-btn--on', enabled);
+    btn.setAttribute('aria-pressed', String(enabled));
+    btn.setAttribute(
+      'aria-label',
+      enabled ? 'LST 커뮤니티 자막 켜짐. 패널 열기' : 'LST 커뮤니티 자막 꺼짐. 패널 열기'
+    );
+    const svg = btn.querySelector('svg');
+    if (svg) svg.innerHTML = enabled ? ICON_SVG.on : ICON_SVG.off;
+  }
+
   function update(opts) {
     Object.assign(state, opts);
+    updateBtnEnabled();
     const panel = document.getElementById(PANEL_ID);
     if (!panel) return;
     const chk = panel.querySelector('#lst-toggle-chk');
