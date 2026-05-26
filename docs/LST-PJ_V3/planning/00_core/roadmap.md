@@ -134,7 +134,7 @@ Status: `in_progress`
 
 Last updated: 2026-05-26
 
-#### 파이프라인 — 탭 오디오 캡처
+#### 파이프라인 — 탭 오디오 캡처(OpenAI Realtime API, OpenAI Transcription API)
 - [x] 탭 오디오 캡처 (offscreen document, Chrome tabCapture)
 - [x] Whisper API 연동 (3s 청크, stop/restart 완전한 webm 보장)
 - [x] Realtime API 연동 (WebRTC, gpt-realtime-whisper)
@@ -143,6 +143,7 @@ Last updated: 2026-05-26
 - [x] Delta 누적 표시 (Realtime interim 텍스트 자연스럽게 성장)
 - [x] 번역 파이프라인 연결 (Google / Papago / DeepL / Google Script)
 - [x] CORS 허용 (manifest host_permissions — DeepL, Papago)
+- [ ] **[V1 불안정]** OpenAI Realtime API 추가 조정 필요
 
 #### 파이프라인 — 마이크 (Web Speech API)
 - [x] Web Speech API 연동
