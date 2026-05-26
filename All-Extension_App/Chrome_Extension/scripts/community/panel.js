@@ -629,12 +629,9 @@ const LSTPanel = (() => {
       <path class="lst-icon-rule" d="M1.5 10.5 H34.5 M1.5 25.5 H34.5 M1.5 10.5 V25.5 M34.5 10.5 V25.5" fill="none" stroke="white" stroke-width="1.4"/>
       <path class="lst-icon-caption" d="M9 20.5 H16.5 M19.5 20.5 H27" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round"/>`,
     on: `
-      <path class="lst-icon-frame lst-icon-frame--filled" fill="white" fill-rule="evenodd" d="
-        M4.5 4.5 H31.5 Q34.5 4.5 34.5 7.5 V28.5 Q34.5 31.5 31.5 31.5 H4.5 Q1.5 31.5 1.5 28.5 V7.5 Q1.5 4.5 4.5 4.5 Z
-        M4.5 9.8 H31.5 V11.2 H4.5 Z
-        M4.5 24.8 H31.5 V26.2 H4.5 Z
-        M8.2 20.5 Q8.2 19.7 9 19.7 H16.5 Q17.3 19.7 17.3 20.5 Q17.3 21.3 16.5 21.3 H9 Q8.2 21.3 8.2 20.5 Z
-        M18.7 20.5 Q18.7 19.7 19.5 19.7 H27 Q27.8 19.7 27.8 20.5 Q27.8 21.3 27 21.3 H19.5 Q18.7 21.3 18.7 20.5 Z"/>`,
+      <path class="lst-icon-frame lst-icon-frame--filled" d="M4.5 4.5 H31.5 Q34.5 4.5 34.5 7.5 V28.5 Q34.5 31.5 31.5 31.5 H4.5 Q1.5 31.5 1.5 28.5 V7.5 Q1.5 4.5 4.5 4.5 Z" fill="white" stroke="none"/>
+      <path class="lst-icon-rule lst-icon-cutout" d="M4.5 10.5 H31.5 M4.5 25.5 H31.5" fill="none" stroke="#111" stroke-width="1.4"/>
+      <path class="lst-icon-caption lst-icon-cutout" d="M9 20.5 H16.5 M19.5 20.5 H27" fill="none" stroke="#111" stroke-width="1.6" stroke-linecap="round"/>`,
   };
 
   function updateBtnEnabled() {

@@ -18,18 +18,14 @@
   transition: stroke 0.2s ease, fill 0.2s ease;
 }
 
-/* 패널 열림 상태 */
-.lst-panel-btn.lst-btn--active svg path {
-  stroke: #3ea6ff;
+.lst-panel-btn svg .lst-icon-caption {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.16s ease, stroke 0.2s ease, fill 0.2s ease;
 }
 
-.lst-panel-btn:not(.lst-btn--on).lst-btn--active svg .lst-icon-frame {
-  stroke: #fff;
-}
-
-.lst-panel-btn.lst-btn--on.lst-btn--active svg .lst-icon-frame--filled {
-  fill: #3ea6ff;
-  stroke: none;
+.lst-panel-btn.lst-btn--active svg .lst-icon-caption {
+  transform: translateY(-3px);
 }
 
 /* ─── 패널 컨테이너 ─── */
