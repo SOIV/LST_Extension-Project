@@ -100,20 +100,18 @@ export default async function ChannelPage({
     );
   }
 
-  // 채널 정보 + 연동 상태 병렬 조회
-  const [channel, connected] = await Promise.all([
+  // 채널 정보 + 연동 상태 + 초기 영상 목록 병렬 조회
+  const [channel, connected, result] = await Promise.all([
     getChannelById(channelId),
     isCreatorConnected(channelId),
+    getChannelVideosCached(
+      channelId,
+      tab as "videos" | "shorts" | "live",
+      24
+    ),
   ]);
 
   if (!channel) notFound();
-
-  // 탭별 초기 영상 목록 조회 (Supabase 캐시 우선)
-  const result = await getChannelVideosCached(
-    channelId,
-    tab as "videos" | "shorts" | "live",
-    24
-  );
 
   // 자막 상태 enrichment (client 컴포넌트에 직렬화 가능한 plain object로 전달)
   const subtitleStatuses = await getSubtitleStatuses(

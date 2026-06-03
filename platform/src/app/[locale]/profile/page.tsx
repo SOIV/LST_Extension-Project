@@ -15,14 +15,11 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-
-  useEffect(() => {
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window === "undefined") return false;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("onboarding") === "1") {
-      setShowOnboarding(true);
-    }
-  }, []);
+    return params.get("onboarding") === "1";
+  });
 
   useEffect(() => {
     const supabase = createClient();

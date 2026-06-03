@@ -40,6 +40,20 @@ export async function proxy(request: NextRequest) {
   // 새 NextResponse.next()를 만들면 intlMiddleware가 설정한 locale 정보가 사라짐
   const response = i18nResponse;
 
+  const stripped = pathnameWithoutLocale(pathname);
+  const locale =
+    routing.locales.find((l) => pathname.startsWith(`/${l}`)) ??
+    routing.defaultLocale;
+
+  const isPublic =
+    PUBLIC_PATHS.some(
+      (p) => stripped === p || stripped.startsWith(p + "/")
+    ) || pathname.startsWith("/api/");
+
+  if (isPublic && stripped !== "/login") {
+    return response;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -64,16 +78,6 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const stripped = pathnameWithoutLocale(pathname);
-  const locale =
-    routing.locales.find((l) => pathname.startsWith(`/${l}`)) ??
-    routing.defaultLocale;
-
-  const isPublic =
-    PUBLIC_PATHS.some(
-      (p) => stripped === p || stripped.startsWith(p + "/")
-    ) || pathname.startsWith("/api/");
 
   if (!user && !isPublic) {
     const loginUrl = new URL(`/${locale}/login`, request.url);

@@ -42,8 +42,26 @@ export default function DashboardPage() {
   const [pendingTracks, setPendingTracks] = useState<PendingTrack[]>([]);
 
   // OAuth result messages
-  const [connectSuccess, setConnectSuccess] = useState("");
-  const [connectError, setConnectError] = useState("");
+  const [{ connectSuccess, connectError }] = useState(() => {
+    if (typeof window === "undefined") {
+      return { connectSuccess: "", connectError: "" };
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get("connected");
+    const error = params.get("error");
+
+    if (connected === "1") {
+      return { connectSuccess: t("connectedSuccess"), connectError: "" };
+    }
+    if (error === "channel_taken") {
+      return { connectSuccess: "", connectError: t("errorChannelTaken") };
+    }
+    if (error) {
+      return { connectSuccess: "", connectError: t("errorConnect") };
+    }
+    return { connectSuccess: "", connectError: "" };
+  });
 
   // Approve/reject state
   const [actioningId, setActioningId] = useState<string | null>(null);
@@ -77,21 +95,10 @@ export default function DashboardPage() {
   // Read OAuth result from URL and clear it
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const connected = params.get("connected");
-    const error = params.get("error");
-
-    if (connected === "1") {
-      setConnectSuccess(t("connectedSuccess"));
-    } else if (error === "channel_taken") {
-      setConnectError(t("errorChannelTaken"));
-    } else if (error) {
-      setConnectError(t("errorConnect"));
-    }
-
-    if (connected || error) {
+    if (params.has("connected") || params.has("error")) {
       window.history.replaceState({}, "", window.location.pathname);
     }
-  }, [t]);
+  }, []);
 
   async function handleDisconnect(channelId: string) {
     if (!confirm(t("confirmDisconnect"))) return;
