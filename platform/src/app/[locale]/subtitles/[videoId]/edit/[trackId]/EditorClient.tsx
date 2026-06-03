@@ -257,7 +257,7 @@ export default function EditorClient({
 
       setSaved(true);
       setSaving(false);
-      setTimeout(() => router.replace(`/subtitles/${videoId}`), 1400);
+      setTimeout(() => router.back(), 1400);
     } catch {
       setError(t("errorNetwork"));
       setSaving(false);

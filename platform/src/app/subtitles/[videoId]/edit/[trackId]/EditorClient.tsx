@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -229,7 +228,7 @@ export default function EditorClient({
 
       setSaved(true);
       setSaving(false);
-      setTimeout(() => router.push(`/subtitles/${videoId}`), 1400);
+      setTimeout(() => router.back(), 1400);
     } catch {
       setError("네트워크 오류가 발생했습니다.");
       setSaving(false);
@@ -242,12 +241,12 @@ export default function EditorClient({
       {/* Sub-header */}
       <div className="sticky top-14 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 h-12 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <Link
-            href={`/subtitles/${videoId}`}
+          <button
+            onClick={() => router.back()}
             className="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors shrink-0"
           >
             ← 뒤로
-          </Link>
+          </button>
           <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50 truncate">
             {languageName} 편집
           </span>

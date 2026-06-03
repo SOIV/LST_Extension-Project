@@ -270,7 +270,6 @@ export default async function SubtitlePage({
                         )}
                         <Link
                           href={`/subtitles/${videoId}/edit/${track.id}`}
-                          replace
                           className="text-xs px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                         >
                           {t("edit")}
