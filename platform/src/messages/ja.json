@@ -147,7 +147,9 @@
     "ariaStartTime": "開始時間",
     "ariaEndTime": "終了時間",
     "ariaSubtitleText": "字幕テキスト",
-    "ariaDeleteCue": "キューを削除"
+    "ariaDeleteCue": "キューを削除",
+    "expandVideo": "動画を拡大",
+    "collapseVideo": "動画を縮小"
   },
   "Footer": {
     "status": "サービス状態",

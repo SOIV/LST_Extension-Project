@@ -99,7 +99,7 @@ Status: `in_progress`
 #### 편집기
 - [x] 편집 중 실시간 미리보기
 - [x] 플랫폼 내 자막 작성(Create) 기능
-- [ ] 미리보기 영상 크기 조정 UX
+- [x] 미리보기 영상 크기 조정 UX
 - [ ] SMI/SAMI, TTML 편집 지원 구체화
 - [ ] Scripting View (고급 편집기, 베타)
 

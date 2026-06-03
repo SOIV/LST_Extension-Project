@@ -147,7 +147,9 @@
     "ariaStartTime": "Start time",
     "ariaEndTime": "End time",
     "ariaSubtitleText": "Subtitle text",
-    "ariaDeleteCue": "Delete cue"
+    "ariaDeleteCue": "Delete cue",
+    "expandVideo": "Expand video",
+    "collapseVideo": "Collapse video"
   },
   "Footer": {
     "status": "Service Status",
