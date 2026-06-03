@@ -287,6 +287,26 @@
     "message": "Where subtitles will be displayed on the video player",
     "description": "Help text for overlay position"
   },
+  "label_textAlign": {
+    "message": "Text Alignment",
+    "description": "Label for text align dropdown"
+  },
+  "align_left": {
+    "message": "Left",
+    "description": "Left align option"
+  },
+  "align_center": {
+    "message": "Center",
+    "description": "Center align option"
+  },
+  "align_right": {
+    "message": "Right",
+    "description": "Right align option"
+  },
+  "help_textAlign": {
+    "message": "Text alignment direction for real-time subtitles",
+    "description": "Help text for text align"
+  },
   "label_overlaySize": {
     "message": "Subtitle Size:",
     "description": "Label for overlay size slider"

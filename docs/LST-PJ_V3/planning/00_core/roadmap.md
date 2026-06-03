@@ -73,9 +73,9 @@ Status: `in_progress`
 
 #### 설정 UI
 - [x] 글꼴/색상/크기/테두리/배경 등 기본 설정
-- [ ] 텍스트 외곽선 (Text Outline)
-- [ ] 텍스트 정렬 (Text Align)
-- [ ] Expert Options (고급 설정 패널)
+- [x] 텍스트 외곽선 (Text Outline) — edgeStyle로 구현 완료
+- [x] 텍스트 정렬 (Text Align) — STT 실시간 자막 텍스트 좌/중/우 정렬
+- [ ] Expert Options (고급 설정 패널) — 담을 내용 미정, 보류
 
 ### P3. 플랫폼 MVP 코어
 
@@ -108,7 +108,7 @@ Status: `in_progress`
 Status: `in_progress`
 
 - [x] 크리에이터 채널 연동 UX 정리
-- [ ] 연동 문구 정합성 수정
+- [x] 연동 문구 정합성 수정
 - [x] 승인 전/후 공개 워크플로우 구현
 - [ ] YouTube 자막 업로드 비상 경로 점검
 - [ ] 영상 제목/설명란 다국어

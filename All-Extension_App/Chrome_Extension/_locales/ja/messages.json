@@ -287,6 +287,26 @@
     "message": "ビデオプレーヤーでの字幕の表示位置",
     "description": "Help text for overlay position"
   },
+  "label_textAlign": {
+    "message": "テキスト配置",
+    "description": "Label for text align dropdown"
+  },
+  "align_left": {
+    "message": "左揃え",
+    "description": "Left align option"
+  },
+  "align_center": {
+    "message": "中央揃え",
+    "description": "Center align option"
+  },
+  "align_right": {
+    "message": "右揃え",
+    "description": "Right align option"
+  },
+  "help_textAlign": {
+    "message": "リアルタイム字幕のテキスト配置方向",
+    "description": "Help text for text align"
+  },
   "label_overlaySize": {
     "message": "字幕サイズ：",
     "description": "Label for overlay size slider"

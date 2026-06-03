@@ -110,6 +110,7 @@ const elements = {
   // 표시 탭 - 실시간
   showOriginal:    document.getElementById('showOriginal'),
   overlayPosition: document.getElementById('overlayPosition'),
+  textAlign:       document.getElementById('textAlign'),
   enableCache:     document.getElementById('enableCache'),
 
   // 실시간 탭 - 상태
@@ -240,6 +241,7 @@ const DISPLAY_DEFAULTS = {
   windowColor:   'black',
   windowOpacity: '0',
   overlayPosition: 'bottom',
+  textAlign:     'center',
 };
 
 /**
@@ -291,6 +293,7 @@ async function loadSettings() {
       // 표시 - 실시간
       if (elements.showOriginal)    elements.showOriginal.checked    = settings.showOriginal    !== false;
       if (elements.overlayPosition) elements.overlayPosition.value   = settings.overlayPosition || DISPLAY_DEFAULTS.overlayPosition;
+      if (elements.textAlign)       elements.textAlign.value         = settings.textAlign       || DISPLAY_DEFAULTS.textAlign;
       if (elements.enableCache)     elements.enableCache.checked     = settings.enableCache     !== false;
       if (elements.sourceLang) elements.sourceLang.value = settings.sourceLang || 'auto';
       if (elements.targetLang) elements.targetLang.value = settings.targetLang || 'ko';
@@ -347,6 +350,7 @@ async function saveSettings(silent = false) {
     // 표시 - 실시간
     showOriginal:    elements.showOriginal?.checked    ?? true,
     overlayPosition: elements.overlayPosition?.value   || DISPLAY_DEFAULTS.overlayPosition,
+    textAlign:       elements.textAlign?.value         || DISPLAY_DEFAULTS.textAlign,
     enableCache:     elements.enableCache?.checked     ?? true,
     // 언어
     sourceLang: elements.sourceLang?.value || 'auto',
@@ -740,6 +744,7 @@ function setupEventListeners() {
     if (elements.edgeStyle)  elements.edgeStyle.value  = DISPLAY_DEFAULTS.edgeStyle;
     if (elements.bgColor)    elements.bgColor.value    = DISPLAY_DEFAULTS.bgColor;
     if (elements.windowColor)elements.windowColor.value= DISPLAY_DEFAULTS.windowColor;
+    if (elements.textAlign)  elements.textAlign.value  = DISPLAY_DEFAULTS.textAlign;
     if (elements.overlaySize) {
       elements.overlaySize.value = percentToSlider(DISPLAY_DEFAULTS.overlaySize);
       if (elements.sizeValue) elements.sizeValue.textContent = DISPLAY_DEFAULTS.overlaySize + '%';
@@ -859,7 +864,7 @@ function setupEventListeners() {
     elements.sourceLang, elements.targetLang,
     elements.fontFamily, elements.fontColor, elements.edgeStyle,
     elements.bgColor, elements.windowColor,
-    elements.showOriginal, elements.overlayPosition, elements.enableCache,
+    elements.showOriginal, elements.overlayPosition, elements.textAlign, elements.enableCache,
     elements.openaiApiKey,
     elements.googleScriptUrl, elements.papagoApiKey, elements.papagoApiSecret, elements.deeplApiKey,
   ].forEach(el => el?.addEventListener('change', () => saveSettings(true)));

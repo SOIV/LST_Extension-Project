@@ -113,7 +113,7 @@ const SttRenderer = (() => {
       'fontColor', 'fontOpacity',
       'bgColor', 'bgOpacity',
       'windowColor', 'windowOpacity',
-      'edgeStyle', 'sttMinDisplayMs',
+      'edgeStyle', 'textAlign', 'sttMinDisplayMs',
     ], (s) => {
       settings      = s || {};
       settingsReady = true;
@@ -177,6 +177,7 @@ const SttRenderer = (() => {
     text.style.fontVariant = fam === 'small-caps' ? 'small-caps' : '';
     text.style.color       = toRgba(s.fontColor || 'white', isInterim ? '55' : (s.fontOpacity ?? '100'));
     text.style.textShadow  = EDGE_STYLE_MAP[s.edgeStyle || 'drop-shadow'] || '';
+    text.style.textAlign   = s.textAlign || 'center';
     text.style.background  = toRgba(s.bgColor || 'black', s.bgOpacity ?? '75');
   }
 

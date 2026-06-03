@@ -388,6 +388,7 @@ chrome.runtime.onInstalled.addListener(async () => {
     windowOpacity:    '0',
     // 표시 - 실시간
     overlayPosition:  'bottom',
+    textAlign:        'center',
     // 번역 - 메인
     translationEngine:   'google',
     // 번역 - 중간

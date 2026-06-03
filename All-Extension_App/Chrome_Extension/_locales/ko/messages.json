@@ -287,6 +287,26 @@
     "message": "비디오 플레이어에서 자막이 표시될 위치",
     "description": "Help text for overlay position"
   },
+  "label_textAlign": {
+    "message": "텍스트 정렬",
+    "description": "Label for text align dropdown"
+  },
+  "align_left": {
+    "message": "왼쪽",
+    "description": "Left align option"
+  },
+  "align_center": {
+    "message": "가운데",
+    "description": "Center align option"
+  },
+  "align_right": {
+    "message": "오른쪽",
+    "description": "Right align option"
+  },
+  "help_textAlign": {
+    "message": "실시간 자막 텍스트의 정렬 방향",
+    "description": "Help text for text align"
+  },
   "label_overlaySize": {
     "message": "자막 크기:",
     "description": "Label for overlay size slider"

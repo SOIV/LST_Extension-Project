@@ -625,6 +625,17 @@
                 <p class="form-help" data-i18n="help_overlayPosition">실시간 자막이 표시될 위치</p>
               </div>
 
+              <!-- 텍스트 정렬 -->
+              <div class="form-group">
+                <label for="textAlign" data-i18n="label_textAlign">텍스트 정렬</label>
+                <select id="textAlign" class="form-control" disabled>
+                  <option value="left"   data-i18n="align_left">왼쪽</option>
+                  <option value="center" data-i18n="align_center" selected>가운데</option>
+                  <option value="right"  data-i18n="align_right">오른쪽</option>
+                </select>
+                <p class="form-help" data-i18n="help_textAlign">실시간 자막 텍스트의 정렬 방향</p>
+              </div>
+
               <div class="form-group">
                 <label class="checkbox-label">
                   <input type="checkbox" id="showOriginal" checked disabled>
