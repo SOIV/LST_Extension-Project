@@ -293,29 +293,35 @@ export default function EditorClient({
       <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:flex-row gap-4">
         {/* Video panel */}
         <div className={`shrink-0 transition-all duration-200 ${videoExpanded ? "lg:w-[600px] xl:w-[680px]" : "lg:w-[420px] xl:w-[480px]"}`}>
-          <div className="sticky top-28">
-            <div className="flex justify-end mb-1">
+          <div className="sticky top-28 flex flex-col gap-1.5">
+            <div className="aspect-video rounded-xl overflow-hidden bg-black">
+              <div id="yt-editor-player" className="w-full h-full" />
+            </div>
+            <div className="flex justify-end">
               <button
                 onClick={() => setVideoExpanded((v) => !v)}
-                className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 title={videoExpanded ? t("collapseVideo") : t("expandVideo")}
                 aria-label={videoExpanded ? t("collapseVideo") : t("expandVideo")}
               >
                 {videoExpanded ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="15 18 9 12 15 6" />
-                    <polyline points="9 18 3 12 9 6" />
-                  </svg>
+                  <>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="15 18 9 12 15 6" />
+                      <polyline points="9 18 3 12 9 6" />
+                    </svg>
+                    {t("collapseVideo")}
+                  </>
                 ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                    <polyline points="15 18 21 12 15 6" />
-                  </svg>
+                  <>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6" />
+                      <polyline points="15 18 21 12 15 6" />
+                    </svg>
+                    {t("expandVideo")}
+                  </>
                 )}
               </button>
-            </div>
-            <div className="aspect-video rounded-xl overflow-hidden bg-black">
-              <div id="yt-editor-player" className="w-full h-full" />
             </div>
           </div>
         </div>
