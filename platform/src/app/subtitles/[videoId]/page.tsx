@@ -2,11 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  ko: "한국어", en: "English", ja: "日本語",
-  "zh-CN": "中文 (简体)", "zh-TW": "中文 (繁體)",
-  es: "Español", fr: "Français", de: "Deutsch", ru: "Русский",
-};
+function getLanguageName(languageCode: string): string {
+  try {
+    const displayNames = new Intl.DisplayNames(["en"], { type: "language" });
+    return displayNames.of(languageCode) ?? languageCode;
+  } catch {
+    return languageCode;
+  }
+}
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft:    { label: "초안",   color: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400" },
@@ -125,7 +128,7 @@ export default async function SubtitlePage({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                          {LANGUAGE_NAMES[track.language_code] ?? track.language_code}
+                          {getLanguageName(track.language_code)}
                         </span>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusInfo.color}`}>
                           {statusInfo.label}

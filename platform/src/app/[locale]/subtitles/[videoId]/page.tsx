@@ -5,11 +5,14 @@ import { getTranslations } from "next-intl/server";
 import { getVideoById, type YoutubeVideo } from "@/lib/youtube";
 import CopyLinkButton from "@/components/CopyLinkButton";
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  ko: "한국어", en: "English", ja: "日本語",
-  "zh-CN": "中文 (简体)", "zh-TW": "中文 (繁體)",
-  es: "Español", fr: "Français", de: "Deutsch", ru: "Русский",
-};
+function getLanguageName(locale: string, languageCode: string): string {
+  try {
+    const displayNames = new Intl.DisplayNames([locale], { type: "language" });
+    return displayNames.of(languageCode) ?? languageCode;
+  } catch {
+    return languageCode;
+  }
+}
 
 // ─── 크리에이터 미연동 페이지 ──────────────────────────────────────────────────
 
@@ -250,7 +253,7 @@ export default async function SubtitlePage({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-                          {LANGUAGE_NAMES[track.language_code] ?? track.language_code}
+                          {getLanguageName(locale, track.language_code)}
                         </span>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor}`}>
                           {statusLabel}

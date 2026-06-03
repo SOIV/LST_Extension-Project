@@ -2,17 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect, notFound } from "next/navigation";
 import EditorClient from "./EditorClient";
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  ko: "한국어",
-  en: "English",
-  ja: "日本語",
-  "zh-CN": "中文 (简体)",
-  "zh-TW": "中文 (繁體)",
-  es: "Español",
-  fr: "Français",
-  de: "Deutsch",
-  ru: "Русский",
-};
+function getLanguageName(languageCode: string): string {
+  try {
+    const displayNames = new Intl.DisplayNames(["en"], { type: "language" });
+    return displayNames.of(languageCode) ?? languageCode;
+  } catch {
+    return languageCode;
+  }
+}
 
 export default async function EditPage({
   params,
@@ -64,7 +61,7 @@ export default async function EditPage({
     <EditorClient
       videoId={videoId}
       trackId={trackId}
-      languageName={LANGUAGE_NAMES[track.language_code] ?? track.language_code}
+      languageName={getLanguageName(track.language_code)}
       format={format}
       initialContent={initialContent}
     />

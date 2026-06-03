@@ -5,11 +5,14 @@ import { useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
-const LANGUAGE_NAMES: Record<string, string> = {
-  ko: "한국어", en: "English", ja: "日本語",
-  "zh-CN": "中文 (简体)", "zh-TW": "中文 (繁體)",
-  es: "Español", fr: "Français", de: "Deutsch", ru: "Русский",
-};
+function getLanguageName(locale: string, languageCode: string): string {
+  try {
+    const displayNames = new Intl.DisplayNames([locale], { type: "language" });
+    return displayNames.of(languageCode) ?? languageCode;
+  } catch {
+    return languageCode;
+  }
+}
 
 interface ConnectedChannel {
   id: string;
@@ -241,7 +244,7 @@ export default function DashboardPage() {
                           </p>
                         )}
                         <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-                          <span>{LANGUAGE_NAMES[track.language_code] ?? track.language_code}</span>
+                          <span>{getLanguageName(locale, track.language_code)}</span>
                           <span>·</span>
                           <span>{new Date(track.created_at).toLocaleDateString()}</span>
                           {video?.youtube_video_id && (
