@@ -42,20 +42,22 @@ export default function ChannelDescription({
           onClick={() => setIsOpen(false)}
         >
           <div
-            className="relative w-full max-w-lg mx-4 bg-white dark:bg-zinc-900 rounded-xl shadow-xl p-6 max-h-[70vh] flex flex-col"
+            className="w-full max-w-lg mx-4 bg-white dark:bg-zinc-900 rounded-xl shadow-xl max-h-[70vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
-              aria-label={labelClose}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-line overflow-y-auto leading-relaxed pr-2">
+            <div className="flex items-center justify-end px-4 pt-3 pb-1 shrink-0">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                aria-label={labelClose}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-line overflow-y-auto leading-relaxed px-6 pb-6">
               {description}
             </p>
           </div>
