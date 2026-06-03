@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getVideoById, type YoutubeVideo } from "@/lib/youtube";
 import CopyLinkButton from "@/components/CopyLinkButton";
+import BackButton from "@/components/BackButton";
 
 function getLanguageName(locale: string, languageCode: string): string {
   try {
@@ -186,6 +187,8 @@ export default async function SubtitlePage({
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-10 px-4">
       <div className="max-w-3xl mx-auto flex flex-col gap-8">
+
+        <BackButton label={t("back")} />
 
         <div className="flex flex-col gap-3">
           <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
