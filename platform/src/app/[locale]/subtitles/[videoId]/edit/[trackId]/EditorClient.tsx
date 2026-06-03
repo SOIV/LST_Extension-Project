@@ -306,9 +306,9 @@ export default function EditorClient({
       )}
 
       {/* Main layout */}
-      <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:flex-row gap-4">
+      <div className={`mx-auto px-4 py-4 flex flex-col lg:flex-row gap-4 transition-all duration-200 ${videoExpanded ? "max-w-screen-2xl" : "max-w-7xl"}`}>
         {/* Video panel */}
-        <div className={`shrink-0 transition-all duration-200 ${videoExpanded ? "lg:w-[600px] xl:w-[680px] lg:-ml-[180px] xl:-ml-[200px]" : "lg:w-[420px] xl:w-[480px]"}`}>
+        <div className={`shrink-0 transition-all duration-200 ${videoExpanded ? "lg:w-[600px] xl:w-[680px]" : "lg:w-[420px] xl:w-[480px]"}`}>
           <div className="sticky top-28 flex flex-col gap-1.5">
             <div className="relative aspect-video rounded-xl overflow-hidden bg-black">
               <div id="yt-editor-player" className="w-full h-full" />
