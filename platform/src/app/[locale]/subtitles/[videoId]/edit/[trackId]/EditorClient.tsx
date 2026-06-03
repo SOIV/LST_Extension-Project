@@ -116,7 +116,17 @@ export default function EditorClient({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
-  const [videoExpanded, setVideoExpanded] = useState(false);
+  const [videoExpanded, setVideoExpanded] = useState(() => {
+    try { return localStorage.getItem("lst-editor-video-expanded") === "true"; } catch { return false; }
+  });
+
+  function toggleVideoExpanded() {
+    setVideoExpanded((v) => {
+      const next = !v;
+      try { localStorage.setItem("lst-editor-video-expanded", String(next)); } catch {}
+      return next;
+    });
+  }
   const [currentSubtitleText, setCurrentSubtitleText] = useState("");
 
   const playerRef = useRef<Record<string, (...args: unknown[]) => unknown>>(null);
@@ -322,7 +332,7 @@ export default function EditorClient({
             </div>
             <div className="flex justify-end">
               <button
-                onClick={() => setVideoExpanded((v) => !v)}
+                onClick={toggleVideoExpanded}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 title={videoExpanded ? t("collapseVideo") : t("expandVideo")}
                 aria-label={videoExpanded ? t("collapseVideo") : t("expandVideo")}
