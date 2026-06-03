@@ -117,6 +117,7 @@ export default function EditorClient({
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [videoExpanded, setVideoExpanded] = useState(false);
+  const [currentSubtitleText, setCurrentSubtitleText] = useState("");
 
   const playerRef = useRef<Record<string, (...args: unknown[]) => unknown>>(null);
 
@@ -152,6 +153,21 @@ export default function EditorClient({
       }
     };
   }, [videoId]);
+
+  // ── 자막 미리보기 폴링 (상시 활성) ────────────────────────────────────────────
+  useEffect(() => {
+    const activeCues = view === "timeline" ? cues : parseContent(rawText, format);
+    const id = setInterval(() => {
+      try {
+        const timeSec = playerRef.current?.getCurrentTime() as number;
+        if (typeof timeSec !== "number") return;
+        const timeMs = timeSec * 1000;
+        const active = activeCues.find((c) => c.start <= timeMs && c.end >= timeMs);
+        setCurrentSubtitleText(active?.text ?? "");
+      } catch { /* ignore */ }
+    }, 200);
+    return () => clearInterval(id);
+  }, [cues, rawText, view, format]);
 
   function seekTo(ms: number) {
     try {
@@ -292,10 +308,17 @@ export default function EditorClient({
       {/* Main layout */}
       <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col lg:flex-row gap-4">
         {/* Video panel */}
-        <div className={`shrink-0 transition-all duration-200 ${videoExpanded ? "lg:w-[600px] xl:w-[680px]" : "lg:w-[420px] xl:w-[480px]"}`}>
+        <div className={`shrink-0 transition-all duration-200 ${videoExpanded ? "lg:w-[600px] xl:w-[680px] lg:-ml-[180px] xl:-ml-[200px]" : "lg:w-[420px] xl:w-[480px]"}`}>
           <div className="sticky top-28 flex flex-col gap-1.5">
-            <div className="aspect-video rounded-xl overflow-hidden bg-black">
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-black">
               <div id="yt-editor-player" className="w-full h-full" />
+              {currentSubtitleText && (
+                <div className="absolute bottom-10 left-0 right-0 flex justify-center pointer-events-none px-6">
+                  <span className="bg-black/80 text-white text-sm leading-snug px-3 py-1.5 rounded text-center whitespace-pre-line max-w-[85%]">
+                    {currentSubtitleText}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex justify-end">
               <button
@@ -406,7 +429,7 @@ export default function EditorClient({
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
               className="w-full font-mono text-xs leading-relaxed text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 resize-none focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
-              style={{ minHeight: "calc(100vh - 20rem)" }}
+              style={{ minHeight: "calc(100vh - 12rem)" }}
               spellCheck={false}
               placeholder={
                 format === "vtt"
@@ -493,7 +516,7 @@ function CueRow({
         onChange={(e) => onUpdate(index, "text", e.target.value)}
         rows={2}
         aria-label={ariaSubtitleText}
-        className="flex-1 min-w-0 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 resize-none focus:outline-none focus:ring-1 focus:ring-zinc-400"
+        className="flex-1 min-w-0 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 resize-y focus:outline-none focus:ring-1 focus:ring-zinc-400"
       />
 
       <button
