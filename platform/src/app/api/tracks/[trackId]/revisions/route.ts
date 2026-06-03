@@ -3,6 +3,31 @@ import { uploadToR2 } from "@/lib/r2";
 import { type NextRequest } from "next/server";
 
 const MAX_SUBTITLE_CONTENT_LENGTH = 4 * 1024 * 1024; // 4MB
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
+
+async function canManageApprovedTrack(
+  supabase: SupabaseServerClient,
+  userId: string,
+  youtubeChannelId: string | null
+) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+
+  if (profile?.role === "admin") return true;
+  if (!youtubeChannelId) return false;
+
+  const { data: creator } = await supabase
+    .from("connected_creators")
+    .select("id")
+    .eq("youtube_channel_id", youtubeChannelId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  return Boolean(creator);
+}
 
 export async function POST(
   request: NextRequest,
@@ -37,7 +62,7 @@ export async function POST(
   // Track + video info
   const { data: track } = await supabase
     .from("subtitle_tracks")
-    .select("id, language_code, videos(youtube_video_id)")
+    .select("id, language_code, status, videos(youtube_video_id, youtube_channel_id)")
     .eq("id", trackId)
     .single();
 
@@ -49,16 +74,28 @@ export async function POST(
   }
 
   const videos = track.videos as
-    | { youtube_video_id: string }
-    | { youtube_video_id: string }[]
+    | { youtube_video_id: string; youtube_channel_id: string | null }
+    | { youtube_video_id: string; youtube_channel_id: string | null }[]
     | null;
-  const ytId = Array.isArray(videos)
-    ? videos[0]?.youtube_video_id
-    : videos?.youtube_video_id;
+  const video = Array.isArray(videos) ? videos[0] : videos;
+  const ytId = video?.youtube_video_id;
   if (!ytId) {
     return Response.json(
       { error: "영상 정보를 찾을 수 없습니다." },
       { status: 500 }
+    );
+  }
+  if (
+    track.status === "approved" &&
+    !(await canManageApprovedTrack(
+      supabase,
+      user.id,
+      video.youtube_channel_id ?? null
+    ))
+  ) {
+    return Response.json(
+      { error: "승인된 자막은 채널 소유자 또는 관리자만 수정할 수 있습니다." },
+      { status: 403 }
     );
   }
 

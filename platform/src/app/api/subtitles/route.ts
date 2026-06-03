@@ -40,16 +40,12 @@ export async function GET(request: NextRequest) {
   }
 
   // 2. 해당 영상의 approved 자막 트랙 목록 조회
-  const tracksQuery = supabase
+  const { data: tracks, error: tracksError } = await supabase
     .from("subtitle_tracks")
     .select("id, language_code")
     .eq("video_id", video.id)
     .eq("status", "approved")
     .order("language_code", { ascending: true });
-
-  if (lang) tracksQuery.eq("language_code", lang);
-
-  const { data: tracks, error: tracksError } = await tracksQuery;
 
   if (tracksError || !tracks || tracks.length === 0) {
     return Response.json(
@@ -68,8 +64,17 @@ export async function GET(request: NextRequest) {
     if (aRank !== bRank) return aRank - bRank;
     return a.language_code.localeCompare(b.language_code);
   });
-  const track = sortedTracks[0];
   const allLanguages = tracks.map((t) => t.language_code);
+  const track = lang
+    ? tracks.find((t) => t.language_code === lang)
+    : sortedTracks[0];
+
+  if (!track) {
+    return Response.json(
+      { error: "No subtitles available for requested language" },
+      { status: 404, headers: CORS_HEADERS }
+    );
+  }
 
   // 3. 현재 리비전 조회 (is_current 불일치 방어: revision_number 내림차순으로 최신 우선)
   const { data: revisions, error: revisionError } = await supabase

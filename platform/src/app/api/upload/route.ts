@@ -4,6 +4,7 @@ import { getVideoById } from "@/lib/youtube";
 import { type NextRequest } from "next/server";
 
 const MAX_SUBTITLE_FILE_SIZE_BYTES = 4 * 1024 * 1024; // 4MB
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
 /** YouTube URL에서 videoId 추출 */
 function extractVideoId(input: string): string | null {
@@ -38,6 +39,30 @@ function detectFormat(filename: string, content: string): "srt" | "vtt" | "smi" 
   if (/<SAMI/i.test(content.trimStart().slice(0, 300))) return "smi";
   if (/<tt[\s>]/i.test(content.trimStart().slice(0, 500))) return "ttml";
   return "srt";
+}
+
+async function canManageApprovedTrack(
+  supabase: SupabaseServerClient,
+  userId: string,
+  youtubeChannelId: string | null
+) {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
+
+  if (profile?.role === "admin") return true;
+  if (!youtubeChannelId) return false;
+
+  const { data: creator } = await supabase
+    .from("connected_creators")
+    .select("id")
+    .eq("youtube_channel_id", youtubeChannelId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  return Boolean(creator);
 }
 
 export async function POST(request: NextRequest) {
@@ -87,10 +112,10 @@ export async function POST(request: NextRequest) {
   const format = detectFormat(file.name, content);
 
   // 1. videos 테이블에 영상 없으면 추가
-  let videoRow: { id: string };
+  let videoRow: { id: string; youtube_channel_id: string | null };
   const { data: existingVideo } = await supabase
     .from("videos")
-    .select("id")
+    .select("id, youtube_channel_id")
     .eq("youtube_video_id", videoId)
     .single();
 
@@ -111,7 +136,7 @@ export async function POST(request: NextRequest) {
     const { data: newVideo, error: videoError } = await supabase
       .from("videos")
       .insert({ youtube_video_id: videoId, youtube_channel_id: youtubeChannelId })
-      .select("id")
+      .select("id, youtube_channel_id")
       .single();
 
     if (videoError || !newVideo) {
@@ -121,15 +146,24 @@ export async function POST(request: NextRequest) {
   }
 
   // 2. subtitle_tracks 조회 또는 생성
-  let trackRow: { id: string };
+  let trackRow: { id: string; status: string };
   const { data: existingTrack } = await supabase
     .from("subtitle_tracks")
-    .select("id")
+    .select("id, status")
     .eq("video_id", videoRow.id)
     .eq("language_code", languageCode)
     .single();
 
   if (existingTrack) {
+    if (
+      existingTrack.status === "approved" &&
+      !(await canManageApprovedTrack(supabase, user.id, videoRow.youtube_channel_id))
+    ) {
+      return Response.json(
+        { error: "승인된 자막은 채널 소유자 또는 관리자만 수정할 수 있습니다." },
+        { status: 403 }
+      );
+    }
     trackRow = existingTrack;
   } else {
     const { data: newTrack, error: trackError } = await supabase
@@ -140,7 +174,7 @@ export async function POST(request: NextRequest) {
         creator_id: user.id,
         status: "pending",
       })
-      .select("id")
+      .select("id, status")
       .single();
 
     if (trackError || !newTrack) {
