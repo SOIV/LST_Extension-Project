@@ -11,6 +11,14 @@ export default function SiteFooter() {
       <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
           <a
+            href="https://docs.lst-pj.soiv-studio.xyz/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-zinc-700 dark:hover:text-zinc-200 underline underline-offset-2"
+          >
+            {t("docs")}
+          </a>
+          <a
             href="https://status.soiv-studio.xyz/status/lst-project"
             target="_blank"
             rel="noopener noreferrer"
