@@ -5,7 +5,8 @@
     "profile": "Profile",
     "logout": "Sign Out",
     "login": "Sign In",
-    "searchPlaceholder": "Video title, channel name, or YouTube URL"
+    "searchPlaceholder": "Video title, channel name, or YouTube URL",
+    "searchSuggestion": "Suggested"
   },
   "LoginPage": {
     "loginError": "An error occurred during sign in. Please try again.",

@@ -5,7 +5,8 @@
     "profile": "プロフィール",
     "logout": "ログアウト",
     "login": "ログイン",
-    "searchPlaceholder": "動画タイトル、チャンネル名またはYouTube URL"
+    "searchPlaceholder": "動画タイトル、チャンネル名またはYouTube URL",
+    "searchSuggestion": "おすすめ"
   },
   "LoginPage": {
     "loginError": "ログイン中にエラーが発生しました。もう一度お試しください。",
