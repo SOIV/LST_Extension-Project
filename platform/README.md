@@ -20,7 +20,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+폰트는 Google Fonts 빌드 의존을 피하기 위해 npm 패키지로 설치한 Pretendard와 Noto Sans 계열을 로컬 번들에서 로드합니다.
 
 ## YouTube Creator OAuth Setup
 

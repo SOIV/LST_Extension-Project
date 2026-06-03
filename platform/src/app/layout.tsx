@@ -1,18 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+import "@fontsource-variable/noto-sans/wght.css";
+import "@fontsource-variable/noto-sans-kr/wght.css";
+import "@fontsource-variable/noto-sans-jp/wght.css";
 import "./globals.css";
 import { getLocale } from "next-intl/server";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "LST Project",
@@ -27,10 +20,7 @@ export default async function RootLayout({
   const locale = await getLocale();
 
   return (
-    <html
-      lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang={locale} className="h-full antialiased">
       <body className="min-h-full flex flex-col">
         {children}
         <SpeedInsights />
