@@ -49,7 +49,6 @@
   },
   "SubtitlePage": {
     "creatorNotConnected": "This channel's creator hasn't connected with LST Project yet.",
-    "creatorNotConnectedDesc": "Once the creator connects their channel, you'll be able to participate in community subtitle work.",
     "requestConnection": "Ask the creator to connect",
     "copyShareLink": "Copy share link",
     "copied": "Copied!",
@@ -102,7 +101,8 @@
     "subtitleDraft": "In progress",
     "connectedBadge": "LST Project Connected",
     "notConnectedBadge": "Not connected",
-    "notConnectedDesc": "Once the creator connects their channel, community subtitle work can begin.",
+    "showMore": "Show more",
+    "close": "Close",
     "liveVodNotice": "Live stream replays may also appear in this tab.",
     "apiNotConfigured": "YouTube API key is not configured.",
     "errorFetch": "Failed to load channel information."

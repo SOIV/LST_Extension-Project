@@ -78,9 +78,6 @@ function CreatorNotConnected({
             <p className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
               {t("creatorNotConnected")}
             </p>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm">
-              {t("creatorNotConnectedDesc")}
-            </p>
           </div>
 
           {/* 공유 링크 복사 */}

@@ -49,7 +49,6 @@
   },
   "SubtitlePage": {
     "creatorNotConnected": "このチャンネルのクリエイターはまだLST Projectと連携していません。",
-    "creatorNotConnectedDesc": "クリエイターがチャンネルを連携すると、コミュニティ字幕作業に参加できます。",
     "requestConnection": "クリエイターに連携をリクエストしましょう",
     "copyShareLink": "共有リンクをコピー",
     "copied": "コピーしました！",
@@ -102,7 +101,8 @@
     "subtitleDraft": "作業中",
     "connectedBadge": "LST Project連携済み",
     "notConnectedBadge": "未連携",
-    "notConnectedDesc": "クリエイターがチャンネルを連携すると、コミュニティ字幕作業を開始できます。",
+    "showMore": "もっと見る",
+    "close": "閉じる",
     "liveVodNotice": "ライブ配信のアーカイブも表示される場合があります。",
     "apiNotConfigured": "YouTube APIキーが設定されていません。",
     "errorFetch": "チャンネル情報の読み込み中にエラーが発生しました。"

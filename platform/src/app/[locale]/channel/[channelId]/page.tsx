@@ -9,6 +9,7 @@ import {
 } from "@/lib/youtube";
 import { getChannelVideosCached } from "@/lib/channelCache";
 import { ChannelVideoGrid } from "@/components/ChannelVideoGrid";
+import ChannelDescription from "@/components/ChannelDescription";
 
 // ─── DB ──────────────────────────────────────────────────────────────────────
 
@@ -199,17 +200,12 @@ export default async function ChannelPage({
               )}
             </div>
 
-            {/* 미연동 안내 */}
-            {!connected && (
-              <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-                {t("notConnectedDesc")}
-              </p>
-            )}
-
             {channel.description && (
-              <p className="text-xs text-zinc-400 dark:text-zinc-500 line-clamp-2">
-                {channel.description}
-              </p>
+              <ChannelDescription
+                description={channel.description}
+                labelShowMore={t("showMore")}
+                labelClose={t("close")}
+              />
             )}
           </div>
         </div>
