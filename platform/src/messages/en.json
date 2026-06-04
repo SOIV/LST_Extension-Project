@@ -1,12 +1,14 @@
 {
   "Navbar": {
     "upload": "Upload",
-    "dashboard": "Dashboard",
-    "profile": "Profile",
-    "logout": "Sign Out",
     "login": "Sign In",
     "searchPlaceholder": "Video title, channel name, or YouTube URL",
-    "searchSuggestion": "Suggested"
+    "searchSuggestion": "Suggested",
+    "userGreeting": "{name}",
+    "userMenuProfile": "Profile",
+    "userMenuSettings": "Account Settings",
+    "userMenuDashboard": "Dashboard",
+    "userMenuLogout": "Sign Out"
   },
   "LoginPage": {
     "loginError": "An error occurred during sign in. Please try again.",
@@ -32,10 +34,16 @@
     "upload": "Upload",
     "handleRequired": "Handle required",
     "handleRequiredDesc": "You need to set a handle in your profile before uploading subtitles.",
-    "goToProfile": "Go to Profile"
+    "goToProfile": "Go to Account Settings"
   },
   "ProfilePage": {
     "title": "Profile",
+    "noHandle": "No handle set",
+    "editSettings": "Account Settings",
+    "memberSince": "Member since"
+  },
+  "AccountSettingsPage": {
+    "title": "Account Settings",
     "labelUsername": "Display Name",
     "placeholderUsername": "Your display name",
     "labelHandle": "Handle",
@@ -45,7 +53,7 @@
     "successSave": "Saved successfully.",
     "saving": "Saving...",
     "save": "Save",
-    "onboardingTitle": "Complete your profile",
+    "onboardingTitle": "Complete your account setup",
     "onboardingDesc": "Set a handle to start uploading subtitles and connecting channels."
   },
   "SubtitlePage": {

@@ -94,7 +94,7 @@ export default function UploadPage() {
             <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("handleRequiredDesc")}</p>
           </div>
           <Link
-            href="/profile"
+            href="/settings"
             className="mt-1 px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 text-sm font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
           >
             {t("goToProfile")}

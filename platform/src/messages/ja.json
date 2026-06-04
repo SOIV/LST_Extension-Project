@@ -1,12 +1,14 @@
 {
   "Navbar": {
     "upload": "アップロード",
-    "dashboard": "ダッシュボード",
-    "profile": "プロフィール",
-    "logout": "ログアウト",
     "login": "ログイン",
     "searchPlaceholder": "動画タイトル、チャンネル名またはYouTube URL",
-    "searchSuggestion": "おすすめ"
+    "searchSuggestion": "おすすめ",
+    "userGreeting": "{name}",
+    "userMenuProfile": "プロフィール",
+    "userMenuSettings": "アカウント設定",
+    "userMenuDashboard": "ダッシュボード",
+    "userMenuLogout": "ログアウト"
   },
   "LoginPage": {
     "loginError": "ログイン中にエラーが発生しました。もう一度お試しください。",
@@ -32,10 +34,16 @@
     "upload": "アップロード",
     "handleRequired": "ハンドルの設定が必要です",
     "handleRequiredDesc": "字幕をアップロードするには、まずプロフィールでハンドルを設定してください。",
-    "goToProfile": "プロフィールへ"
+    "goToProfile": "アカウント設定へ"
   },
   "ProfilePage": {
     "title": "プロフィール",
+    "noHandle": "ハンドル未設定",
+    "editSettings": "アカウント設定",
+    "memberSince": "参加日"
+  },
+  "AccountSettingsPage": {
+    "title": "アカウント設定",
     "labelUsername": "ニックネーム",
     "placeholderUsername": "表示名",
     "labelHandle": "ハンドル",
@@ -45,7 +53,7 @@
     "successSave": "保存しました。",
     "saving": "保存中...",
     "save": "保存",
-    "onboardingTitle": "プロフィールを完成させましょう",
+    "onboardingTitle": "アカウント設定を完成させましょう",
     "onboardingDesc": "ハンドルを設定すると、字幕のアップロードやチャンネル連携が可能になります。"
   },
   "SubtitlePage": {

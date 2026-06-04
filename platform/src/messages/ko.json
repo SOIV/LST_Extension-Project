@@ -1,12 +1,14 @@
 {
   "Navbar": {
     "upload": "업로드",
-    "dashboard": "대시보드",
-    "profile": "프로필",
-    "logout": "로그아웃",
     "login": "로그인",
     "searchPlaceholder": "동영상 제목, 채널명 또는 YouTube URL",
-    "searchSuggestion": "추천"
+    "searchSuggestion": "추천",
+    "userGreeting": "{name}",
+    "userMenuProfile": "프로필",
+    "userMenuSettings": "계정 설정",
+    "userMenuDashboard": "대시보드",
+    "userMenuLogout": "로그아웃"
   },
   "LoginPage": {
     "loginError": "로그인 중 오류가 발생했습니다. 다시 시도해 주세요.",
@@ -32,10 +34,16 @@
     "upload": "업로드",
     "handleRequired": "핸들 설정이 필요합니다",
     "handleRequiredDesc": "자막을 업로드하려면 먼저 프로필에서 핸들을 설정해주세요.",
-    "goToProfile": "프로필로 이동"
+    "goToProfile": "계정 설정으로 이동"
   },
   "ProfilePage": {
     "title": "프로필",
+    "noHandle": "핸들 미설정",
+    "editSettings": "계정 설정",
+    "memberSince": "가입일"
+  },
+  "AccountSettingsPage": {
+    "title": "계정 설정",
     "labelUsername": "닉네임",
     "placeholderUsername": "표시될 이름",
     "labelHandle": "핸들",
@@ -45,7 +53,7 @@
     "successSave": "저장되었습니다.",
     "saving": "저장 중...",
     "save": "저장",
-    "onboardingTitle": "프로필을 완성해 주세요",
+    "onboardingTitle": "계정 설정을 완성해 주세요",
     "onboardingDesc": "핸들을 설정하면 자막 업로드 및 채널 연동이 가능합니다."
   },
   "SubtitlePage": {

@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
 
         if (!profile?.handle) {
           const locale = detectLocale(request);
-          return NextResponse.redirect(`${origin}/${locale}/profile?onboarding=1`);
+          return NextResponse.redirect(`${origin}/${locale}/settings?onboarding=1`);
         }
       }
 

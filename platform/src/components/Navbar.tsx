@@ -80,6 +80,7 @@ export default function Navbar() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") ?? "";
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<{ username: string | null } | null>(null);
   const [searchState, setSearchState] = useState({
     syncedQuery: query,
     value: query,
@@ -90,7 +91,9 @@ export default function Navbar() {
   });
   const [isSuggestOpen, setIsSuggestOpen] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const searchValue = searchState.syncedQuery === query ? searchState.value : query;
 
   if (searchState.syncedQuery !== query) {
@@ -120,12 +123,45 @@ export default function Navbar() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+
+    async function loadUser() {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+      if (data.user) {
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("id", data.user.id)
+          .single();
+        setProfile(profileData ?? { username: null });
+      }
+    }
+
+    loadUser();
+
     const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null);
+      if (!session?.user) {
+        setProfile(null);
+      }
     });
     return () => listener.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // 페이지 이동 시 드롭다운 닫기
+  useEffect(() => {
+    setIsUserMenuOpen(false);
+  }, [pathname]);
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -208,6 +244,8 @@ export default function Navbar() {
       setActiveSuggestionIndex(-1);
     }
   }
+
+  const displayName = profile?.username ?? user?.email?.split("@")[0] ?? "";
 
   // 로그인 페이지에서는 Navbar 숨김
   if (pathname === "/login") return null;
@@ -335,26 +373,73 @@ export default function Navbar() {
           </Link>
 
           {user ? (
-            <>
-              <Link
-                href="/dashboard"
-                className="px-3 py-1.5 rounded-lg text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                {t("dashboard")}
-              </Link>
-              <Link
-                href="/profile"
-                className="px-3 py-1.5 rounded-lg text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                {t("profile")}
-              </Link>
+            <div ref={userMenuRef} className="relative">
               <button
-                onClick={handleSignOut}
-                className="px-3 py-1.5 rounded-lg text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                onClick={() => setIsUserMenuOpen((v) => !v)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               >
-                {t("logout")}
+                <span className="max-w-[7rem] truncate">
+                  {t("userGreeting", { name: displayName })}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`flex-shrink-0 transition-transform duration-150 ${isUserMenuOpen ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </button>
-            </>
+
+              {isUserMenuOpen && (
+                <div className="absolute right-0 top-full mt-1 min-w-[10rem] rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg shadow-zinc-900/10 dark:shadow-black/30 overflow-hidden py-1 z-50">
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-zinc-400" aria-hidden="true">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    {t("userMenuProfile")}
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-zinc-400" aria-hidden="true">
+                      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    {t("userMenuSettings")}
+                  </Link>
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-zinc-400" aria-hidden="true">
+                      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    {t("userMenuDashboard")}
+                  </Link>
+                  <div className="my-1 border-t border-zinc-100 dark:border-zinc-800" />
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-zinc-400" aria-hidden="true">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    {t("userMenuLogout")}
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <Link
               href="/login"
