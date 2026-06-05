@@ -158,11 +158,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 페이지 이동 시 드롭다운 닫기
-  useEffect(() => {
-    setIsUserMenuOpen(false);
-  }, [pathname]);
-
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -402,6 +397,7 @@ export default function Navbar() {
                 <div className="absolute right-0 top-full mt-1 min-w-[10rem] rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg shadow-zinc-900/10 dark:shadow-black/30 overflow-hidden py-1 z-50">
                   <Link
                     href="/profile"
+                    onClick={() => setIsUserMenuOpen(false)}
                     className="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-zinc-400" aria-hidden="true">
@@ -411,6 +407,7 @@ export default function Navbar() {
                   </Link>
                   <Link
                     href="/settings"
+                    onClick={() => setIsUserMenuOpen(false)}
                     className="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-zinc-400" aria-hidden="true">
@@ -420,6 +417,7 @@ export default function Navbar() {
                   </Link>
                   <Link
                     href="/dashboard"
+                    onClick={() => setIsUserMenuOpen(false)}
                     className="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 text-zinc-400" aria-hidden="true">
