@@ -78,6 +78,11 @@ function TabLink({
   );
 }
 
+function normalizeYouTubeHandle(customUrl?: string): string | null {
+  if (!customUrl) return null;
+  return customUrl.startsWith("@") ? customUrl : `@${customUrl}`;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function ChannelPage({
@@ -121,13 +126,27 @@ export default async function ChannelPage({
   // 탭별 빈 목록 메시지 키
   const emptyKey =
     tab === "shorts" ? "noShorts" : tab === "live" ? "noLive" : "noVideos";
+  const channelHandle = normalizeYouTubeHandle(channel.customUrl);
+  const metaItems = [
+    channelHandle,
+    channel.subscriberCount
+      ? t("subscribers", {
+          count: formatCountLocale(channel.subscriberCount, locale),
+        })
+      : null,
+    channel.videoCount
+      ? t("videoCount", {
+          count: formatExact(channel.videoCount, locale),
+        })
+      : null,
+  ].filter((item): item is string => Boolean(item));
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-10 px-4">
       <div className="max-w-5xl mx-auto flex flex-col gap-6">
 
         {/* 채널 헤더 */}
-        <div className="flex items-start gap-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
+        <div className="relative flex items-start gap-4 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5">
           {channel.thumbnail && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -136,8 +155,8 @@ export default async function ChannelPage({
               className="w-16 h-16 rounded-full object-cover flex-shrink-0"
             />
           )}
-          <div className="flex flex-col gap-2 min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col gap-2 min-w-0 flex-1 pr-0 sm:pr-40">
+            <div className="flex flex-wrap items-center gap-2 min-h-8">
               <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
                 {channel.title}
               </h1>
@@ -181,21 +200,15 @@ export default async function ChannelPage({
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-              {channel.subscriberCount && (
-                <span>
-                  {t("subscribers", {
-                    count: formatCountLocale(channel.subscriberCount, locale),
-                  })}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-zinc-500 dark:text-zinc-400">
+              {metaItems.map((item, index) => (
+                <span key={`${item}-${index}`} className="inline-flex items-center gap-2">
+                  {index > 0 && (
+                    <span className="text-zinc-300 dark:text-zinc-600">•</span>
+                  )}
+                  <span>{item}</span>
                 </span>
-              )}
-              {channel.videoCount && (
-                <span>
-                  {t("videoCount", {
-                    count: formatExact(channel.videoCount, locale),
-                  })}
-                </span>
-              )}
+              ))}
             </div>
 
             {channel.description && (
@@ -206,6 +219,30 @@ export default async function ChannelPage({
               />
             )}
           </div>
+          <a
+            href={`https://www.youtube.com/channel/${channelId}`}
+            target="_blank"
+            rel="noreferrer"
+            className="static ml-auto inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 sm:absolute sm:right-5 sm:top-5 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M15 3h6v6" />
+              <path d="M10 14 21 3" />
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            </svg>
+            {t("viewOnYouTube")}
+          </a>
         </div>
 
         {/* 탭 바 */}

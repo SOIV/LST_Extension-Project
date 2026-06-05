@@ -37,6 +37,7 @@ export type YoutubeChannel = {
   title: string;
   thumbnail: string;
   description: string;
+  customUrl?: string;
   subscriberCount?: string;
   videoCount?: string;
 };
@@ -462,6 +463,7 @@ export async function getChannelById(
     title: ch.snippet.title,
     thumbnail: ch.snippet.thumbnails?.medium?.url ?? "",
     description: ch.snippet.description,
+    customUrl: ch.snippet.customUrl,
     subscriberCount: ch.statistics?.subscriberCount,
     videoCount: ch.statistics?.videoCount,
   };
