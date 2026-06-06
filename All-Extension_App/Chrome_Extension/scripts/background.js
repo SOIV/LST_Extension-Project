@@ -314,7 +314,8 @@ async function translateWithGoogle(text, sl, tl) {
 }
 
 async function translateWithScript(text, sl, tl, scriptUrl) {
-  const res = await fetch(scriptUrl, {
+  const url = normalizeAppsScriptUrl(scriptUrl);
+  const res = await fetch(url, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify({ text, source: sl, target: tl }),
@@ -322,6 +323,19 @@ async function translateWithScript(text, sl, tl, scriptUrl) {
   if (!res.ok) throw new Error(`Script API ${res.status}`);
   const data = await res.json();
   return data.translatedText || data.text || text;
+}
+
+function normalizeAppsScriptUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+
+  const deploymentId = raw
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/^macros\/s\//i, '')
+    .replace(/\/(exec|dev)$/i, '');
+
+  return `https://script.google.com/macros/s/${encodeURIComponent(deploymentId)}/exec`;
 }
 
 async function translateWithPapago(text, sl, tl, apiKey, apiSecret) {

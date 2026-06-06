@@ -176,11 +176,11 @@
     "description": "Help text for OpenAI API key"
   },
   "label_googleScriptUrl": {
-    "message": "Apps ScriptデプロイURL",
+    "message": "Apps ScriptデプロイIDまたはURL",
     "description": "Label for Google Apps Script URL input"
   },
   "help_googleScriptUrl": {
-    "message": "Google Apps ScriptのWebアプリURLを入力してください",
+    "message": "Google Apps ScriptのWebアプリデプロイIDまたは完全なURLを入力してください",
     "description": "Help text for Google Apps Script URL"
   },
   "label_papagoApiKey": {
@@ -236,7 +236,7 @@
     "description": "Google Apps Script label"
   },
   "info_googleAppsScriptDesc": {
-    "message": "Apps ScriptのデプロイURLを入力してください",
+    "message": "Apps ScriptのデプロイIDまたはURLを入力してください",
     "description": "Google Apps Script description"
   },
   "info_papago": {

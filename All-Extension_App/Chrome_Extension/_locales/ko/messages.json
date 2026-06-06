@@ -176,11 +176,11 @@
     "description": "Help text for OpenAI API key"
   },
   "label_googleScriptUrl": {
-    "message": "Apps Script 배포 URL",
+    "message": "Apps Script 배포 ID 또는 URL",
     "description": "Label for Google Apps Script URL input"
   },
   "help_googleScriptUrl": {
-    "message": "Google Apps Script 웹 앱 배포 URL을 입력하세요",
+    "message": "Google Apps Script 웹 앱 배포 ID 또는 전체 URL을 입력하세요",
     "description": "Help text for Google Apps Script URL"
   },
   "label_papagoApiKey": {
@@ -236,7 +236,7 @@
     "description": "Google Apps Script label"
   },
   "info_googleAppsScriptDesc": {
-    "message": "Apps Script 배포 URL을 입력하세요",
+    "message": "Apps Script 배포 ID 또는 URL을 입력하세요",
     "description": "Google Apps Script description"
   },
   "info_papago": {

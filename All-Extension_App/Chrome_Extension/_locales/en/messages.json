@@ -176,11 +176,11 @@
     "description": "Help text for OpenAI API key"
   },
   "label_googleScriptUrl": {
-    "message": "Apps Script Deployment URL",
+    "message": "Apps Script Deployment ID or URL",
     "description": "Label for Google Apps Script URL input"
   },
   "help_googleScriptUrl": {
-    "message": "Enter the deployed Google Apps Script web app URL",
+    "message": "Enter the Google Apps Script web app deployment ID or full URL",
     "description": "Help text for Google Apps Script URL"
   },
   "label_papagoApiKey": {
@@ -236,7 +236,7 @@
     "description": "Google Apps Script label"
   },
   "info_googleAppsScriptDesc": {
-    "message": "Enter your Apps Script deployment URL",
+    "message": "Enter your Apps Script deployment ID or URL",
     "description": "Google Apps Script description"
   },
   "info_papago": {
