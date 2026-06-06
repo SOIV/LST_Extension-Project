@@ -2,9 +2,6 @@
  * Live Stream Translator - Popup Script
  */
 
-// 잠금 탭 목록 (Phase 6에서 해제)
-const LOCKED_TABS = ['language', 'translation', 'status'];
-
 // 디버그 모드 상태
 let debugMode = false;
 let logoClickCount = 0;
@@ -579,10 +576,6 @@ function toggleDebugMode(enabled) {
       c.style.userSelect = 'auto';
       c.querySelectorAll('[disabled]').forEach(el => el.removeAttribute('disabled'));
     });
-    if (elements.sttBtn)                    elements.sttBtn.removeAttribute('disabled');
-    if (elements.sttSource)                elements.sttSource.removeAttribute('disabled');
-    if (elements.interimTranslationEnabled) elements.interimTranslationEnabled.removeAttribute('disabled');
-    if (elements.interimTranslationEngine)  elements.interimTranslationEngine.removeAttribute('disabled');
     // sttEngine은 sttSource 값 기준으로 활성 여부 결정 (내부에서 모델/도움말도 처리)
     updateSttEngineState(elements.sttSource?.value || 'tab');
     showToast('🔧 디버그 모드 활성화', 'info');
@@ -600,9 +593,7 @@ function toggleDebugMode(enabled) {
       c.style.userSelect = '';
       c.querySelectorAll('select, input, button').forEach(el => el.setAttribute('disabled', ''));
     });
-    if (elements.sttBtn)       elements.sttBtn.setAttribute('disabled', '');
-    if (elements.sttSource)    elements.sttSource.setAttribute('disabled', '');
-    if (elements.sttEngine)    elements.sttEngine.setAttribute('disabled', '');
+    updateSttEngineState(elements.sttSource?.value || 'tab');
     showToast('디버그 모드 비활성화', 'info');
   }
 }
@@ -612,8 +603,7 @@ function toggleDebugMode(enabled) {
  */
 function updateSttEngineState(source) {
   const isMic = source === 'mic';
-  // 디버그 모드일 때만 disabled 상태 변경 (잠금 상태에서는 건드리지 않음)
-  if (elements.sttEngine && debugMode) {
+  if (elements.sttEngine) {
     elements.sttEngine.disabled = isMic;
   }
   const engine = isMic ? 'webspeech' : (elements.sttEngine?.value || 'whisper');
@@ -671,9 +661,8 @@ function updateEngineHelp(engine) {
 function updateModelVisibility(engine) {
   if (elements.whisperModelGroup)  elements.whisperModelGroup.style.display  = engine === 'whisper'  ? '' : 'none';
   if (elements.realtimeModelGroup) elements.realtimeModelGroup.style.display = engine === 'realtime' ? '' : 'none';
-  // 모델 select disabled 상태도 팝업 잠금 상태에 맞게 동기화
-  if (elements.whisperModel  && debugMode) elements.whisperModel.disabled  = engine !== 'whisper';
-  if (elements.realtimeModel && debugMode) elements.realtimeModel.disabled = engine !== 'realtime';
+  if (elements.whisperModel)  elements.whisperModel.disabled  = engine !== 'whisper';
+  if (elements.realtimeModel) elements.realtimeModel.disabled = engine !== 'realtime';
 }
 
 /**

@@ -100,8 +100,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // Whisper 전사 결과 → content script 전달 (offscreen → background → tab)
   if (message.action === 'whisperTranscript') {
-    if (tabCaptureActiveTabId !== null) {
-      chrome.tabs.sendMessage(tabCaptureActiveTabId, {
+    const targetTabId = tabCaptureActiveTabId;
+    if (targetTabId !== null && sttState.active && sttState.tabId === targetTabId) {
+      chrome.tabs.sendMessage(targetTabId, {
         action:     'whisperTranscript',
         text:       message.text,
         translated: message.translated,
@@ -167,6 +168,10 @@ async function hasOffscreenDocument() {
 }
 
 async function startTabCapture(tabId) {
+  if (tabCaptureActiveTabId !== null) {
+    await stopTabCapture();
+  }
+
   const settings = await getStoredSettings([
     'openaiApiKey', 'sourceLang', 'targetLang', 'sttEngine',
     'translationEngine', 'googleScriptUrl', 'papagoApiKey', 'papagoApiSecret', 'deeplApiKey',
@@ -197,23 +202,41 @@ async function startTabCapture(tabId) {
   }
 
   tabCaptureActiveTabId = tabId;
+  sttState = { active: true, tabId, source: 'tab' };
+  updateBadge(tabId, 'stt_active');
 
   chrome.tabs.sendMessage(tabId, { action: 'tabCaptureActive' }).catch(() => {});
 }
 
 async function stopTabCapture() {
+  const stoppedTabId = tabCaptureActiveTabId;
+  tabCaptureActiveTabId = null;
+
   chrome.runtime.sendMessage({ action: 'tabCaptureStop' }).catch(() => {});
+
+  if (stoppedTabId !== null) {
+    chrome.tabs.sendMessage(stoppedTabId, { action: 'tabCaptureInactive' }).catch(() => {});
+    if (sttState.tabId === stoppedTabId) {
+      sttState = { active: false, tabId: null, source: null };
+    }
+    updateBadge(stoppedTabId, tabSubtitleStatus.get(stoppedTabId) || 'not_youtube');
+  }
 
   if (await hasOffscreenDocument()) {
     chrome.offscreen.closeDocument().catch(() => {});
   }
+}
 
-  if (tabCaptureActiveTabId !== null) {
-    chrome.tabs.sendMessage(tabCaptureActiveTabId, { action: 'tabCaptureInactive' }).catch(() => {});
-    if (sttState.tabId === tabCaptureActiveTabId) {
-      sttState = { active: false, tabId: null, source: null };
-    }
-    tabCaptureActiveTabId = null;
+async function stopSttForTab(tabId) {
+  chrome.tabs.sendMessage(tabId, { action: 'stopCapture' }).catch(() => {});
+
+  if (tabCaptureActiveTabId === tabId) {
+    await stopTabCapture();
+  }
+
+  if (sttState.tabId === tabId) {
+    sttState = { active: false, tabId: null, source: null };
+    updateBadge(tabId, tabSubtitleStatus.get(tabId) || 'not_youtube');
   }
 }
 
@@ -353,6 +376,10 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // 페이지 이동 시 배지 초기화
   if (changeInfo.status === 'loading') {
+    if (sttState.tabId === tabId || tabCaptureActiveTabId === tabId) {
+      stopSttForTab(tabId).catch(() => {});
+    }
+
     const url = tab?.url || tab?.pendingUrl || '';
     const isYouTube =
       /^https:\/\/(www\.)?youtube\.com\//.test(url);

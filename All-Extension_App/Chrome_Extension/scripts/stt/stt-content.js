@@ -22,6 +22,8 @@
   let autoRestart      = false;
   let restartCount     = 0;
   const MAX_RESTART    = 5;
+  let sttActive        = false;
+  let sttSessionId     = 0;
 
   // ── Web Speech API 버퍼 / 타이머 ──────────────────────────
   // 텍스트 안정성 기반 침묵 타이머:
@@ -76,6 +78,17 @@
     wsLastKnownText  = '';
   }
 
+  function beginSttSession() {
+    sttActive = true;
+    sttSessionId++;
+    return sttSessionId;
+  }
+
+  function endSttSession() {
+    sttActive = false;
+    sttSessionId++;
+  }
+
   /* ─── STT 시작/중지 ─────────────────────────────────────── */
 
   function getSyncSettings(keys) {
@@ -90,6 +103,7 @@
       return false;
     }
     if (isRecognizing) return true;
+    const sessionId = beginSttSession();
 
     const storageKeys = [
       'sourceLang', 'targetLang',
@@ -99,12 +113,13 @@
     ];
 
     const s = await getSyncSettings(storageKeys);
-      const sourceLang = s.sourceLang || 'auto';
-      const targetLang = s.targetLang || 'ko';
-      const lang       = LANG_BCP47[sourceLang] || '';
-      const silenceMs  = s.sttSilenceMs ?? 1500;
-      // 최대 버퍼 타이머: silenceMs * 4, 최소 4s, 최대 8s
-      const maxBufferMs = Math.min(Math.max(silenceMs * 4, 4000), 8000);
+    if (!sttActive || sessionId !== sttSessionId) return false;
+    const sourceLang = s.sourceLang || 'auto';
+    const targetLang = s.targetLang || 'ko';
+    const lang       = LANG_BCP47[sourceLang] || '';
+    const silenceMs  = s.sttSilenceMs ?? 1500;
+    // 최대 버퍼 타이머: silenceMs * 4, 최소 4s, 최대 8s
+    const maxBufferMs = Math.min(Math.max(silenceMs * 4, 4000), 8000);
 
       // 메인 번역 옵션
       const translationOpts = {
@@ -127,12 +142,17 @@
 
       // 최종 번역 후 렌더링
       function translateAndShow(text) {
+        if (!sttActive || sessionId !== sttSessionId) return;
         translateText(text, sourceLang, targetLang, translationOpts)
           .then((translated) => {
+            if (!sttActive || sessionId !== sttSessionId) return;
             const isSame = !translated || translated.trim() === text.trim();
             SttRenderer.show(text, isSame ? null : translated, false);
           })
-          .catch(() => SttRenderer.show(text, null, false));
+          .catch(() => {
+            if (!sttActive || sessionId !== sttSessionId) return;
+            SttRenderer.show(text, null, false);
+          });
       }
 
       // 버퍼 flush (최종 처리)
@@ -155,6 +175,7 @@
       };
 
       recognition.onresult = (event) => {
+        if (!sttActive || sessionId !== sttSessionId) return;
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const r    = event.results[i];
           const text = r[0].transcript;
@@ -169,6 +190,7 @@
           // ── 중간 결과 처리 ────────────────────────────────
 
           // 원어 즉시 표시
+          if (!sttActive || sessionId !== sttSessionId) return;
           SttRenderer.show(text, null, true);
 
           // 문장 부호 감지 시 즉시 flush (silenceMs 대기 없이)
@@ -198,10 +220,12 @@
             if (interimOpts) {
               clearTimeout(wsInterimTranslateTimer);
               wsInterimTranslateTimer = setTimeout(() => {
+                if (!sttActive || sessionId !== sttSessionId) return;
                 const interimText = wsInterimBuffer;
                 if (!interimText?.trim()) return;
                 translateText(interimText, sourceLang, targetLang, interimOpts)
                   .then((translated) => {
+                    if (!sttActive || sessionId !== sttSessionId) return;
                     if (interimText !== wsInterimBuffer) return; // 스테일 방지
                     const isSame = !translated || translated.trim() === interimText.trim();
                     SttRenderer.show(interimText, isSame ? null : translated, true);
@@ -223,7 +247,7 @@
       recognition.onend = () => {
         resetWsState();
         isRecognizing = false;
-        if (autoRestart && restartCount < MAX_RESTART) {
+        if (autoRestart && sttActive && sessionId === sttSessionId && restartCount < MAX_RESTART) {
           restartCount++;
           setTimeout(() => { try { recognition?.start(); } catch (_) {} }, 200);
         }
@@ -235,6 +259,7 @@
       } catch (e) {
         console.error('[LST STT] Failed to start:', e);
         autoRestart = false;
+        endSttSession();
         recognition = null;
         return false;
       }
@@ -243,6 +268,7 @@
 
   function stopRecognition() {
     autoRestart = false;
+    endSttSession();
     resetWsState();
     try { recognition?.abort(); } catch (_) {}
     recognition   = null;
@@ -268,10 +294,12 @@
       sendResponse({ success: true });
 
     } else if (message.action === 'tabCaptureActive') {
+      beginSttSession();
       SttRenderer.show('캡처 중...', null, true);
       sendResponse({ success: true });
 
     } else if (message.action === 'tabCaptureInactive') {
+      endSttSession();
       SttRenderer.clear();
       sendResponse({ success: true });
 
@@ -286,6 +314,7 @@
   /* ─── Whisper / Realtime 결과 표시 ──────────────────────── */
 
   function showWhisperResult(original, translated, interim) {
+    if (!sttActive) return;
     if (!original?.trim()) return;
     const isSame = !translated || translated.trim() === original.trim();
     SttRenderer.show(original, isSame ? null : translated, !!interim);
