@@ -10,6 +10,28 @@
     "userMenuDashboard": "대시보드",
     "userMenuLogout": "로그아웃"
   },
+  "HomePage": {
+    "eyebrow": "Community subtitles for YouTube",
+    "title": "LST Project",
+    "description": "YouTube 영상과 라이브 방송을 더 많은 언어로 함께 볼 수 있도록, 커뮤니티 자막을 찾고 만들고 검토하는 공간입니다.",
+    "searchPlaceholder": "동영상 제목, 채널명 또는 YouTube URL",
+    "searchButton": "검색",
+    "linkUpload": "자막 업로드",
+    "linkDashboard": "크리에이터 대시보드",
+    "linkDocs": "문서",
+    "statSubtitlesLabel": "자막",
+    "statVideosLabel": "영상",
+    "statLanguagesLabel": "언어",
+    "feature1Title": "YouTube & 라이브 지원",
+    "feature1Desc": "일반 영상부터 실시간 스트림까지, 모든 YouTube 콘텐츠에 커뮤니티 자막을 연결합니다.",
+    "feature2Title": "Chrome Extension",
+    "feature2Desc": "확장 프로그램을 설치하면 YouTube 페이지에서 바로 커뮤니티 자막을 켤 수 있습니다.",
+    "feature3Title": "채널 승인 시스템",
+    "feature3Desc": "채널 소유자가 자막을 검토하고 승인하면 시청자에게 우선 표시됩니다.",
+    "contextBadge": "2020",
+    "contextTitle": "YouTube가 종료한 그 기능을 이어서",
+    "contextDesc": "2020년, YouTube는 커뮤니티 자막 기능을 공식 종료했습니다. 그 이후로도 다국어 자막을 원하는 크리에이터와 팬들의 수요는 사라지지 않았고, 지금도 트위터 DM으로 작업을 의뢰하거나 개인적으로 파일을 공유하는 방식이 이어지고 있습니다. LST Project는 그 공백을 커뮤니티가 직접 채울 수 있도록 만들어진 공간입니다."
+  },
   "LoginPage": {
     "loginError": "로그인 중 오류가 발생했습니다. 다시 시도해 주세요.",
     "continueWithGoogle": "Google로 계속하기",

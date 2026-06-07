@@ -10,6 +10,28 @@
     "userMenuDashboard": "ダッシュボード",
     "userMenuLogout": "ログアウト"
   },
+  "HomePage": {
+    "eyebrow": "Community subtitles for YouTube",
+    "title": "LST Project",
+    "description": "YouTube動画とライブ配信をより多くの言語で楽しめるように、コミュニティ字幕を探し、作成し、確認するための場所です。",
+    "searchPlaceholder": "動画タイトル、チャンネル名またはYouTube URL",
+    "searchButton": "検索",
+    "linkUpload": "字幕をアップロード",
+    "linkDashboard": "クリエイターダッシュボード",
+    "linkDocs": "ドキュメント",
+    "statSubtitlesLabel": "字幕",
+    "statVideosLabel": "動画",
+    "statLanguagesLabel": "言語",
+    "feature1Title": "YouTube & ライブ対応",
+    "feature1Desc": "通常の動画からリアルタイム配信まで、すべてのYouTubeコンテンツにコミュニティ字幕を提供します。",
+    "feature2Title": "Chrome拡張機能",
+    "feature2Desc": "拡張機能をインストールするだけで、YouTubeページ上でコミュニティ字幕を表示できます。",
+    "feature3Title": "チャンネル承認システム",
+    "feature3Desc": "チャンネル所有者が字幕を確認・承認することで、視聴者に優先的に表示されます。",
+    "contextBadge": "2020",
+    "contextTitle": "YouTubeが終了した機能を引き継いで",
+    "contextDesc": "2020年、YouTubeはコミュニティ字幕機能を公式に終了しました。しかしその後も、多言語字幕を求めるクリエイターやファンの需要はなくなりませんでした。今もTwitterのDMで作業を依頼したり、個人間でファイルをやり取りしたりする形が続いています。LST Projectは、そのギャップをコミュニティ自身が埋められるよう作られた場所です。"
+  },
   "LoginPage": {
     "loginError": "ログイン中にエラーが発生しました。もう一度お試しください。",
     "continueWithGoogle": "Googleで続ける",
