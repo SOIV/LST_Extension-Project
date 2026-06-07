@@ -44,8 +44,22 @@ const config = {
         title: 'LST Project Docs',
         items: [
           {
-            type: 'custom-versionAwareDocs',
+            to: '/beta/getting-started',
+            label: 'Beta 가이드',
             position: 'left',
+            activeBasePath: '/beta',
+          },
+          {
+            to: '/apps/overview',
+            label: 'Apps',
+            position: 'left',
+            activeBasePath: '/apps',
+          },
+          {
+            to: '/platform/overview',
+            label: 'Platform',
+            position: 'left',
+            activeBasePath: '/platform',
           },
           {
             href: 'https://github.com/SOIV/LST_Extension-Project',
