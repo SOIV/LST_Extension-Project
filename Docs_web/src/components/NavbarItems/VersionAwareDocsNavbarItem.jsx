@@ -16,23 +16,23 @@ function NavbarLink({to, label, active}) {
 
 export default function VersionAwareDocsNavbarItem() {
   const {pathname} = useLocation();
-  const isV1 = pathname === '/1.0.0' || pathname.startsWith('/1.0.0/');
-
-  if (!isV1) {
-    return <NavbarLink to="/" label="Guide" active />;
-  }
 
   return (
     <>
       <NavbarLink
-        to="/1.0.0/apps/overview"
-        label="Apps"
-        active={pathname.startsWith('/1.0.0/apps/')}
+        to="/beta/getting-started"
+        label="Beta 가이드"
+        active={pathname.startsWith('/beta/')}
       />
       <NavbarLink
-        to="/1.0.0/platform/overview"
+        to="/apps/overview"
+        label="Apps"
+        active={pathname.startsWith('/apps/')}
+      />
+      <NavbarLink
+        to="/platform/overview"
         label="Platform"
-        active={pathname.startsWith('/1.0.0/platform/')}
+        active={pathname.startsWith('/platform/')}
       />
     </>
   );

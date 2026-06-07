@@ -28,18 +28,6 @@ const config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.js',
-          lastVersion: 'current',
-          versions: {
-            current: {
-              label: 'Beta',
-              badge: true,
-            },
-            '1.0.0': {
-              label: 'v1.0.0',
-              badge: true,
-              banner: 'unreleased',
-            },
-          },
         },
         blog: false,
         theme: {
@@ -60,10 +48,6 @@ const config = {
             position: 'left',
           },
           {
-            type: 'docsVersionDropdown',
-            position: 'right',
-          },
-          {
             href: 'https://github.com/SOIV/LST_Extension-Project',
             className: 'header-github-link',
             'aria-label': 'GitHub repository',
@@ -82,8 +66,8 @@ const config = {
                 to: '/',
               },
               {
-                label: 'API 키 설정',
-                to: '/beta/api-keys',
+                label: 'Beta 가이드',
+                to: '/beta/getting-started',
               },
               {
                 label: '문제 해결',
