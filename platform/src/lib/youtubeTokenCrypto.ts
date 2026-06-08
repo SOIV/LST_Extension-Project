@@ -1,4 +1,4 @@
-import { createCipheriv, createHash, randomBytes } from "crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 12;
@@ -26,6 +26,30 @@ function resolveKeyMaterial(): Buffer | null {
 
 export function isYoutubeTokenEncryptionConfigured(): boolean {
   return resolveKeyMaterial() !== null;
+}
+
+export function decryptYoutubeToken(encrypted: string): string {
+  const key = resolveKeyMaterial();
+  if (!key) {
+    throw new Error("YOUTUBE_TOKEN_CIPHER_KEY is not configured");
+  }
+
+  const parts = encrypted.split(".");
+  if (parts.length !== 3) {
+    throw new Error("Invalid encrypted token format");
+  }
+
+  const iv = Buffer.from(parts[0], "base64");
+  const tag = Buffer.from(parts[1], "base64");
+  const ciphertext = Buffer.from(parts[2], "base64");
+
+  const decipher = createDecipheriv(ALGORITHM, key, iv);
+  decipher.setAuthTag(tag);
+
+  return Buffer.concat([
+    decipher.update(ciphertext),
+    decipher.final(),
+  ]).toString("utf8");
 }
 
 export function encryptYoutubeToken(plainText: string): string {
