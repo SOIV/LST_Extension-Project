@@ -33,6 +33,18 @@ interface PendingTrack {
   } | null;
 }
 
+interface PendingLocalization {
+  id: string;
+  language_code: string;
+  title: string;
+  description: string;
+  created_at: string;
+  videos: {
+    youtube_video_id: string;
+    title: string | null;
+  } | null;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const locale = useLocale();
@@ -41,6 +53,9 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [channels, setChannels] = useState<ConnectedChannel[]>([]);
   const [pendingTracks, setPendingTracks] = useState<PendingTrack[]>([]);
+  const [pendingLocalizations, setPendingLocalizations] = useState<PendingLocalization[]>([]);
+  const [locActioningId, setLocActioningId] = useState<string | null>(null);
+  const [locActionError, setLocActionError] = useState("");
 
   // OAuth result messages
   const [{ connectSuccess, connectError }] = useState(() => {
@@ -69,9 +84,10 @@ export default function DashboardPage() {
   const [actionError, setActionError] = useState("");
 
   const fetchData = useCallback(async () => {
-    const [chRes, pendRes] = await Promise.all([
+    const [chRes, pendRes, locRes] = await Promise.all([
       fetch("/api/creator/connect"),
       fetch("/api/creator/pending"),
+      fetch("/api/creator/pending-localizations"),
     ]);
 
     if (chRes.ok) {
@@ -81,6 +97,10 @@ export default function DashboardPage() {
     if (pendRes.ok) {
       const data = await pendRes.json();
       setPendingTracks(data.tracks ?? []);
+    }
+    if (locRes.ok) {
+      const data = await locRes.json();
+      setPendingLocalizations(data.localizations ?? []);
     }
   }, []);
 
@@ -135,6 +155,25 @@ export default function DashboardPage() {
       setActionError(data.error ?? t("errorAction"));
     }
     setActioningId(null);
+  }
+
+  async function handleLocalizationAction(locId: string, status: "approved" | "rejected") {
+    setLocActioningId(locId);
+    setLocActionError("");
+
+    const res = await fetch(`/api/creator/video-localizations/${locId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+
+    if (res.ok) {
+      setPendingLocalizations((prev) => prev.filter((l) => l.id !== locId));
+    } else {
+      const data = await res.json();
+      setLocActionError(data.error ?? t("errorLocalizationAction"));
+    }
+    setLocActioningId(null);
   }
 
   if (loading) {
@@ -214,6 +253,75 @@ export default function DashboardPage() {
               {t("connectYouTube")}
             </a>
           </div>
+        </section>
+
+        {/* ── 승인 대기 제목/설명 번역 ── */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t("pendingLocalizationSection")}</h2>
+
+          {locActionError && (
+            <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg px-4 py-2">
+              {locActionError}
+            </p>
+          )}
+
+          {pendingLocalizations.length === 0 ? (
+            <div className="flex items-center justify-center py-12 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+              <p className="text-sm text-zinc-400 dark:text-zinc-500">{t("noPendingLocalizations")}</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {pendingLocalizations.map((loc) => {
+                const isActioning = locActioningId === loc.id;
+                return (
+                  <div
+                    key={loc.id}
+                    className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 flex flex-col gap-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex flex-col gap-1 min-w-0">
+                        {loc.videos?.title && (
+                          <p className="text-xs text-zinc-400 dark:text-zinc-500 line-clamp-1">
+                            {loc.videos.title}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          <span className="font-mono">{loc.language_code}</span>
+                          <span>·</span>
+                          <span>{new Date(loc.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50 line-clamp-1">
+                          {t("localizationTitle_label")}: {loc.title}
+                        </p>
+                        {loc.description && (
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                            {loc.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleLocalizationAction(loc.id, "rejected")}
+                          disabled={isActioning}
+                          className="text-xs px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-red-300 hover:text-red-500 dark:hover:text-red-400 disabled:opacity-40 transition-colors"
+                        >
+                          {isActioning ? "…" : t("rejectLocalization")}
+                        </button>
+                        <button
+                          onClick={() => handleLocalizationAction(loc.id, "approved")}
+                          disabled={isActioning}
+                          className="text-xs px-3 py-1.5 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-40 transition-colors"
+                        >
+                          {isActioning ? "…" : t("approveLocalization")}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* ── 승인 대기 자막 ── */}

@@ -167,18 +167,6 @@ export default async function SubtitlePage({
     );
   }
 
-  // 현재 사용자가 이 영상의 채널 소유자인지 확인
-  let isChannelOwner = false;
-  if (user && video.youtube_channel_id) {
-    const { data: connection } = await supabase
-      .from("connected_creators")
-      .select("youtube_channel_id")
-      .eq("youtube_channel_id", video.youtube_channel_id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    isChannelOwner = !!connection;
-  }
-
   const { data: tracks } = await supabase
     .from("subtitle_tracks")
     .select(`
@@ -336,7 +324,7 @@ export default async function SubtitlePage({
           )}
         </div>
 
-        {isChannelOwner && (
+        {user && (
           <LocalizationPanel videoId={videoId} />
         )}
 
