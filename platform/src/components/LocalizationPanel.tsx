@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
-export default function LocalizationPanel({ videoId }: { videoId: string }) {
+type Props = {
+  videoId: string;
+  originalTitle?: string | null;
+  originalDescription?: string | null;
+};
+
+export default function LocalizationPanel({ videoId, originalTitle, originalDescription }: Props) {
   const t = useTranslations("SubtitlePage");
 
   const [lang, setLang] = useState("");
@@ -52,6 +58,19 @@ export default function LocalizationPanel({ videoId }: { videoId: string }) {
 
       <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-4 flex flex-col gap-4">
         <p className="text-sm text-zinc-500 dark:text-zinc-400">{t("localizationDesc")}</p>
+
+        {/* 원본 참고 */}
+        {(originalTitle || originalDescription) && (
+          <div className="flex flex-col gap-1.5 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+            <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500">{t("localizationOriginal")}</p>
+            {originalTitle && (
+              <p className="text-sm text-zinc-700 dark:text-zinc-300">{originalTitle}</p>
+            )}
+            {originalDescription && (
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-pre-line line-clamp-3">{originalDescription}</p>
+            )}
+          </div>
+        )}
 
         {success && (
           <p className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg px-4 py-2">

@@ -325,7 +325,10 @@ export default async function SubtitlePage({
         </div>
 
         {user && (
-          <LocalizationPanel videoId={videoId} />
+          <LocalizationPanel
+            videoId={videoId}
+            originalTitle={video.title}
+          />
         )}
 
       </div>
