@@ -94,7 +94,20 @@
     "statusRejected": "Rejected",
     "edit": "Edit",
     "revisionHistory": "Revision History",
-    "current": "Current"
+    "current": "Current",
+    "localizationSection": "Video Title / Description Localization",
+    "localizationDesc": "Add translated titles and descriptions to your YouTube video.",
+    "localizationAddLanguage": "Add language",
+    "localizationLanguage": "Language code",
+    "localizationLanguagePlaceholder": "ko, en, ja ...",
+    "localizationTitle": "Title",
+    "localizationDescription": "Description (optional)",
+    "localizationRemove": "Remove",
+    "localizationSubmit": "Upload to YouTube",
+    "localizationSubmitting": "Uploading...",
+    "localizationSuccess": "Successfully uploaded to YouTube.",
+    "localizationErrorNoLang": "Please add at least one language.",
+    "localizationErrorApi": "An error occurred while uploading."
   },
   "SearchPage": {
     "title": "Search",

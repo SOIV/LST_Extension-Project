@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { getVideoById, type YoutubeVideo } from "@/lib/youtube";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import BackButton from "@/components/BackButton";
+import LocalizationPanel from "@/components/LocalizationPanel";
 
 function getLanguageName(locale: string, languageCode: string): string {
   try {
@@ -127,9 +128,11 @@ export default async function SubtitlePage({
     rejected: t("statusRejected"),
   };
 
+  const { data: { user } } = await supabase.auth.getUser();
+
   const { data: video } = await supabase
     .from("videos")
-    .select("id, youtube_video_id, title, channel_name")
+    .select("id, youtube_video_id, youtube_channel_id, title, channel_name")
     .eq("youtube_video_id", videoId)
     .single();
 
@@ -162,6 +165,18 @@ export default async function SubtitlePage({
         shareUrl={shareUrl}
       />
     );
+  }
+
+  // 현재 사용자가 이 영상의 채널 소유자인지 확인
+  let isChannelOwner = false;
+  if (user && video.youtube_channel_id) {
+    const { data: connection } = await supabase
+      .from("connected_creators")
+      .select("youtube_channel_id")
+      .eq("youtube_channel_id", video.youtube_channel_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    isChannelOwner = !!connection;
   }
 
   const { data: tracks } = await supabase
@@ -320,6 +335,10 @@ export default async function SubtitlePage({
             </div>
           )}
         </div>
+
+        {isChannelOwner && (
+          <LocalizationPanel videoId={videoId} />
+        )}
 
       </div>
     </div>

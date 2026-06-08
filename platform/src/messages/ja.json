@@ -94,7 +94,20 @@
     "statusRejected": "却下",
     "edit": "編集",
     "revisionHistory": "リビジョン履歴",
-    "current": "現在"
+    "current": "現在",
+    "localizationSection": "動画タイトル／説明の多言語対応",
+    "localizationDesc": "YouTube動画のタイトルと説明を他の言語で追加します。",
+    "localizationAddLanguage": "言語を追加",
+    "localizationLanguage": "言語コード",
+    "localizationLanguagePlaceholder": "ko, en, ja ...",
+    "localizationTitle": "タイトル",
+    "localizationDescription": "説明（任意）",
+    "localizationRemove": "削除",
+    "localizationSubmit": "YouTubeにアップロード",
+    "localizationSubmitting": "アップロード中...",
+    "localizationSuccess": "YouTubeに正常にアップロードされました。",
+    "localizationErrorNoLang": "言語を1つ以上追加してください。",
+    "localizationErrorApi": "アップロード中にエラーが発生しました。"
   },
   "SearchPage": {
     "title": "検索",

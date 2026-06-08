@@ -94,7 +94,20 @@
     "statusRejected": "거절됨",
     "edit": "편집",
     "revisionHistory": "리비전 히스토리",
-    "current": "현재"
+    "current": "현재",
+    "localizationSection": "영상 제목/설명 다국어",
+    "localizationDesc": "YouTube 영상의 제목과 설명을 다른 언어로 추가합니다.",
+    "localizationAddLanguage": "언어 추가",
+    "localizationLanguage": "언어 코드",
+    "localizationLanguagePlaceholder": "ko, en, ja ...",
+    "localizationTitle": "제목",
+    "localizationDescription": "설명 (선택)",
+    "localizationRemove": "삭제",
+    "localizationSubmit": "YouTube에 업로드",
+    "localizationSubmitting": "업로드 중...",
+    "localizationSuccess": "YouTube에 성공적으로 업로드되었습니다.",
+    "localizationErrorNoLang": "언어를 1개 이상 추가하세요.",
+    "localizationErrorApi": "업로드 중 오류가 발생했습니다."
   },
   "SearchPage": {
     "title": "검색",
