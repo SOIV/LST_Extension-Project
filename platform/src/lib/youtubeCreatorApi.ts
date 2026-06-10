@@ -85,6 +85,107 @@ export async function getValidAccessToken(
   return refreshed.access_token;
 }
 
+/** multipart/related 요청 바디 생성 */
+function buildMultipartBody(
+  boundary: string,
+  metadata: object,
+  content: string,
+  contentType: string
+): string {
+  return (
+    `--${boundary}\r\n` +
+    `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+    JSON.stringify(metadata) + `\r\n` +
+    `--${boundary}\r\n` +
+    `Content-Type: ${contentType}; charset=UTF-8\r\n\r\n` +
+    content + `\r\n` +
+    `--${boundary}--`
+  );
+}
+
+/**
+ * YouTube Captions API — 자막 트랙 업로드 (upsert)
+ * - 이미 "LST Project" 이름의 캡션이 있으면 UPDATE, 없으면 INSERT
+ * - 필요 스코프: youtube.force-ssl
+ */
+export async function uploadCaptionTrack(
+  accessToken: string,
+  youtubeVideoId: string,
+  languageCode: string,
+  content: string,
+  format: string
+): Promise<{ ok: boolean; error?: string }> {
+  const CAPTION_NAME = "LST Project";
+  const UPLOAD_BASE = "https://www.googleapis.com/upload/youtube/v3/captions";
+
+  // 1. 기존 캡션 목록 조회 → "LST Project" 이름의 캡션 ID 탐색
+  let existingCaptionId: string | null = null;
+  try {
+    const listRes = await fetch(
+      `${YT_BASE}/captions?part=snippet&videoId=${youtubeVideoId}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (listRes.ok) {
+      const listData = await listRes.json() as { items?: Array<{ id: string; snippet: { language: string; name: string } }> };
+      for (const item of listData.items ?? []) {
+        if (item.snippet?.language === languageCode && item.snippet?.name === CAPTION_NAME) {
+          existingCaptionId = item.id;
+          break;
+        }
+      }
+    }
+  } catch {
+    // 목록 조회 실패 시 insert로 fallback
+  }
+
+  const contentType = format === "vtt" ? "text/vtt" : "text/plain";
+  const boundary = `lst_boundary_${Date.now()}`;
+
+  if (existingCaptionId) {
+    // 2a. 기존 캡션 업데이트
+    const body = buildMultipartBody(
+      boundary,
+      { id: existingCaptionId, snippet: { videoId: youtubeVideoId, language: languageCode, name: CAPTION_NAME, isDraft: false } },
+      content,
+      contentType
+    );
+    const res = await fetch(`${UPLOAD_BASE}?part=snippet&uploadType=multipart`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": `multipart/related; boundary=${boundary}`,
+      },
+      body,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({})) as { error?: { message?: string } };
+      return { ok: false, error: err.error?.message ?? res.statusText };
+    }
+    return { ok: true };
+  } else {
+    // 2b. 새 캡션 삽입
+    const body = buildMultipartBody(
+      boundary,
+      { snippet: { videoId: youtubeVideoId, language: languageCode, name: CAPTION_NAME, isDraft: false } },
+      content,
+      contentType
+    );
+    const res = await fetch(`${UPLOAD_BASE}?part=snippet&uploadType=multipart`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": `multipart/related; boundary=${boundary}`,
+      },
+      body,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({})) as { error?: { message?: string } };
+      return { ok: false, error: err.error?.message ?? res.statusText };
+    }
+    return { ok: true };
+  }
+}
+
 /**
  * YouTube videos.update — localizations 필드 업데이트
  * part=localizations 만 전송하므로 snippet 변경 없음

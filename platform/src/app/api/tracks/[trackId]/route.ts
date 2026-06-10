@@ -43,7 +43,7 @@ export async function PATCH(
   // 트랙 조회 (영상 정보 포함)
   const { data: track } = await supabase
     .from("subtitle_tracks")
-    .select("id, video_id, videos(id, youtube_video_id, youtube_channel_id)")
+    .select("id, video_id, language_code, videos(id, youtube_video_id, youtube_channel_id)")
     .eq("id", trackId)
     .single();
 
@@ -102,6 +102,42 @@ export async function PATCH(
 
   if (updateError) {
     return Response.json({ error: "상태 업데이트 실패" }, { status: 500 });
+  }
+
+  // 승인 시 YouTube 업로드 대기열에 추가 (non-fatal)
+  if (status === "approved") {
+    try {
+      const youtubeVideoId = (video as { youtube_video_id: string }).youtube_video_id;
+
+      // 현재 리비전의 storage_path, format 조회
+      const { data: currentRevision } = await supabase
+        .from("subtitle_revisions")
+        .select("storage_path, format")
+        .eq("track_id", trackId)
+        .eq("is_current", true)
+        .single();
+
+      if (currentRevision) {
+        // 같은 track_id가 이미 있으면 upsert (재승인 시 최신 리비전으로 갱신)
+        await supabase.from("youtube_upload_queue").upsert(
+          {
+            track_id: trackId,
+            youtube_video_id: youtubeVideoId,
+            youtube_channel_id: channelId,
+            user_id: user.id,
+            language_code: track.language_code,
+            storage_path: currentRevision.storage_path,
+            format: currentRevision.format,
+            status: "pending",
+            error_message: null,
+            processed_at: null,
+          },
+          { onConflict: "track_id" }
+        );
+      }
+    } catch {
+      // 대기열 추가 실패는 승인 결과에 영향 없음
+    }
   }
 
   return Response.json({ success: true, status });

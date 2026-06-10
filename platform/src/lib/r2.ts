@@ -1,4 +1,4 @@
-import { ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 const r2Client = new S3Client({
   region: "auto",
@@ -29,6 +29,22 @@ export async function uploadToR2(
     })
   );
   return key;
+}
+
+/**
+ * R2에서 파일 내용 읽기
+ * @param key - 저장 경로
+ */
+export async function getFromR2(key: string): Promise<string> {
+  const res = await r2Client.send(
+    new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME!,
+      Key: key,
+    })
+  );
+
+  if (!res.Body) throw new Error("R2 object body is empty");
+  return res.Body.transformToString("utf-8");
 }
 
 /** R2 연결 상태 확인 (읽기 권한 필요) */
