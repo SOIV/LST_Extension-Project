@@ -1,6 +1,6 @@
 # LST 프로젝트 로드맵
 
-Last updated: 2026-05-26
+Last updated: 2026-06-11
 
 ## 1) 프로젝트 방향
 
@@ -31,7 +31,7 @@ YouTube 영상/라이브를 대상으로 한 **커뮤니티 자막 플랫폼 + C
 | P1 | 기반 구축 | in_progress | 25% | 상태 모니터링/기본 운영 점검 체계 완료 |
 | P2 | Extension MVP | in_progress | 53% | YouTube 영상에서 안정적으로 자막 조회/렌더링 |
 | P3 | 플랫폼 MVP 코어 | in_progress | 36% | 로그인, 업로드/조회, 버전관리, 기본 편집기 동작 |
-| P4 | 플랫폼 MVP 크리에이터 | in_progress | 33% | 채널 연동 + 승인/공개 워크플로우 완료 |
+| P4 | 플랫폼 MVP 크리에이터 | completed | 100% | 채널 연동 + 승인/공개 워크플로우 완료 |
 | P5 | 통합 & 안정화 | planned | 0% | 장애 대응/회귀 방지/성능 기준 충족 |
 | P6 | 실시간 STT | in_progress | 67% | 전체 STT 파이프라인 안정화 + 렌더러/설정 UI 완성 |
 | CS | 공통 시스템 | in_progress | 56% | 자막 포맷/번역 파이프라인 완전 구현 |
@@ -109,10 +109,16 @@ Status: `in_progress`
 - [x] 크리에이터 채널 연동 UX 정리
 - [x] 연동 문구 정합성 수정
 - [x] 승인 전/후 공개 워크플로우 구현
-- [ ] YouTube 자막 업로드 비상 경로 점검
-- [ ] 영상 제목/설명란 다국어
+- [x] YouTube 자막 업로드 경로 구현
+  - [x] 승인 시 YouTube Captions API upsert (captions.list → insert/update)
+  - [x] 일별 할당량 대기열 시스템 (`youtube_upload_queue` + `youtube_quota_usage` 테이블)
+  - [x] 크론잡 (`/api/cron/process-youtube-queue`) — UTC 02:00 실행, 배치 처리
+  - [x] Stale processing 복구, retry_count 기록
+- [x] 영상 제목/설명란 다국어 (커뮤니티 제목/설명란)
   - [x] 제목/설명 업로드 (`videos.update` localizations)
-  - [x] 제목/설명 입력 UI
+  - [x] 제목/설명 입력 UI (모달 팝업, 언어 선택 드롭다운, 원본/번역 2컬럼)
+  - [x] 미로그인 시 로그인 리다이렉트, 빈 상태 메시지
+  - [x] 미연동 채널 영상도 제출 가능 (video 레코드 자동 생성)
 
 ### P5. 통합 & 안정화
 
@@ -131,7 +137,7 @@ Status: `planned`
 
 Status: `in_progress`
 
-Last updated: 2026-05-26
+Last updated: 2026-06-11
 
 #### 파이프라인 — 탭 오디오 캡처(OpenAI Realtime API, OpenAI Transcription API)
 - [x] 탭 오디오 캡처 (offscreen document, Chrome tabCapture)
@@ -257,9 +263,9 @@ Status: `planned`
 
 ## 6) 현재 주간 집중 항목
 
-- [ ] 메인 홈(기본) 구축
+- [x] **P4 완료** — YouTube 자막 업로드 대기열 시스템 구현
+- [ ] P5 데모 영상 녹화 준비 (youtube.force-ssl 스코프 데모)
 - [ ] 자막 편집기 편의성 업데이트
-- [ ] 연동 안내 문구 정리
 
 ## 7) 업데이트 규칙
 
