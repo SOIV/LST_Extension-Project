@@ -130,7 +130,7 @@ function ChannelCard({
   locale,
 }: {
   channel: YoutubeChannel;
-  labels: { viewChannel: string; subscribers: string };
+  labels: { viewChannel: string; subscribers: (count: string) => string };
   locale: string;
 }) {
   return (
@@ -161,7 +161,7 @@ function ChannelCard({
         </p>
         {channel.subscriberCount && (
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {labels.subscribers.replace("{count}", formatCountLocale(channel.subscriberCount, locale))}
+            {labels.subscribers(formatCountLocale(channel.subscriberCount, locale))}
           </p>
         )}
         {channel.description && (
@@ -196,7 +196,7 @@ export default async function SearchPage({
     draft: t("subtitleDraft"),
     viewSubtitles: t("viewSubtitles"),
     viewChannel: t("viewChannel"),
-    subscribers: t("subscribers"),
+    subscribers: (count: string) => t("subscribers", { count }),
   };
 
   // 검색어 없음
