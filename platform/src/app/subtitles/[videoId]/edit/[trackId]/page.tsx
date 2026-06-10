@@ -43,11 +43,12 @@ export default async function EditPage({
 
   const currentRev = revisions?.find((r) => r.is_current);
 
+  type SubtitleFormat = "srt" | "vtt" | "smi" | "sami" | "ttml";
   let initialContent = "";
-  let format: "srt" | "vtt" = "srt";
+  let format: SubtitleFormat = "srt";
 
   if (currentRev) {
-    format = currentRev.format as "srt" | "vtt";
+    format = currentRev.format as SubtitleFormat;
     const r2Url = `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${currentRev.storage_path}`;
     try {
       const res = await fetch(r2Url, { cache: "no-store" });
