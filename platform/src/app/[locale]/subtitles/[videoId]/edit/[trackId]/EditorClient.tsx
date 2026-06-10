@@ -5,6 +5,8 @@ import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 
 // ── Types ────────────────────────────────────────────────────────────────────
+type SubtitleFormat = "srt" | "vtt" | "smi" | "sami" | "ttml";
+
 interface Cue {
   id: string;
   start: number; // ms
@@ -13,12 +15,12 @@ interface Cue {
 }
 
 // ── Time utilities ────────────────────────────────────────────────────────────
-function msToTime(ms: number, fmt: "srt" | "vtt"): string {
+function msToTime(ms: number, fmt: SubtitleFormat): string {
   const h = Math.floor(ms / 3_600_000);
   const m = Math.floor((ms % 3_600_000) / 60_000);
   const s = Math.floor((ms % 60_000) / 1_000);
   const r = ms % 1_000;
-  const sep = fmt === "vtt" ? "." : ",";
+  const sep = fmt === "srt" ? "," : ".";
   return (
     String(h).padStart(2, "0") +
     ":" +
@@ -56,6 +58,106 @@ function genId(): string {
   return String(++_uid);
 }
 
+function parseSMI(content: string): Cue[] {
+  const syncs: Array<{ start: number; text: string }> = [];
+  const syncRe =
+    /<SYNC[^>]+Start\s*=\s*["']?(\d+)["']?[^>]*>([\s\S]*?)(?=<SYNC|<\/BODY>|$)/gi;
+  let m: RegExpExecArray | null;
+  while ((m = syncRe.exec(content)) !== null) {
+    const startMs = parseInt(m[1], 10);
+    const pMatch =
+      m[2].match(/<P[^>]*>([\s\S]*?)<\/P>/i) ||
+      m[2].match(/<P[^>]*>([\s\S]*)/i);
+    let text = "";
+    if (pMatch) {
+      text = pMatch[1]
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/&nbsp;/gi, "")
+        .replace(/&amp;/gi, "&")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .trim();
+    }
+    syncs.push({ start: startMs, text });
+  }
+  const cues: Cue[] = [];
+  for (let i = 0; i < syncs.length; i++) {
+    const { start, text } = syncs[i];
+    if (!text) continue;
+    const end = i + 1 < syncs.length ? syncs[i + 1].start : start + 3000;
+    if (end > start) cues.push({ id: genId(), start, end, text });
+  }
+  return cues;
+}
+
+function parseTTMLCues(content: string): Cue[] {
+  let doc: Document;
+  try {
+    doc = new DOMParser().parseFromString(content, "application/xml");
+    if (doc.querySelector("parsererror")) return [];
+  } catch {
+    return [];
+  }
+
+  function ttmlTimeToMs(str: string): number {
+    const s = str.trim();
+    const cm = s.match(/^(\d+):(\d+):(\d+)(?:[.,](\d+))?$/);
+    if (cm) {
+      const frac = cm[4] ? Math.round(parseFloat("0." + cm[4]) * 1000) : 0;
+      return (
+        parseInt(cm[1], 10) * 3_600_000 +
+        parseInt(cm[2], 10) * 60_000 +
+        parseInt(cm[3], 10) * 1_000 +
+        frac
+      );
+    }
+    const um = s.match(/^(\d+(?:\.\d+)?)(h|m|s|ms)$/);
+    if (um) {
+      const val = parseFloat(um[1]);
+      switch (um[2]) {
+        case "h":  return Math.round(val * 3_600_000);
+        case "m":  return Math.round(val * 60_000);
+        case "s":  return Math.round(val * 1_000);
+        case "ms": return Math.round(val);
+      }
+    }
+    return NaN;
+  }
+
+  function extractText(el: Element): string {
+    let result = "";
+    for (const node of Array.from(el.childNodes)) {
+      if (node.nodeType === 3) {
+        result += node.textContent ?? "";
+      } else if (node.nodeType === 1) {
+        const child = node as Element;
+        if (child.localName === "br") result += "\n";
+        else result += extractText(child);
+      }
+    }
+    return result.replace(/[ \t]+/g, " ").trim();
+  }
+
+  const pEls = Array.from(doc.getElementsByTagName("*")).filter(
+    (el) => el.localName === "p"
+  );
+  const cues: Cue[] = [];
+  for (const p of pEls) {
+    const beginStr = p.getAttribute("begin");
+    const endStr = p.getAttribute("end");
+    if (!beginStr || !endStr) continue;
+    const start = ttmlTimeToMs(beginStr);
+    const end = ttmlTimeToMs(endStr);
+    if (isNaN(start) || isNaN(end) || end <= start) continue;
+    const text = extractText(p);
+    if (text) cues.push({ id: genId(), start, end, text });
+  }
+  return cues;
+}
+
 function parseBlocks(content: string): Cue[] {
   const blocks = content.trim().split(/\n[ \t]*\n/);
   const result: Cue[] = [];
@@ -73,14 +175,69 @@ function parseBlocks(content: string): Cue[] {
   return result;
 }
 
-function parseContent(content: string, fmt: "srt" | "vtt"): Cue[] {
+function parseContent(content: string, fmt: SubtitleFormat): Cue[] {
   if (!content.trim()) return [];
+  if (fmt === "smi" || fmt === "sami") return parseSMI(content);
+  if (fmt === "ttml") return parseTTMLCues(content);
   const body =
     fmt === "vtt" ? content.replace(/^WEBVTT[^\n]*\n+/, "") : content;
   return parseBlocks(body);
 }
 
-function stringifyContent(cues: Cue[], fmt: "srt" | "vtt"): string {
+function stringifyContent(cues: Cue[], fmt: SubtitleFormat): string {
+  if (fmt === "smi" || fmt === "sami") {
+    const bodyLines: string[] = [];
+    for (let i = 0; i < cues.length; i++) {
+      const { start, end, text } = cues[i];
+      const encoded = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<BR>");
+      bodyLines.push(
+        `<SYNC Start=${start}><P Class=UNKN>${encoded}</P></SYNC>`
+      );
+      const nextStart = cues[i + 1]?.start;
+      if (nextStart === undefined || nextStart !== end) {
+        bodyLines.push(`<SYNC Start=${end}><P Class=UNKN>&nbsp;</P></SYNC>`);
+      }
+    }
+    return [
+      "<SAMI>",
+      "<HEAD>",
+      '<STYLE TYPE="text/css">',
+      "P { margin-left: 8pt; margin-right: 8pt; margin-bottom: 2pt; text-align: center; font-size: 10pt; font-family: Arial; color: white; }",
+      ".UNKN { Name: Unknown; lang: und; SAMI_Type: CC; }",
+      "</STYLE>",
+      "</HEAD>",
+      "<BODY>",
+      ...bodyLines,
+      "</BODY>",
+      "</SAMI>",
+    ].join("\n");
+  }
+
+  if (fmt === "ttml") {
+    const pLines = cues.map(({ start, end, text }) => {
+      const encoded = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br/>");
+      return `      <p begin="${msToTime(start, "ttml")}" end="${msToTime(end, "ttml")}">${encoded}</p>`;
+    });
+    return [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<tt xml:lang="und" xmlns="http://www.w3.org/ns/ttml">',
+      "  <body>",
+      "    <div>",
+      ...pLines,
+      "    </div>",
+      "  </body>",
+      "</tt>",
+    ].join("\n");
+  }
+
   const lines = cues.map(
     (c, i) =>
       `${i + 1}\n${msToTime(c.start, fmt)} --> ${msToTime(c.end, fmt)}\n${c.text}`
@@ -93,7 +250,7 @@ interface EditorClientProps {
   videoId: string;
   trackId: string;
   languageName: string;
-  format: "srt" | "vtt";
+  format: SubtitleFormat;
   initialContent: string;
 }
 
@@ -164,7 +321,7 @@ export default function EditorClient({
     };
   }, [videoId]);
 
-  // ── 자막 미리보기 폴링 (상시 활성) ────────────────────────────────────────────
+  // ── 자막 미리보기 폴링 ────────────────────────────────────────────────────
   useEffect(() => {
     const activeCues = view === "timeline" ? cues : parseContent(rawText, format);
     const id = setInterval(() => {
@@ -226,6 +383,23 @@ export default function EditorClient({
       ...prev,
       { id: genId(), start, end: start + 2000, text: "" },
     ]);
+  }
+
+  function insertCueAt(index: number) {
+    setCues((prev) => {
+      const updated = [...prev];
+      const cur = updated[index];
+      const nextCue = updated[index + 1];
+      const start = cur.end;
+      const end = nextCue ? nextCue.start : cur.end + 2000;
+      updated.splice(index + 1, 0, {
+        id: genId(),
+        start,
+        end: end > start ? end : start + 2000,
+        text: "",
+      });
+      return updated;
+    });
   }
 
   function deleteCue(index: number) {
@@ -406,7 +580,7 @@ export default function EditorClient({
                 </div>
               ) : (
                 <>
-                  {cues.map((cue, i) => (
+                  {cues.flatMap((cue, i) => [
                     <CueRow
                       key={cue.id}
                       index={i}
@@ -420,8 +594,20 @@ export default function EditorClient({
                       ariaEndTime={t("ariaEndTime")}
                       ariaSubtitleText={t("ariaSubtitleText")}
                       ariaDeleteCue={t("ariaDeleteCue")}
-                    />
-                  ))}
+                    />,
+                    <button
+                      key={`ins-${cue.id}`}
+                      onClick={() => insertCueAt(i)}
+                      className="group flex w-full items-center gap-2 py-0.5"
+                      aria-label={t("ariaInsertCue")}
+                    >
+                      <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800 group-hover:bg-zinc-300 dark:group-hover:bg-zinc-600 transition-colors" />
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[11px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+                        {t("addCue")}
+                      </span>
+                      <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800 group-hover:bg-zinc-300 dark:group-hover:bg-zinc-600 transition-colors" />
+                    </button>,
+                  ])}
                   <button
                     onClick={addCue}
                     className="w-full py-3 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 text-sm text-zinc-400 dark:text-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors"
@@ -444,6 +630,10 @@ export default function EditorClient({
               placeholder={
                 format === "vtt"
                   ? "WEBVTT\n\n1\n00:00:01.000 --> 00:00:03.000\nHello world"
+                  : format === "smi" || format === "sami"
+                  ? "<SAMI>\n<HEAD></HEAD>\n<BODY>\n<SYNC Start=1000><P Class=UNKN>Hello world</P></SYNC>\n<SYNC Start=3000><P Class=UNKN>&nbsp;</P></SYNC>\n</BODY>\n</SAMI>"
+                  : format === "ttml"
+                  ? '<?xml version="1.0" encoding="UTF-8"?>\n<tt xml:lang="und" xmlns="http://www.w3.org/ns/ttml">\n  <body>\n    <div>\n      <p begin="00:00:01.000" end="00:00:03.000">Hello world</p>\n    </div>\n  </body>\n</tt>'
                   : "1\n00:00:01,000 --> 00:00:03,000\nHello world"
               }
             />
@@ -458,7 +648,7 @@ export default function EditorClient({
 interface CueRowProps {
   index: number;
   cue: Cue;
-  format: "srt" | "vtt";
+  format: SubtitleFormat;
   onUpdate: (
     index: number,
     field: "start" | "end" | "text",
