@@ -356,6 +356,23 @@ export default function EditorClient({
     ]);
   }
 
+  function insertCueAt(index: number) {
+    setCues((prev) => {
+      const updated = [...prev];
+      const cur = updated[index];
+      const nextCue = updated[index + 1];
+      const start = cur.end;
+      const end = nextCue ? nextCue.start : cur.end + 2000;
+      updated.splice(index + 1, 0, {
+        id: genId(),
+        start,
+        end: end > start ? end : start + 2000,
+        text: "",
+      });
+      return updated;
+    });
+  }
+
   function deleteCue(index: number) {
     setCues((prev) => prev.filter((_, i) => i !== index));
   }
@@ -488,18 +505,18 @@ export default function EditorClient({
               {cues.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
                   <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
-                    자막 큐가 없습니다.
+                    자막 줄이 없습니다.
                   </p>
                   <button
                     onClick={addCue}
                     className="text-sm font-medium px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                   >
-                    + 첫 번째 큐 추가
+                    + 첫 번째 자막 줄 추가
                   </button>
                 </div>
               ) : (
                 <>
-                  {cues.map((cue, i) => (
+                  {cues.flatMap((cue, i) => [
                     <CueRow
                       key={cue.id}
                       index={i}
@@ -508,13 +525,25 @@ export default function EditorClient({
                       onUpdate={updateCue}
                       onDelete={deleteCue}
                       onSeek={seekTo}
-                    />
-                  ))}
+                    />,
+                    <button
+                      key={`ins-${cue.id}`}
+                      onClick={() => insertCueAt(i)}
+                      className="group flex w-full items-center gap-2 py-0.5"
+                      aria-label={`${i + 1}번 줄 아래에 자막 추가`}
+                    >
+                      <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800 group-hover:bg-zinc-300 dark:group-hover:bg-zinc-600 transition-colors" />
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[11px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+                        + 자막 줄 추가
+                      </span>
+                      <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800 group-hover:bg-zinc-300 dark:group-hover:bg-zinc-600 transition-colors" />
+                    </button>,
+                  ])}
                   <button
                     onClick={addCue}
                     className="w-full py-3 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 text-sm text-zinc-400 dark:text-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors"
                   >
-                    + 큐 추가
+                    + 자막 줄 추가
                   </button>
                 </>
               )}
