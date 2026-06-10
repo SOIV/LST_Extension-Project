@@ -104,7 +104,7 @@ Status: `in_progress`
 
 ### P4. 플랫폼 MVP 크리에이터
 
-Status: `in_progress`
+Status: `completed`
 
 - [x] 크리에이터 채널 연동 UX 정리
 - [x] 연동 문구 정합성 수정
