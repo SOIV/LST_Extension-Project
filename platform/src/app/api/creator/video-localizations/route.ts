@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { getVideoById } from "@/lib/youtube";
 
 function err(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status });
@@ -32,13 +33,35 @@ export async function POST(request: NextRequest) {
   if (!title || typeof title !== "string" || !title.trim()) return err("title is required");
 
   // videos 테이블에서 video_id 조회
-  const { data: video } = await supabase
+  let { data: video } = await supabase
     .from("videos")
     .select("id")
     .eq("youtube_video_id", videoId)
     .single();
 
-  if (!video) return err("Video not found", 404);
+  // 크리에이터 미연동 영상 → YouTube API로 정보 가져와서 자동 생성
+  if (!video) {
+    try {
+      const yt = await getVideoById(videoId);
+      if (!yt) return err("Video not found", 404);
+
+      const { data: newVideo } = await supabase
+        .from("videos")
+        .insert({
+          youtube_video_id: videoId,
+          youtube_channel_id: yt.channelId,
+          title: yt.title,
+          channel_name: yt.channelTitle,
+        })
+        .select("id")
+        .single();
+
+      if (!newVideo) return err("Failed to create video record", 500);
+      video = newVideo;
+    } catch {
+      return err("Video not found", 404);
+    }
+  }
 
   const { error } = await supabase
     .from("video_localizations")

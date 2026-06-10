@@ -2,10 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { getVideoById, type YoutubeVideo } from "@/lib/youtube";
-import CopyLinkButton from "@/components/CopyLinkButton";
+import { getVideoById } from "@/lib/youtube";
 import BackButton from "@/components/BackButton";
 import LocalizationPanel from "@/components/LocalizationPanel";
+import RevisionHistoryModal from "@/components/RevisionHistoryModal";
 
 function getLanguageName(locale: string, languageCode: string): string {
   try {
@@ -14,93 +14,6 @@ function getLanguageName(locale: string, languageCode: string): string {
   } catch {
     return languageCode;
   }
-}
-
-// ─── 크리에이터 미연동 페이지 ──────────────────────────────────────────────────
-
-function CreatorNotConnected({
-  videoId,
-  ytVideo,
-  t,
-  shareUrl,
-}: {
-  videoId: string;
-  ytVideo: YoutubeVideo | null;
-  t: Awaited<ReturnType<typeof getTranslations<"SubtitlePage">>>;
-  shareUrl: string;
-}) {
-  return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-10 px-4">
-      <div className="max-w-3xl mx-auto flex flex-col gap-6">
-
-        {/* 영상 플레이어 */}
-        <div className="flex flex-col gap-3">
-          <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
-            <iframe
-              src={`https://www.youtube.com/embed/${videoId}`}
-              className="w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-          {ytVideo && (
-            <div>
-              <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 line-clamp-2">
-                {ytVideo.title}
-              </h1>
-              {ytVideo.channelTitle && (
-                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  {ytVideo.channelTitle}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* 크리에이터 미연동 안내 */}
-        <div className="flex flex-col items-center gap-4 py-10 px-6 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
-
-          {/* 아이콘 */}
-          <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-zinc-400 dark:text-zinc-500"
-            >
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-            </svg>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <p className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-              {t("creatorNotConnected")}
-            </p>
-          </div>
-
-          {/* 공유 링크 복사 */}
-          <div className="flex flex-col items-center gap-2 pt-1">
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">
-              {t("requestConnection")}
-            </p>
-            <CopyLinkButton
-              url={shareUrl}
-              labelCopy={t("copyShareLink")}
-              labelCopied={t("copied")}
-            />
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
 }
 
 // ─── 메인 페이지 ───────────────────────────────────────────────────────────────
@@ -130,62 +43,62 @@ export default async function SubtitlePage({
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // YouTube API로 영상 원본 정보 조회 (크리에이터 연동 여부와 무관하게 항상 시도)
+  let ytVideo: { title: string; description: string; channelTitle?: string } | null = null;
+  if (process.env.YOUTUBE_API_KEY) {
+    try {
+      const yt = await getVideoById(videoId);
+      if (yt) ytVideo = { title: yt.title, description: yt.description, channelTitle: yt.channelTitle };
+    } catch {
+      // 실패해도 계속 진행
+    }
+  }
+
+  // DB에서 영상 조회
   const { data: video } = await supabase
     .from("videos")
     .select("id, youtube_video_id, youtube_channel_id, title, channel_name")
     .eq("youtube_video_id", videoId)
     .single();
 
-  // DB에 없는 영상 → 크리에이터 미연동 페이지
-  if (!video) {
-    // YouTube API로 영상 정보 보조 조회 (선택적)
-    let ytVideo: YoutubeVideo | null = null;
-    if (process.env.YOUTUBE_API_KEY) {
-      try {
-        ytVideo = await getVideoById(videoId);
-      } catch {
-        // API 실패해도 페이지는 보여줌
-      }
-    }
-
-    // YouTube에도 없는 videoId → 진짜 404
-    if (!ytVideo && !process.env.YOUTUBE_API_KEY) {
-      // API 키가 없으면 판별 불가 → 미연동 페이지로 fallback
-    } else if (!ytVideo) {
-      notFound();
-    }
-
-    const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/${locale}/subtitles/${videoId}`;
-
-    return (
-      <CreatorNotConnected
-        videoId={videoId}
-        ytVideo={ytVideo}
-        t={t}
-        shareUrl={shareUrl}
-      />
-    );
+  // YouTube API도 없고 DB에도 없으면 → 진짜 404
+  if (!video && !ytVideo && process.env.YOUTUBE_API_KEY) {
+    notFound();
   }
 
-  const { data: tracks } = await supabase
-    .from("subtitle_tracks")
-    .select(`
-      id,
-      language_code,
-      status,
-      created_at,
-      subtitle_revisions (
-        id,
-        revision_number,
-        format,
-        message,
-        is_current,
-        created_at,
-        contributor_id
-      )
-    `)
-    .eq("video_id", video.id)
-    .order("language_code");
+  // 자막 트랙 조회 (연동된 채널만)
+  const { data: tracks } = video
+    ? await supabase
+        .from("subtitle_tracks")
+        .select(`
+          id,
+          language_code,
+          status,
+          created_at,
+          subtitle_revisions (
+            id,
+            revision_number,
+            format,
+            message,
+            is_current,
+            created_at,
+            contributor_id
+          )
+        `)
+        .eq("video_id", video.id)
+        .order("language_code")
+    : { data: null };
+
+  // 번역 추가 건수 조회
+  const { count: localizationCount } = video
+    ? await supabase
+        .from("video_localizations")
+        .select("id", { count: "exact", head: true })
+        .eq("video_id", video.id)
+    : { count: 0 };
+
+  const displayTitle = ytVideo?.title ?? video?.title;
+  const displayChannel = ytVideo?.channelTitle ?? video?.channel_name;
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-10 px-4">
@@ -193,6 +106,7 @@ export default async function SubtitlePage({
 
         <BackButton label={t("back")} />
 
+        {/* 영상 플레이어 */}
         <div className="flex flex-col gap-3">
           <div className="aspect-video w-full rounded-xl overflow-hidden bg-black">
             <iframe
@@ -202,20 +116,21 @@ export default async function SubtitlePage({
               allowFullScreen
             />
           </div>
-          {video.title && (
+          {displayTitle && (
             <div>
               <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 line-clamp-2">
-                {video.title}
+                {displayTitle}
               </h1>
-              {video.channel_name && (
+              {displayChannel && (
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  {video.channel_name}
+                  {displayChannel}
                 </p>
               )}
             </div>
           )}
         </div>
 
+{/* 커뮤니티 자막 섹션 */}
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
@@ -271,6 +186,12 @@ export default async function SubtitlePage({
                             v{currentRevision.revision_number} · {currentRevision.format.toUpperCase()}
                           </span>
                         )}
+                        {revisions.length > 0 && (
+                          <RevisionHistoryModal
+                            languageName={getLanguageName(locale, track.language_code)}
+                            revisions={revisions}
+                          />
+                        )}
                         <Link
                           href={`/subtitles/${videoId}/edit/${track.id}`}
                           className="text-xs px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
@@ -285,38 +206,6 @@ export default async function SubtitlePage({
                         {currentRevision.message}
                       </p>
                     )}
-
-                    {revisions.length > 1 && (
-                      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3">
-                        <p className="text-xs text-zinc-400 mb-2">{t("revisionHistory")}</p>
-                        <div className="flex flex-col gap-1.5">
-                          {[...revisions]
-                            .sort((a: { revision_number: number }, b: { revision_number: number }) => b.revision_number - a.revision_number)
-                            .map((rev: {
-                              id: string;
-                              revision_number: number;
-                              message: string;
-                              is_current: boolean;
-                              created_at: string;
-                            }) => (
-                              <div key={rev.id} className="flex items-center gap-2 text-xs text-zinc-500">
-                                <span className={`font-mono ${rev.is_current ? "text-zinc-900 dark:text-zinc-100 font-semibold" : ""}`}>
-                                  v{rev.revision_number}
-                                </span>
-                                {rev.is_current && (
-                                  <span className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-400">
-                                    {t("current")}
-                                  </span>
-                                )}
-                                <span className="flex-1 truncate">{rev.message || "—"}</span>
-                                <span className="text-zinc-400">
-                                  {new Date(rev.created_at).toLocaleDateString()}
-                                </span>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -324,12 +213,14 @@ export default async function SubtitlePage({
           )}
         </div>
 
-        {user && (
-          <LocalizationPanel
-            videoId={videoId}
-            originalTitle={video.title}
-          />
-        )}
+        {/* 커뮤니티 제목/설명란 */}
+        <LocalizationPanel
+          videoId={videoId}
+          originalTitle={ytVideo?.title ?? video?.title}
+          originalDescription={ytVideo?.description}
+          isLoggedIn={!!user}
+          localizationCount={localizationCount ?? 0}
+        />
 
       </div>
     </div>
