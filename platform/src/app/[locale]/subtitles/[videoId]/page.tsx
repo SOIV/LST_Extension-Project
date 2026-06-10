@@ -102,9 +102,13 @@ export default async function SubtitlePage({
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-10 px-4">
-      <div className="max-w-3xl mx-auto flex flex-col gap-8">
 
+      {/* 뒤로가기 — 컨텐츠 컨테이너 밖, 상단 좌측 */}
+      <div className="max-w-3xl mx-auto mb-4">
         <BackButton label={t("back")} />
+      </div>
+
+      <div className="max-w-3xl mx-auto flex flex-col gap-8">
 
         {/* 영상 플레이어 */}
         <div className="flex flex-col gap-3">
