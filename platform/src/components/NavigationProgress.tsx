@@ -21,6 +21,16 @@ export default function NavigationProgress() {
   }, [pathname]);
 
   useEffect(() => {
+    function onNavigationStart() {
+      clearTimeout(timerRef.current);
+      navigatingRef.current = true;
+      setPhase("loading");
+    }
+    window.addEventListener("navigation-progress-start", onNavigationStart);
+    return () => window.removeEventListener("navigation-progress-start", onNavigationStart);
+  }, []);
+
+  useEffect(() => {
     function onLinkClick(e: MouseEvent) {
       const anchor = (e.target as Element).closest("a");
       if (!anchor) return;

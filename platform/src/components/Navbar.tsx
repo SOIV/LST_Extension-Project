@@ -202,6 +202,7 @@ export default function Navbar() {
     });
     setIsSuggestOpen(false);
     setActiveSuggestionIndex(-1);
+    window.dispatchEvent(new Event("navigation-progress-start"));
     router.push(`/search?q=${encodeURIComponent(q)}`);
     inputRef.current?.blur();
   }
