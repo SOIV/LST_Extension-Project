@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     const result = await getChannelVideosCached(
       channelId,
       tab as ChannelTab,
-      24,
+      8,
       pageToken,
       bypassCache,
     );
