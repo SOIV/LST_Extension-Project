@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import Navbar from "@/components/Navbar";
 import SiteFooter from "@/components/SiteFooter";
+import NavigationProgress from "@/components/NavigationProgress";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -27,6 +28,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
+      <NavigationProgress />
       <Navbar />
       {children}
       <SiteFooter />

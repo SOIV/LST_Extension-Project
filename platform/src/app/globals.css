@@ -33,3 +33,37 @@ body {
 :lang(en) {
   --font-sans: "Pretendard Variable", "Noto Sans Variable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+
+/* Navigation progress bar */
+@keyframes nav-progress-slide {
+  0% { left: -40%; }
+  100% { left: 110%; }
+}
+
+@keyframes nav-progress-fade-out {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.nav-progress-indeterminate {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  background-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+
+.nav-progress-indeterminate::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 38%;
+  background-color: var(--foreground);
+  animation: nav-progress-slide 1.3s ease-in-out infinite;
+}
+
+.nav-progress-done {
+  width: 100%;
+  background-color: var(--foreground);
+  animation: nav-progress-fade-out 0.45s ease-out forwards;
+}
