@@ -112,7 +112,7 @@ export default async function ChannelPage({
     getChannelVideosCached(
       channelId,
       tab as "videos" | "shorts" | "live",
-      12
+      24
     ),
   ]);
 
