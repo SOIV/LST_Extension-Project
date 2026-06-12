@@ -41,8 +41,8 @@ LST 내부에서는 포맷과 무관하게 아래 구조를 기준으로 자막�
 |---|---:|---:|---|
 | SRT | yes | yes | 기본 타임라인 자막. 스타일/위치 보존 제한 |
 | VTT | yes | yes | Web/YouTube 미리보기와 Extension 표시 후보 |
-| SMI/SAMI | planned | planned | HTML 유사 구조. 언어/스타일 해석 정책 필요 |
-| TTML | planned | planned | 구조와 스타일이 복잡하므로 subset 우선 |
+| SMI/SAMI | yes | yes | HTML 유사 구조. 언어/스타일 해석 정책 필요 |
+| TTML | yes | yes | 구조와 스타일이 복잡하므로 subset 우선 |
 
 ## Conversion Policy
 
