@@ -196,8 +196,8 @@ async function startTabCapture(tabId) {
   if (!(await hasOffscreenDocument())) {
     await chrome.offscreen.createDocument({
       url: chrome.runtime.getURL('offscreen.html'),
-      reasons: ['AUDIO_PLAYBACK'],
-      justification: 'Tab audio capture for realtime STT',
+      reasons: ['USER_MEDIA', 'WEB_RTC'],
+      justification: '탭 오디오 캡처 및 WebRTC STT 처리',
     });
   }
 
