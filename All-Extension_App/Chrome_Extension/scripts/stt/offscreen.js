@@ -27,6 +27,7 @@
   let activeStream  = null;
   let captureActive = false;
   let captureSessionId = 0;
+  let stoppingCapture = false;
 
   // Whisper
   let mediaRecorder = null;
@@ -54,7 +55,7 @@
     }
 
     if (message.action === 'tabCaptureStop') {
-      stopCapture();
+      stopCapture({ notifyBackground: false });
       sendResponse({ success: true });
     }
   });
@@ -81,8 +82,12 @@
     chrome.runtime.sendMessage({ action: 'whisperTranscript', ...payload }).catch(() => {});
   }
 
+  function notifyCaptureStopped(reason) {
+    chrome.runtime.sendMessage({ action: 'tabCaptureStopped', reason }).catch(() => {});
+  }
+
   async function startCapture(streamId, stored) {
-    stopCapture();
+    stopCapture({ notifyBackground: false });
     const sessionId = beginCaptureSession();
 
     let stream;
@@ -102,6 +107,14 @@
     }
 
     activeStream = stream;
+    stream.getAudioTracks().forEach((track) => {
+      track.addEventListener('ended', () => {
+        if (!isCaptureSessionActive(sessionId) || stoppingCapture) return;
+        console.warn('[LST Offscreen] Audio track ended');
+        stopCapture({ notifyBackground: true, reason: 'audio_track_ended' });
+      }, { once: true });
+    });
+
     audioCtx     = new AudioContext();
     const source = audioCtx.createMediaStreamSource(stream);
     source.connect(audioCtx.destination);
@@ -359,12 +372,24 @@
 
     realtimePc = new RTCPeerConnection();
     realtimePc.ontrack = () => {};
+    realtimePc.onconnectionstatechange = () => {
+      const state = realtimePc?.connectionState;
+      if (!isCaptureSessionActive(sessionId) || stoppingCapture) return;
+      if (state === 'failed' || state === 'disconnected' || state === 'closed') {
+        console.warn('[LST Realtime] WebRTC connection ended:', state);
+        stopCapture({ notifyBackground: true, reason: `realtime_${state}` });
+      }
+    };
 
     stream.getAudioTracks().forEach(track => realtimePc.addTrack(track, stream));
 
     realtimeDc = realtimePc.createDataChannel('oai-events');
     realtimeDc.onopen  = () => console.log('[LST Realtime] Data channel open');
-    realtimeDc.onclose = () => console.log('[LST Realtime] Data channel closed');
+    realtimeDc.onclose = () => {
+      console.log('[LST Realtime] Data channel closed');
+      if (!isCaptureSessionActive(sessionId) || stoppingCapture) return;
+      stopCapture({ notifyBackground: true, reason: 'realtime_data_channel_closed' });
+    };
     realtimeDc.onmessage = (e) => {
       try {
         handleRealtimeEvent(sessionId, JSON.parse(e.data), sourceLang, targetLang, translationOpts, interimOpts);
@@ -534,7 +559,10 @@
 
   /* ─── 캡처 중지 ───────────────────────────────────────────────────────────── */
 
-  function stopCapture() {
+  function stopCapture({ notifyBackground = false, reason = 'stopped' } = {}) {
+    if (stoppingCapture) return;
+    const shouldNotify = notifyBackground && captureActive;
+    stoppingCapture = true;
     endCaptureSession();
     if (mediaRecorder?.state !== 'inactive') {
       mediaRecorder?.stop();
@@ -549,6 +577,8 @@
     audioCtx?.close().catch(() => {});
     audioCtx = null;
 
+    stoppingCapture = false;
+    if (shouldNotify) notifyCaptureStopped(reason);
     console.log('[LST Offscreen] Tab audio capture stopped');
   }
 

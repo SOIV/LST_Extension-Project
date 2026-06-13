@@ -113,6 +113,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return;
   }
 
+  // offscreen 쪽 캡처/Realtime 연결이 먼저 종료된 경우 → background 상태 동기화
+  if (message.action === 'tabCaptureStopped') {
+    handleTabCaptureStopped(message.reason)
+      .then(() => sendResponse({ success: true }))
+      .catch(e => sendResponse({ success: false, error: e.message }));
+    return true;
+  }
+
   // STT 활성 상태 → 배지 업데이트
   if (message.action === 'sttStateChange') {
     const { active, tabId: sttTabId, source } = message;
@@ -168,7 +176,7 @@ async function hasOffscreenDocument() {
 }
 
 async function startTabCapture(tabId) {
-  if (tabCaptureActiveTabId !== null) {
+  if (tabCaptureActiveTabId !== null || (sttState.active && sttState.source === 'tab')) {
     await stopTabCapture();
   }
 
@@ -209,7 +217,7 @@ async function startTabCapture(tabId) {
 }
 
 async function stopTabCapture() {
-  const stoppedTabId = tabCaptureActiveTabId;
+  const stoppedTabId = tabCaptureActiveTabId ?? (sttState.source === 'tab' ? sttState.tabId : null);
   tabCaptureActiveTabId = null;
 
   chrome.runtime.sendMessage({ action: 'tabCaptureStop' }).catch(() => {});
@@ -225,6 +233,27 @@ async function stopTabCapture() {
   if (await hasOffscreenDocument()) {
     chrome.offscreen.closeDocument().catch(() => {});
   }
+}
+
+async function handleTabCaptureStopped(reason = 'unknown') {
+  const stoppedTabId = tabCaptureActiveTabId ?? (sttState.source === 'tab' ? sttState.tabId : null);
+  tabCaptureActiveTabId = null;
+
+  if (stoppedTabId !== null) {
+    chrome.tabs.sendMessage(stoppedTabId, { action: 'tabCaptureInactive' }).catch(() => {});
+    if (sttState.tabId === stoppedTabId) {
+      sttState = { active: false, tabId: null, source: null };
+    }
+    updateBadge(stoppedTabId, tabSubtitleStatus.get(stoppedTabId) || 'not_youtube');
+  } else if (sttState.source === 'tab') {
+    sttState = { active: false, tabId: null, source: null };
+  }
+
+  if (await hasOffscreenDocument()) {
+    chrome.offscreen.closeDocument().catch(() => {});
+  }
+
+  console.warn('[LST Background] Tab audio capture stopped:', reason);
 }
 
 async function stopSttForTab(tabId) {
