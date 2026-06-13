@@ -38,7 +38,18 @@
   let realtimeInterimBuffer = '';
   let realtimeSilenceTimer  = null;  // 폴백용 수동 침묵 타이머
   let realtimeInterimTranslateTimer = null;
+  let realtimeInterimTranslateInFlight = false;
+  let realtimeLastInterimTranslateAt = 0;
+  let realtimeLastTranslatedInterim = '';
   let realtimeSilenceMs     = 1500;
+  const REALTIME_INTERIM_TRANSLATE_INTERVAL_MS = 900;
+  let realtimeConfig = null;
+  let realtimeReconnectTimer = null;
+  let realtimeReconnectAttempts = 0;
+  let realtimeRestarting = false;
+  const REALTIME_DISCONNECTED_GRACE_MS = 5000;
+  const REALTIME_RECONNECT_BASE_DELAY_MS = 1500;
+  const REALTIME_RECONNECT_MAX_DELAY_MS = 30000;
 
 
   /* ─── 메시지 수신 ─────────────────────────────────────────────────────────── */
@@ -161,8 +172,19 @@
       if (!openaiApiKey) {
         console.warn('[LST Offscreen] openaiApiKey not set — STT disabled');
       } else if (sttEngine === 'realtime') {
+        realtimeConfig = {
+          sessionId,
+          stream,
+          apiKey: openaiApiKey,
+          sourceLang,
+          targetLang,
+          translationOpts,
+          interimOpts,
+          model: realtimeModel,
+        };
         await startRealtimeSTT(sessionId, stream, openaiApiKey, sourceLang, targetLang, translationOpts, interimOpts, realtimeModel);
       } else {
+        realtimeConfig = null;
         startWhisperRecorder(sessionId, stream, openaiApiKey, sourceLang, targetLang, translationOpts, whisperModel);
       }
     } catch (err) {
@@ -374,10 +396,19 @@
     realtimePc.ontrack = () => {};
     realtimePc.onconnectionstatechange = () => {
       const state = realtimePc?.connectionState;
-      if (!isCaptureSessionActive(sessionId) || stoppingCapture) return;
-      if (state === 'failed' || state === 'disconnected' || state === 'closed') {
+      if (!isCaptureSessionActive(sessionId) || stoppingCapture || realtimeRestarting) return;
+      if (state === 'connected') {
+        realtimeReconnectAttempts = 0;
+        clearTimeout(realtimeReconnectTimer);
+        realtimeReconnectTimer = null;
+        return;
+      }
+      if (state === 'disconnected') {
+        console.warn('[LST Realtime] WebRTC connection disconnected');
+        scheduleRealtimeReconnect(sessionId, 'realtime_disconnected', REALTIME_DISCONNECTED_GRACE_MS);
+      } else if (state === 'failed' || state === 'closed') {
         console.warn('[LST Realtime] WebRTC connection ended:', state);
-        stopCapture({ notifyBackground: true, reason: `realtime_${state}` });
+        scheduleRealtimeReconnect(sessionId, `realtime_${state}`);
       }
     };
 
@@ -387,8 +418,8 @@
     realtimeDc.onopen  = () => console.log('[LST Realtime] Data channel open');
     realtimeDc.onclose = () => {
       console.log('[LST Realtime] Data channel closed');
-      if (!isCaptureSessionActive(sessionId) || stoppingCapture) return;
-      stopCapture({ notifyBackground: true, reason: 'realtime_data_channel_closed' });
+      if (!isCaptureSessionActive(sessionId) || stoppingCapture || realtimeRestarting) return;
+      scheduleRealtimeReconnect(sessionId, 'realtime_data_channel_closed');
     };
     realtimeDc.onmessage = (e) => {
       try {
@@ -405,6 +436,70 @@
     await realtimePc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
 
     console.log('[LST Realtime] WebRTC connection established');
+  }
+
+  function getRealtimeReconnectDelay() {
+    return Math.min(
+      REALTIME_RECONNECT_BASE_DELAY_MS * (2 ** Math.max(realtimeReconnectAttempts - 1, 0)),
+      REALTIME_RECONNECT_MAX_DELAY_MS,
+    );
+  }
+
+  function scheduleRealtimeReconnect(sessionId, reason, delayMs = getRealtimeReconnectDelay()) {
+    if (!isCaptureSessionActive(sessionId) || stoppingCapture) return;
+    if (!realtimeConfig || realtimeConfig.sessionId !== sessionId) return;
+    if (realtimeReconnectTimer) return;
+
+    console.warn('[LST Realtime] Reconnect scheduled:', reason, `${delayMs}ms`);
+    realtimeReconnectTimer = setTimeout(() => {
+      realtimeReconnectTimer = null;
+      reconnectRealtime(sessionId, reason);
+    }, delayMs);
+  }
+
+  function isFatalRealtimeReconnectError(err) {
+    const message = err?.message || '';
+    return /(?:Session creation|SDP exchange) failed:\s*(400|401|403|404)\b/.test(message);
+  }
+
+  async function reconnectRealtime(sessionId, reason) {
+    if (!isCaptureSessionActive(sessionId) || stoppingCapture) return;
+    if (!realtimeConfig || realtimeConfig.sessionId !== sessionId) return;
+
+    const state = realtimePc?.connectionState;
+    if (reason === 'realtime_disconnected' && (state === 'connected' || state === 'connecting')) {
+      return;
+    }
+
+    realtimeReconnectAttempts++;
+    realtimeRestarting = true;
+    console.warn('[LST Realtime] Reconnecting:', reason, `(attempt ${realtimeReconnectAttempts})`);
+
+    try {
+      stopRealtimeSTT({ preserveConfig: true });
+      if (!isCaptureSessionActive(sessionId)) return;
+
+      await startRealtimeSTT(
+        realtimeConfig.sessionId,
+        realtimeConfig.stream,
+        realtimeConfig.apiKey,
+        realtimeConfig.sourceLang,
+        realtimeConfig.targetLang,
+        realtimeConfig.translationOpts,
+        realtimeConfig.interimOpts,
+        realtimeConfig.model,
+      );
+    } catch (err) {
+      console.warn('[LST Realtime] Reconnect failed:', err.message);
+      if (!isCaptureSessionActive(sessionId)) return;
+      if (isFatalRealtimeReconnectError(err)) {
+        stopCapture({ notifyBackground: true, reason: 'realtime_reconnect_fatal' });
+      } else {
+        scheduleRealtimeReconnect(sessionId, 'realtime_reconnect_error');
+      }
+    } finally {
+      realtimeRestarting = false;
+    }
   }
 
   async function getEphemeralToken(apiKey, sourceLang, model = 'gpt-realtime-whisper') {
@@ -463,6 +558,7 @@
         break;
 
       case 'input_audio_buffer.speech_started':
+        realtimeLastTranslatedInterim = '';
         console.log('[LST Realtime] Speech detected');
         break;
 
@@ -475,6 +571,7 @@
         realtimeInterimTranslateTimer = null;
         const vadText = realtimeInterimBuffer.trim();
         realtimeInterimBuffer = '';
+        realtimeLastTranslatedInterim = '';
         console.log('[LST Realtime] Speech stopped (server VAD)');
         if (!vadText) break;
         const vadTranslated = await translateText(vadText, sourceLang, targetLang, translationOpts);
@@ -491,22 +588,7 @@
           // 원문 즉시 표시
           sendTranscript(sessionId, { text: currentText, translated: '', interim: true });
 
-          // 중간 번역: delta 폭주를 막기 위해 짧게 디바운스
-          // stale 체크로 오래된 결과는 자동 폐기
-          if (interimOpts) {
-            clearTimeout(realtimeInterimTranslateTimer);
-            realtimeInterimTranslateTimer = setTimeout(() => {
-              const interimText = realtimeInterimBuffer;
-              if (!interimText.trim()) return;
-              translateText(interimText, sourceLang, targetLang, interimOpts)
-                .then((translated) => {
-                  if (!isCaptureSessionActive(sessionId)) return;
-                  if (interimText !== realtimeInterimBuffer) return; // 스테일 방지
-                  sendTranscript(sessionId, { text: interimText, translated, interim: true });
-                })
-                .catch(() => {});
-            }, 400);
-          }
+          scheduleRealtimeInterimTranslation(sessionId, sourceLang, targetLang, interimOpts);
 
           // 폴백 침묵 타이머 (server VAD가 speech_stopped를 못 보낼 경우 대비)
           clearTimeout(realtimeSilenceTimer);
@@ -514,6 +596,7 @@
             if (!isCaptureSessionActive(sessionId)) return;
             const text = realtimeInterimBuffer.trim();
             realtimeInterimBuffer = '';
+            realtimeLastTranslatedInterim = '';
             realtimeSilenceTimer  = null;
             if (!text) return;
             const translated = await translateText(text, sourceLang, targetLang, translationOpts);
@@ -530,6 +613,7 @@
         realtimeInterimTranslateTimer = null;
         const remaining = realtimeInterimBuffer.trim();
         realtimeInterimBuffer = '';
+        realtimeLastTranslatedInterim = '';
         // buffer에 아직 남은 텍스트가 있으면 completed transcript로 최종 처리
         const finalText = event.transcript?.trim() || remaining;
         if (!finalText) break;
@@ -544,16 +628,70 @@
     }
   }
 
-  function stopRealtimeSTT() {
+  function scheduleRealtimeInterimTranslation(sessionId, sourceLang, targetLang, interimOpts) {
+    if (!interimOpts) return;
+    if (!isCaptureSessionActive(sessionId)) return;
+    if (realtimeInterimTranslateInFlight) return;
+
+    const delay = Math.max(
+      0,
+      REALTIME_INTERIM_TRANSLATE_INTERVAL_MS - (Date.now() - realtimeLastInterimTranslateAt),
+    );
+
+    if (realtimeInterimTranslateTimer) return;
+    realtimeInterimTranslateTimer = setTimeout(() => {
+      realtimeInterimTranslateTimer = null;
+      runRealtimeInterimTranslation(sessionId, sourceLang, targetLang, interimOpts);
+    }, delay);
+  }
+
+  async function runRealtimeInterimTranslation(sessionId, sourceLang, targetLang, interimOpts) {
+    if (!isCaptureSessionActive(sessionId)) return;
+
+    const interimText = realtimeInterimBuffer.trim();
+    if (!interimText || interimText === realtimeLastTranslatedInterim) return;
+
+    realtimeInterimTranslateInFlight = true;
+    realtimeLastInterimTranslateAt = Date.now();
+
+    try {
+      const translated = await translateText(interimText, sourceLang, targetLang, interimOpts);
+      if (!isCaptureSessionActive(sessionId)) return;
+
+      const currentText = realtimeInterimBuffer.trim();
+      if (!currentText) return;
+
+      realtimeLastTranslatedInterim = interimText;
+      sendTranscript(sessionId, { text: interimText, translated, interim: true });
+    } catch (err) {
+      console.debug('[LST Realtime] Interim translation failed:', err.message);
+    } finally {
+      realtimeInterimTranslateInFlight = false;
+      if (isCaptureSessionActive(sessionId) && realtimeInterimBuffer.trim() !== realtimeLastTranslatedInterim) {
+        scheduleRealtimeInterimTranslation(sessionId, sourceLang, targetLang, interimOpts);
+      }
+    }
+  }
+
+  function stopRealtimeSTT({ preserveConfig = false } = {}) {
+    clearTimeout(realtimeReconnectTimer);
+    realtimeReconnectTimer = null;
     realtimeDc?.close();
     realtimePc?.close();
     realtimeDc                    = null;
     realtimePc                    = null;
     realtimeInterimBuffer         = '';
+    realtimeInterimTranslateInFlight = false;
+    realtimeLastInterimTranslateAt = 0;
+    realtimeLastTranslatedInterim = '';
     clearTimeout(realtimeSilenceTimer);
     clearTimeout(realtimeInterimTranslateTimer);
     realtimeSilenceTimer = null;
     realtimeInterimTranslateTimer = null;
+    if (!preserveConfig) {
+      realtimeConfig = null;
+      realtimeReconnectAttempts = 0;
+    }
     console.log('[LST Realtime] WebRTC connection closed');
   }
 

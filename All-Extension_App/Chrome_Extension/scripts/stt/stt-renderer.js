@@ -181,6 +181,12 @@ const SttRenderer = (() => {
     text.style.background  = toRgba(s.bgColor || 'black', s.bgOpacity ?? '75');
   }
 
+  function setPanelText(wrapper, value) {
+    const text = wrapper.querySelector('.lst-stt-text');
+    if (!text) return;
+    text.textContent = value;
+  }
+
   // ─── 공개 API ─────────────────────────────────────────────
 
   /**
@@ -217,7 +223,7 @@ const SttRenderer = (() => {
       // 상단: 원어
       const top = getOrCreatePanel(TOP_ID, 'top');
       if (top) {
-        top.querySelector('.lst-stt-text').textContent = original;
+        setPanelText(top, original);
         applyStyle(top, !!isInterim);
         top.style.display = 'flex';
       }
@@ -227,8 +233,8 @@ const SttRenderer = (() => {
       if (bottom) {
         const hasTranslation = translated?.trim() && translated.trim() !== original.trim();
         if (hasTranslation) {
-          bottom.querySelector('.lst-stt-text').textContent = translated;
-          applyStyle(bottom, false);
+          setPanelText(bottom, translated);
+          applyStyle(bottom, !!isInterim);
           bottom.style.bottom  = getBottomValue();
           bottom.style.display = 'flex';
           startControlsObserver();
