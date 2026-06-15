@@ -4,7 +4,7 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "Integrated translation system for real-time streaming platforms - Supports YouTube, Twitch, SOOP, Chzzk, and Niconico",
+    "message": "Community subtitles and real-time STT/translation subtitle overlay for YouTube videos and live streams",
     "description": "Extension description"
   },
   "nav_language": {
@@ -266,6 +266,22 @@
   "help_showOriginal": {
     "message": "Display both the original language and translated language",
     "description": "Help text for show original"
+  },
+  "label_overlayDisplayMode": {
+    "message": "Overlay Mode",
+    "description": "Label for realtime overlay display mode"
+  },
+  "overlayMode_split": {
+    "message": "Split Display",
+    "description": "Split realtime overlay mode option"
+  },
+  "overlayMode_focus": {
+    "message": "Focus Overlay",
+    "description": "Focus realtime overlay mode option"
+  },
+  "help_overlayDisplayMode": {
+    "message": "Select how realtime subtitles are displayed over the video player",
+    "description": "Help text for realtime overlay display mode"
   },
   "label_overlayPosition": {
     "message": "Subtitle Position",

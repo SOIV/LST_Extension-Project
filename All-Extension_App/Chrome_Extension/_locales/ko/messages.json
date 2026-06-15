@@ -4,7 +4,7 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "실시간 스트리밍 플랫폼 통합 번역 시스템 - YouTube, Twitch, SOOP, 치지직, 니코니코동화 지원",
+    "message": "YouTube 영상과 라이브 방송용 커뮤니티 자막 및 실시간 STT/번역 자막 오버레이",
     "description": "Extension description"
   },
   "nav_language": {
@@ -266,6 +266,22 @@
   "help_showOriginal": {
     "message": "원본 언어와 번역된 언어를 모두 표시합니다",
     "description": "Help text for show original"
+  },
+  "label_overlayDisplayMode": {
+    "message": "오버레이 방식",
+    "description": "Label for realtime overlay display mode"
+  },
+  "overlayMode_split": {
+    "message": "분할 표시",
+    "description": "Split realtime overlay mode option"
+  },
+  "overlayMode_focus": {
+    "message": "집중 오버레이",
+    "description": "Focus realtime overlay mode option"
+  },
+  "help_overlayDisplayMode": {
+    "message": "실시간 자막을 표시할 오버레이 방식을 선택합니다",
+    "description": "Help text for realtime overlay display mode"
   },
   "label_overlayPosition": {
     "message": "자막 위치",

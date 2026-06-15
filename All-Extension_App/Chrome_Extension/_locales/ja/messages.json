@@ -4,7 +4,7 @@
     "description": "Extension name"
   },
   "extDescription": {
-    "message": "リアルタイムストリーミングプラットフォームの統合翻訳システム - YouTube、Twitch、SOOP、Chzzk、Niconicoに対応",
+    "message": "YouTube動画とライブ配信用のコミュニティ字幕・リアルタイムSTT/翻訳字幕オーバーレイ",
     "description": "Extension description"
   },
   "nav_language": {
@@ -266,6 +266,22 @@
   "help_showOriginal": {
     "message": "原文と翻訳語の両方を表示します",
     "description": "Help text for show original"
+  },
+  "label_overlayDisplayMode": {
+    "message": "オーバーレイ方式",
+    "description": "Label for realtime overlay display mode"
+  },
+  "overlayMode_split": {
+    "message": "分割表示",
+    "description": "Split realtime overlay mode option"
+  },
+  "overlayMode_focus": {
+    "message": "集中オーバーレイ",
+    "description": "Focus realtime overlay mode option"
+  },
+  "help_overlayDisplayMode": {
+    "message": "リアルタイム字幕を表示するオーバーレイ方式を選択します",
+    "description": "Help text for realtime overlay display mode"
   },
   "label_overlayPosition": {
     "message": "字幕の位置",
