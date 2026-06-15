@@ -586,8 +586,18 @@
             <div class="settings-section">
               <h2 data-i18n="heading_realtimeDisplay">실시간 자막 표시</h2>
 
-              <!-- 자막 위치 -->
+              <!-- 오버레이 방식 -->
               <div class="form-group">
+                <label for="overlayDisplayMode" data-i18n="label_overlayDisplayMode">오버레이 방식</label>
+                <select id="overlayDisplayMode" class="form-control">
+                  <option value="split" data-i18n="overlayMode_split">분할 표시</option>
+                  <option value="focus" data-i18n="overlayMode_focus">집중 오버레이</option>
+                </select>
+                <p class="form-help" data-i18n="help_overlayDisplayMode">실시간 자막을 표시할 오버레이 방식을 선택합니다</p>
+              </div>
+
+              <!-- 자막 위치 -->
+              <div class="form-group" id="overlayPositionGroup">
                 <label for="overlayPosition" data-i18n="label_overlayPosition">자막 위치</label>
                 <select id="overlayPosition" class="form-control">
                   <option value="top"    data-i18n="position_top">상단</option>

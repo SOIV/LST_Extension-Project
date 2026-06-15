@@ -28,6 +28,7 @@
       bgOpacity:     currentSettings.bgOpacity     || '75',
       windowColor:   currentSettings.windowColor   || 'black',
       windowOpacity: currentSettings.windowOpacity || '0',
+      overlayDisplayMode: currentSettings.overlayDisplayMode || 'split',
       // STT 설정
       sttEngine:       currentSettings.sttEngine       || 'whisper',
       whisperModel:    currentSettings.whisperModel    || 'gpt-4o-mini-transcribe',

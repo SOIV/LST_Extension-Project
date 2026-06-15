@@ -106,6 +106,8 @@ const elements = {
 
   // 표시 탭 - 실시간
   showOriginal:    document.getElementById('showOriginal'),
+  overlayDisplayMode: document.getElementById('overlayDisplayMode'),
+  overlayPositionGroup: document.getElementById('overlayPositionGroup'),
   overlayPosition: document.getElementById('overlayPosition'),
   textAlign:       document.getElementById('textAlign'),
   enableCache:     document.getElementById('enableCache'),
@@ -156,6 +158,13 @@ function sliderToOpacity(index) {
 function opacityToSlider(percent) {
   const index = OPACITY_MAP.indexOf(String(percent));
   return index !== -1 ? index : 4; // 기본값 100%
+}
+
+function updateOverlayDisplayModeUi() {
+  const mode = elements.overlayDisplayMode?.value || DISPLAY_DEFAULTS.overlayDisplayMode;
+  if (elements.overlayPositionGroup) {
+    elements.overlayPositionGroup.style.display = mode === 'focus' ? 'none' : '';
+  }
 }
 
 /**
@@ -237,6 +246,7 @@ const DISPLAY_DEFAULTS = {
   bgOpacity:     '75',
   windowColor:   'black',
   windowOpacity: '0',
+  overlayDisplayMode: 'split',
   overlayPosition: 'bottom',
   textAlign:     'center',
 };
@@ -289,9 +299,11 @@ async function loadSettings() {
 
       // 표시 - 실시간
       if (elements.showOriginal)    elements.showOriginal.checked    = settings.showOriginal    !== false;
+      if (elements.overlayDisplayMode) elements.overlayDisplayMode.value = settings.overlayDisplayMode || DISPLAY_DEFAULTS.overlayDisplayMode;
       if (elements.overlayPosition) elements.overlayPosition.value   = settings.overlayPosition || DISPLAY_DEFAULTS.overlayPosition;
       if (elements.textAlign)       elements.textAlign.value         = settings.textAlign       || DISPLAY_DEFAULTS.textAlign;
       if (elements.enableCache)     elements.enableCache.checked     = settings.enableCache     !== false;
+      updateOverlayDisplayModeUi();
       if (elements.sourceLang) elements.sourceLang.value = settings.sourceLang || 'auto';
       if (elements.targetLang) elements.targetLang.value = settings.targetLang || 'ko';
       if (elements.sttSource)    elements.sttSource.value    = settings.sttSource    || 'tab';
@@ -346,6 +358,7 @@ async function saveSettings(silent = false) {
     windowOpacity: sliderToOpacity(elements.windowOpacity?.value ?? 0),
     // 표시 - 실시간
     showOriginal:    elements.showOriginal?.checked    ?? true,
+    overlayDisplayMode: elements.overlayDisplayMode?.value || DISPLAY_DEFAULTS.overlayDisplayMode,
     overlayPosition: elements.overlayPosition?.value   || DISPLAY_DEFAULTS.overlayPosition,
     textAlign:       elements.textAlign?.value         || DISPLAY_DEFAULTS.textAlign,
     enableCache:     elements.enableCache?.checked     ?? true,
@@ -734,6 +747,8 @@ function setupEventListeners() {
     if (elements.bgColor)    elements.bgColor.value    = DISPLAY_DEFAULTS.bgColor;
     if (elements.windowColor)elements.windowColor.value= DISPLAY_DEFAULTS.windowColor;
     if (elements.textAlign)  elements.textAlign.value  = DISPLAY_DEFAULTS.textAlign;
+    if (elements.overlayDisplayMode) elements.overlayDisplayMode.value = DISPLAY_DEFAULTS.overlayDisplayMode;
+    updateOverlayDisplayModeUi();
     if (elements.overlaySize) {
       elements.overlaySize.value = percentToSlider(DISPLAY_DEFAULTS.overlaySize);
       if (elements.sizeValue) elements.sizeValue.textContent = DISPLAY_DEFAULTS.overlaySize + '%';
@@ -844,6 +859,11 @@ function setupEventListeners() {
   // 중간 번역 엔진 변경 시 API 키 그룹 전환
   elements.interimTranslationEngine?.addEventListener('change', () => {
     updateInterimKeyFields(elements.interimTranslationEngine.value);
+    saveSettings(true);
+  });
+
+  elements.overlayDisplayMode?.addEventListener('change', () => {
+    updateOverlayDisplayModeUi();
     saveSettings(true);
   });
 

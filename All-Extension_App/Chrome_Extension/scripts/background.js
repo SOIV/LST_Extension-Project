@@ -91,6 +91,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // content script 오버레이 닫기 → 현재 탭 STT 전체 중지
+  if (message.action === 'stopSttForCurrentTab' && tabId) {
+    stopSttForTab(tabId)
+      .then(() => sendResponse({ success: true }))
+      .catch(e => sendResponse({ success: false, error: e.message }));
+    return true;
+  }
+
   if (message.action === 'translateText') {
     translateForContentScript(message)
       .then(translated => sendResponse({ success: true, translated }))
@@ -457,6 +465,7 @@ chrome.runtime.onInstalled.addListener(async () => {
     windowColor:      'black',
     windowOpacity:    '0',
     // 표시 - 실시간
+    overlayDisplayMode: 'split',
     overlayPosition:  'bottom',
     textAlign:        'center',
     // 번역 - 메인

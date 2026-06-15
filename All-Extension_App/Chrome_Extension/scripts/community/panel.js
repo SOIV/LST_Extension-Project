@@ -52,6 +52,11 @@ const LSTPanel = (() => {
     { value: 'drop-shadow', label: '그림자 효과' },
   ];
 
+  const OVERLAY_MODE_OPTIONS = [
+    { value: 'split', label: '분할 표시' },
+    { value: 'focus', label: '집중 오버레이' },
+  ];
+
   const SIZE_STEPS    = ['50','75','100','150','200','300','400'];
   const OPACITY_STEPS = ['0','25','50','75','100'];
 
@@ -80,6 +85,7 @@ const LSTPanel = (() => {
     bgOpacity:     '75',
     windowColor:   'black',
     windowOpacity: '0',
+    overlayDisplayMode: 'split',
   };
 
   // ─── 상태 ────────────────────────────────────────────────
@@ -380,6 +386,15 @@ const LSTPanel = (() => {
 
       <!-- 실시간 탭 -->
       <div class="lst-settings-tab-body lst-hidden" id="lst-tab-realtime">
+        <div class="lst-setting-group">
+          <div class="lst-setting-item">
+            <span class="lst-setting-label">오버레이 방식</span>
+            <select class="lst-setting-select" id="lst-set-overlayDisplayMode">
+              ${buildOptions(OVERLAY_MODE_OPTIONS, state.overlayDisplayMode)}
+            </select>
+          </div>
+        </div>
+        <div class="lst-panel-divider"></div>
         ${state.sttEngine === 'realtime' ? `
         <div class="lst-setting-group">
           <div class="lst-setting-item">
@@ -446,6 +461,7 @@ const LSTPanel = (() => {
       'lst-set-edgeStyle':  'edgeStyle',
       'lst-set-bgColor':    'bgColor',
       'lst-set-windowColor':'windowColor',
+      'lst-set-overlayDisplayMode': 'overlayDisplayMode',
     };
     Object.entries(selectMap).forEach(([id, key]) => {
       body.querySelector(`#${id}`)?.addEventListener('change', (e) => {
