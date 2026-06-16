@@ -7,6 +7,10 @@
     "message": "YouTube 영상과 라이브 방송용 커뮤니티 자막 및 실시간 STT/번역 자막 오버레이",
     "description": "Extension description"
   },
+  "about_description": {
+    "message": "유튜브 또는 실시간 스트리밍 플랫폼에서 실시간 자막을 제공하며 유튜브에서 커뮤니티 자막을 통하여 다양한 언어의 자막을 지원하는 크롬 확장 프로그램입니다.",
+    "description": "About page description"
+  },
   "nav_language": {
     "message": "언어",
     "description": "Navigation label for language settings"
@@ -410,10 +414,6 @@
   "btn_shortcutSettings": {
     "message": "단축키",
     "description": "Open Chrome extension shortcut settings button text"
-  },
-  "about_description": {
-    "message": "실시간 스트리밍 플랫폼을 위한 통합 번역 시스템",
-    "description": "About page description"
   },
   "about_supportedPlatforms": {
     "message": "지원 플랫폼",

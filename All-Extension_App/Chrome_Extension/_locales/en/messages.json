@@ -7,6 +7,10 @@
     "message": "Community subtitles and real-time STT/translation subtitle overlay for YouTube videos and live streams",
     "description": "Extension description"
   },
+  "about_description": {
+    "message": "A Chrome extension that provides real-time subtitles for YouTube or live streaming platforms, supporting various languages through YouTube's community subtitles.",
+    "description": "About page description"
+  },
   "nav_language": {
     "message": "Language",
     "description": "Navigation label for language settings"
@@ -410,10 +414,6 @@
   "btn_shortcutSettings": {
     "message": "Shortcuts",
     "description": "Open Chrome extension shortcut settings button text"
-  },
-  "about_description": {
-    "message": "Integrated translation system for real-time streaming platforms",
-    "description": "About page description"
   },
   "about_supportedPlatforms": {
     "message": "Supported Platforms",
