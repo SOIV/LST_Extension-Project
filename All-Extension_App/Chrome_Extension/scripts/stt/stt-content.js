@@ -250,6 +250,10 @@
         if (autoRestart && sttActive && sessionId === sttSessionId && restartCount < MAX_RESTART) {
           restartCount++;
           setTimeout(() => { try { recognition?.start(); } catch (_) {} }, 200);
+        } else if (sttActive && sessionId === sttSessionId) {
+          // 재시작 한도 초과 또는 예기치 않은 종료 → 전체 정리 후 background에 알림
+          stopRecognition();
+          chrome.runtime.sendMessage({ action: 'stopSttForCurrentTab' }).catch(() => {});
         }
       };
 
@@ -280,7 +284,10 @@
   /* ─── 메시지 수신 ───────────────────────────────────────── */
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message.action === 'startSttCapture') {
+    if (message.action === 'lstSttPing') {
+      sendResponse({ success: true });
+
+    } else if (message.action === 'startSttCapture') {
       startRecognition()
         .then(started => sendResponse({
           success: !!started,

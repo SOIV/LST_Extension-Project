@@ -47,8 +47,8 @@
     },
     {
       "matches": [
-        "https://www.youtube.com/*",
-        "https://youtube.com/*"
+        "http://*/*",
+        "https://*/*"
       ],
       "js": ["scripts/stt/stt-renderer.js", "scripts/stt/stt-content.js"],
       "run_at": "document_end"

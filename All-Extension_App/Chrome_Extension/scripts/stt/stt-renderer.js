@@ -7,7 +7,8 @@
  *   #lst-stt-translated — 하단: 번역
  *
  * [재생바 자동 회피]
- *   하단 패널은 ytp-autohide 클래스 변화를 감지해 bottom 위치를 동적으로 조정.
+ *   분할 표시의 하단 패널은 ytp-autohide 클래스 변화를 감지해 bottom 위치를 동적으로 조정.
+ *   집중 오버레이는 사이트 DOM과 분리된 fixed 창으로 document.body에 표시한다.
  */
 
 const SttRenderer = (() => {
@@ -62,6 +63,7 @@ const SttRenderer = (() => {
   let focusIdleTimer  = null;
   let focusRect       = null;
   let focusRectLoaded = false;
+  let focusViewportBound = false;
 
   // ─── 헬퍼 ─────────────────────────────────────────────────
 
@@ -76,6 +78,24 @@ const SttRenderer = (() => {
 
   function getPlayer() {
     return document.querySelector('#movie_player') || document.querySelector('.html5-video-player');
+  }
+
+  function getViewportBounds() {
+    return {
+      width: Math.max(1, window.innerWidth || document.documentElement.clientWidth || 0),
+      height: Math.max(1, window.innerHeight || document.documentElement.clientHeight || 0),
+    };
+  }
+
+  function isAppendableFullscreenElement(element) {
+    if (!element || element === document.body || element === document.documentElement) return false;
+    return !['VIDEO', 'AUDIO', 'IFRAME', 'OBJECT', 'EMBED', 'CANVAS'].includes(element.tagName);
+  }
+
+  function getFocusHost() {
+    const fullscreenElement = document.fullscreenElement;
+    if (isAppendableFullscreenElement(fullscreenElement)) return fullscreenElement;
+    return document.body;
   }
 
   function isFocusMode() {
@@ -162,26 +182,34 @@ const SttRenderer = (() => {
     return Number.isFinite(numeric) ? numeric : fallback;
   }
 
-  function defaultFocusRect(player) {
-    const width = Math.max(320, player.clientWidth - 12);
-    const height = clamp(Math.round(player.clientHeight * 0.38), 150, Math.max(150, player.clientHeight - 24));
+  function defaultFocusRect() {
+    const viewport = getViewportBounds();
+    const availableWidth = Math.max(1, viewport.width - 24);
+    const availableHeight = Math.max(1, viewport.height - 24);
+    const minWidth = Math.min(320, availableWidth);
+    const minHeight = Math.min(150, availableHeight);
+    const maxWidth = Math.min(820, availableWidth);
+    const maxHeight = Math.min(360, availableHeight);
+    const width = clamp(Math.round(viewport.width * 0.72), minWidth, maxWidth);
+    const height = clamp(Math.round(viewport.height * 0.34), minHeight, maxHeight);
     return {
-      left: 6,
-      top: 6,
+      left: Math.round((viewport.width - width) / 2),
+      top: Math.min(24, Math.max(0, viewport.height - height)),
       width,
       height,
     };
   }
 
-  function normalizeFocusRect(rect, player) {
-    const fallback = defaultFocusRect(player);
-    const minWidth = Math.min(320, player.clientWidth);
-    const minHeight = Math.min(140, player.clientHeight);
-    const width = clamp(numberOr(rect?.width, fallback.width), minWidth, Math.max(minWidth, player.clientWidth));
-    const height = clamp(numberOr(rect?.height, fallback.height), minHeight, Math.max(minHeight, player.clientHeight));
+  function normalizeFocusRect(rect) {
+    const viewport = getViewportBounds();
+    const fallback = defaultFocusRect();
+    const minWidth = Math.min(280, viewport.width);
+    const minHeight = Math.min(140, viewport.height);
+    const width = clamp(numberOr(rect?.width, fallback.width), minWidth, Math.max(minWidth, viewport.width));
+    const height = clamp(numberOr(rect?.height, fallback.height), minHeight, Math.max(minHeight, viewport.height));
     return {
-      left: clamp(numberOr(rect?.left, fallback.left), 0, Math.max(0, player.clientWidth - width)),
-      top: clamp(numberOr(rect?.top, fallback.top), 0, Math.max(0, player.clientHeight - height)),
+      left: clamp(numberOr(rect?.left, fallback.left), 0, Math.max(0, viewport.width - width)),
+      top: clamp(numberOr(rect?.top, fallback.top), 0, Math.max(0, viewport.height - height)),
       width,
       height,
     };
@@ -194,6 +222,32 @@ const SttRenderer = (() => {
       width: `${Math.round(rect.width)}px`,
       height: `${Math.round(rect.height)}px`,
     });
+  }
+
+  function getCurrentFocusRect(panel) {
+    const styledRect = {
+      left: parseFloat(panel.style.left),
+      top: parseFloat(panel.style.top),
+      width: parseFloat(panel.style.width),
+      height: parseFloat(panel.style.height),
+    };
+
+    if (
+      Number.isFinite(styledRect.left) &&
+      Number.isFinite(styledRect.top) &&
+      Number.isFinite(styledRect.width) &&
+      Number.isFinite(styledRect.height)
+    ) {
+      return styledRect;
+    }
+
+    const bounds = panel.getBoundingClientRect();
+    return {
+      left: bounds.left,
+      top: bounds.top,
+      width: bounds.width,
+      height: bounds.height,
+    };
   }
 
   // ─── 패널 DOM ─────────────────────────────────────────────
@@ -243,17 +297,17 @@ const SttRenderer = (() => {
     let panel = document.getElementById(FOCUS_ID);
     if (panel) return panel;
 
-    const container = getPlayer();
+    const container = getFocusHost();
     if (!container) return null;
 
     panel = document.createElement('div');
     panel.id = FOCUS_ID;
     Object.assign(panel.style, {
-      position: 'absolute',
+      position: 'fixed',
       display: 'none',
       flexDirection: 'column',
       pointerEvents: 'auto',
-      zIndex: '101',
+      zIndex: '2147483647',
       overflow: 'hidden',
       border: '1px solid rgba(255,255,255,0.58)',
       boxSizing: 'border-box',
@@ -280,8 +334,8 @@ const SttRenderer = (() => {
         ">×</button>
       </div>
       <div class="lst-stt-focus-current" style="
-        flex:0 0 auto;min-height:42px;max-height:44%;overflow-y:auto;overscroll-behavior:contain;
-        padding:34px 28px 12px;box-sizing:border-box;
+        flex:0 0 auto;min-height:88px;max-height:52%;overflow-y:auto;overscroll-behavior:contain;
+        padding:24px 28px 6px;box-sizing:border-box;
         scrollbar-width:thin;
       "></div>
       <div class="lst-stt-focus-history" style="
@@ -297,19 +351,38 @@ const SttRenderer = (() => {
       "></div>
     `;
 
-    bindFocusInteractions(panel, container);
-    applyFocusRect(panel, defaultFocusRect(container));
+    bindFocusInteractions(panel);
+    applyFocusRect(panel, defaultFocusRect());
     container.appendChild(panel);
 
     loadFocusRect((savedRect) => {
       if (!document.body.contains(panel)) return;
-      applyFocusRect(panel, normalizeFocusRect(savedRect, container));
+      applyFocusRect(panel, normalizeFocusRect(savedRect));
     });
 
     return panel;
   }
 
-  function bindFocusInteractions(panel, container) {
+  function moveFocusPanelToActiveHost() {
+    const panel = document.getElementById(FOCUS_ID);
+    if (!panel) return;
+    const host = getFocusHost();
+    if (host && panel.parentElement !== host) {
+      host.appendChild(panel);
+    }
+    const nextRect = normalizeFocusRect(getCurrentFocusRect(panel));
+    applyFocusRect(panel, nextRect);
+    focusRect = nextRect;
+  }
+
+  function bindFocusViewportEvents() {
+    if (focusViewportBound) return;
+    focusViewportBound = true;
+    document.addEventListener('fullscreenchange', moveFocusPanelToActiveHost);
+    window.addEventListener('resize', moveFocusPanelToActiveHost);
+  }
+
+  function bindFocusInteractions(panel) {
     const drag = panel.querySelector('.lst-stt-focus-drag');
     const resize = panel.querySelector('.lst-stt-focus-resize');
     const close = panel.querySelector('.lst-stt-focus-close');
@@ -335,12 +408,11 @@ const SttRenderer = (() => {
       event.preventDefault();
       drag.setPointerCapture?.(event.pointerId);
       const startRect = panel.getBoundingClientRect();
-      const playerRect = container.getBoundingClientRect();
       const start = {
         x: event.clientX,
         y: event.clientY,
-        left: startRect.left - playerRect.left,
-        top: startRect.top - playerRect.top,
+        left: startRect.left,
+        top: startRect.top,
         width: startRect.width,
         height: startRect.height,
       };
@@ -351,7 +423,7 @@ const SttRenderer = (() => {
           top: start.top + (moveEvent.clientY - start.y),
           width: start.width,
           height: start.height,
-        }, container);
+        });
         applyFocusRect(panel, next);
         focusRect = next;
       };
@@ -370,12 +442,11 @@ const SttRenderer = (() => {
       event.preventDefault();
       resize.setPointerCapture?.(event.pointerId);
       const startRect = panel.getBoundingClientRect();
-      const playerRect = container.getBoundingClientRect();
       const start = {
         x: event.clientX,
         y: event.clientY,
-        left: startRect.left - playerRect.left,
-        top: startRect.top - playerRect.top,
+        left: startRect.left,
+        top: startRect.top,
         width: startRect.width,
         height: startRect.height,
       };
@@ -386,7 +457,7 @@ const SttRenderer = (() => {
           top: start.top,
           width: start.width + (moveEvent.clientX - start.x),
           height: start.height + (moveEvent.clientY - start.y),
-        }, container);
+        });
         applyFocusRect(panel, next);
         focusRect = next;
       };
@@ -506,7 +577,7 @@ const SttRenderer = (() => {
     const entry = document.createElement('div');
     entry.className = isInterim ? 'lst-stt-focus-entry lst-stt-focus-entry--interim' : 'lst-stt-focus-entry';
     Object.assign(entry.style, {
-      padding: isHistory ? '6px 0' : '8px 0',
+      padding: isHistory ? '6px 0' : '2px 0 4px',
       borderBottom: isHistory ? '1px dashed rgba(255,255,255,.12)' : '0',
       opacity: isHistory ? '0.88' : '1',
     });
@@ -578,6 +649,12 @@ const SttRenderer = (() => {
 
     const panel = getOrCreateFocusPanel();
     if (!panel) return;
+
+    bindFocusViewportEvents();
+    moveFocusPanelToActiveHost();
+    const nextRect = normalizeFocusRect(getCurrentFocusRect(panel));
+    applyFocusRect(panel, nextRect);
+    focusRect = nextRect;
 
     applyFocusStyle(panel);
     panel.style.display = 'flex';

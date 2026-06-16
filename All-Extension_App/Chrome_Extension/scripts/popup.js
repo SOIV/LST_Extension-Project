@@ -772,6 +772,21 @@ function setupEventListeners() {
     saveSettings(true);
   });
 
+  async function ensureSttContentScript(tabId) {
+    try {
+      const response = await chrome.tabs.sendMessage(tabId, { action: 'lstSttPing' });
+      if (response?.success) return true;
+    } catch (_) {
+      // 현재 탭에 STT content script가 아직 없으면 아래에서 주입한다.
+    }
+
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ['scripts/stt/stt-renderer.js', 'scripts/stt/stt-content.js'],
+    });
+    return true;
+  }
+
   // STT 버튼
   elements.sttBtn?.addEventListener('click', () => {
     const next   = !sttListening;
@@ -792,33 +807,38 @@ function setupEventListeners() {
         return;
       }
 
-      if (source === 'tab') {
-        // 탭 오디오 캡처 → background 경유
-        chrome.runtime.sendMessage({ action: 'startTabCapture', tabId: tab.id }, (response) => {
-          if (response?.success) {
-            setSttState(true);
-            chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source })
-              .catch(() => {})
-              .finally(updateRealtimeStatus);
-          } else {
-            showToast('탭 오디오 캡처 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
+      ensureSttContentScript(tab.id)
+        .then(() => {
+          if (source === 'tab') {
+            // 탭 오디오 캡처 → background 경유
+            chrome.runtime.sendMessage({ action: 'startTabCapture', tabId: tab.id }, (response) => {
+              if (response?.success) {
+                setSttState(true);
+                chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source })
+                  .catch(() => {})
+                  .finally(updateRealtimeStatus);
+              } else {
+                showToast('탭 오디오 캡처 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
+              }
+            });
+            return;
           }
-        });
-      } else {
-        // 마이크 (Web Speech API) → content script 경유
-        chrome.tabs.sendMessage(tab.id, { action: 'startSttCapture' })
-          .then((response) => {
-            if (response?.success) {
-              setSttState(true);
-              chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source })
-                .catch(() => {})
-                .finally(updateRealtimeStatus);
-            } else {
-              showToast('마이크 STT 시작 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
-            }
-          })
-          .catch((e) => showToast('마이크 STT 시작 실패: ' + (e.message || '알 수 없는 오류'), 'error'));
-      }
+
+          // 마이크 (Web Speech API) → content script 경유
+          chrome.tabs.sendMessage(tab.id, { action: 'startSttCapture' })
+            .then((response) => {
+              if (response?.success) {
+                setSttState(true);
+                chrome.runtime.sendMessage({ action: 'sttStateChange', active: true, tabId: tab.id, source })
+                  .catch(() => {})
+                  .finally(updateRealtimeStatus);
+              } else {
+                showToast('마이크 STT 시작 실패: ' + (response?.error || '알 수 없는 오류'), 'error');
+              }
+            })
+            .catch((e) => showToast('마이크 STT 시작 실패: ' + (e.message || '알 수 없는 오류'), 'error'));
+        })
+        .catch((e) => showToast('실시간 자막 스크립트 주입 실패: ' + (e.message || '알 수 없는 오류'), 'error'));
     });
   });
 

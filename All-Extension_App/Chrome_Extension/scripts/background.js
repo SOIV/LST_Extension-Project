@@ -254,7 +254,13 @@ async function handleTabCaptureStopped(reason = 'unknown') {
     }
     updateBadge(stoppedTabId, tabSubtitleStatus.get(stoppedTabId) || 'not_youtube');
   } else if (sttState.source === 'tab') {
+    // tabCaptureActiveTabId가 이미 초기화됐어도 탭에 비활성 알림은 보내야 한다
+    const orphanedTabId = sttState.tabId;
     sttState = { active: false, tabId: null, source: null };
+    if (orphanedTabId) {
+      chrome.tabs.sendMessage(orphanedTabId, { action: 'tabCaptureInactive' }).catch(() => {});
+      updateBadge(orphanedTabId, tabSubtitleStatus.get(orphanedTabId) || 'not_youtube');
+    }
   }
 
   if (await hasOffscreenDocument()) {
@@ -443,6 +449,20 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     }
   }
 });
+
+// ─── 서비스 워커 시작 시 고아 offscreen 정리 ──────────────────────────────────
+// MV3 서비스 워커는 절전 후 재시작 시 sttState 등 메모리 상태가 초기화되는데,
+// offscreen 문서는 살아있어 상태 불일치가 발생할 수 있다. 시작 시 정리한다.
+(async () => {
+  try {
+    if (await hasOffscreenDocument()) {
+      await chrome.offscreen.closeDocument();
+      console.warn('[LST Background] Orphaned offscreen document cleaned up on startup');
+    }
+  } catch (e) {
+    console.debug('[LST Background] Startup cleanup:', e.message);
+  }
+})();
 
 // ─── 설치 / 업데이트 ──────────────────────────────────────────────────────────
 

@@ -129,6 +129,7 @@
     audioCtx     = new AudioContext();
     const source = audioCtx.createMediaStreamSource(stream);
     source.connect(audioCtx.destination);
+    await audioCtx.resume().catch(() => {});
 
     const {
       openaiApiKey,
@@ -202,18 +203,20 @@
       ? 'audio/webm;codecs=opus'
       : 'audio/webm';
 
-    let chunks = [];
+    let processingQueue = Promise.resolve();
 
     // stop() 호출 시 ondataavailable + onstop 순서로 완전한 webm 파일이 만들어짐.
     // start(timeslice) 방식은 첫 청크 이후 헤더가 없어 Whisper가 파싱 불가.
+    // STT API 처리를 기다리면 그동안 다음 오디오를 놓치므로 녹음 재시작과 처리를 분리한다.
     function next() {
       const rec = new MediaRecorder(stream, { mimeType });
+      let chunks = [];
 
       rec.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.push(e.data);
       };
 
-      rec.onstop = async () => {
+      rec.onstop = () => {
         if (!isCaptureSessionActive(sessionId)) {
           chunks = [];
           return;
@@ -222,25 +225,15 @@
         const blob = new Blob(chunks, { type: mimeType });
         chunks = [];
 
-        if (blob.size >= 1000) {
-          try {
-            const transcript = await callWhisperApi(blob, apiKey, sourceLang, mimeType, model);
-            if (!isCaptureSessionActive(sessionId)) return;
-            if (transcript?.trim()) {
-              const translated = await translateText(transcript, sourceLang, targetLang, translationOpts);
-              sendTranscript(sessionId, {
-                text:       transcript,
-                translated: translated,
-              });
-            }
-          } catch (err) {
-            console.error('[LST Offscreen] Whisper error:', err.message);
-          }
-        }
-
         // mediaRecorder가 null이면 stopCapture()가 호출된 것 → 재시작 안 함
         if (mediaRecorder !== null && isCaptureSessionActive(sessionId)) {
           mediaRecorder = next();
+        }
+
+        if (blob.size >= 1000) {
+          processingQueue = processingQueue
+            .then(() => processWhisperBlob(sessionId, blob, apiKey, sourceLang, targetLang, translationOpts, model, mimeType))
+            .catch((err) => console.error('[LST Offscreen] Whisper error:', err.message));
         }
       };
 
@@ -254,6 +247,19 @@
 
     mediaRecorder = next();
     console.log('[LST Offscreen] Whisper recorder started');
+  }
+
+  async function processWhisperBlob(sessionId, blob, apiKey, sourceLang, targetLang, translationOpts, model, mimeType) {
+    if (!isCaptureSessionActive(sessionId)) return;
+    const transcript = await callWhisperApi(blob, apiKey, sourceLang, mimeType, model);
+    if (!isCaptureSessionActive(sessionId)) return;
+    if (transcript?.trim()) {
+      const translated = await translateText(transcript, sourceLang, targetLang, translationOpts);
+      sendTranscript(sessionId, {
+        text:       transcript,
+        translated: translated,
+      });
+    }
   }
 
   /* ─── Whisper API 호출 ────────────────────────────────────────────────────── */
@@ -489,6 +495,12 @@
         realtimeConfig.interimOpts,
         realtimeConfig.model,
       );
+
+      // startRealtimeSTT 진행 중 외부에서 캡처가 중단됐다면 새 연결도 정리
+      if (!isCaptureSessionActive(sessionId)) {
+        stopRealtimeSTT();
+        return;
+      }
     } catch (err) {
       console.warn('[LST Realtime] Reconnect failed:', err.message);
       if (!isCaptureSessionActive(sessionId)) return;
