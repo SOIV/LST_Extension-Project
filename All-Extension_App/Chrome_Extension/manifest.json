@@ -3,6 +3,24 @@
   "name": "__MSG_extName__",
   "version": "0.0.1",
   "description": "__MSG_extDescription__",
+  "default_locale": "ko",
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
 
   "permissions": [
     "activeTab",
@@ -53,24 +71,5 @@
       "js": ["scripts/stt/stt-renderer.js", "scripts/stt/stt-content.js"],
       "run_at": "document_end"
     }
-  ],
-
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "32": "icons/icon32.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  },
-
-  "icons": {
-    "16": "icons/icon16.png",
-    "32": "icons/icon32.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  },
-
-  "default_locale": "ko"
+  ]
 }
