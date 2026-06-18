@@ -3,7 +3,7 @@
 YouTube 중심 커뮤니티 자막 플랫폼 + 브라우저 확장 프로그램 + Desktop 보조 앱 프로젝트
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://www.google.com/chrome/)
+[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://chromewebstore.google.com/detail/nbjghecapdnggdklamlmebflgajpgeeb?utm_source=item-share-cb)
 [![Platform](https://img.shields.io/badge/Platform-Live-brightgreen.svg)](https://lst-pj.soiv-studio.xyz)
 [![Crowdin](https://badges.crowdin.net/lst-project/localized.svg)](https://crowdin.com/project/lst-project)
 
@@ -183,6 +183,8 @@ npm run build
 ```
 
 ### Chrome 확장 프로그램
+
+> 현재 Beta 버전으로 Chrome 웹 스토어 배포를 진행중에 있습니다.<br> 이 과정에서 버그나 오류가 있을 수 있으며 제보는 깃허브 이슈 또는 이메일로 받고있습니다.
 
 Chrome 웹 스토어 배포 전에는 개발자 모드로 설치합니다.
 

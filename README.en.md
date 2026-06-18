@@ -3,7 +3,7 @@
 Community subtitle platform, browser extension, and planned desktop helper for YouTube-centered subtitle workflows.
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://www.google.com/chrome/)
+[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://chromewebstore.google.com/detail/nbjghecapdnggdklamlmebflgajpgeeb?utm_source=item-share-cb)
 [![Platform](https://img.shields.io/badge/Platform-Live-brightgreen.svg)](https://lst-pj.soiv-studio.xyz)
 [![Crowdin](https://badges.crowdin.net/lst-project/localized.svg)](https://crowdin.com/project/lst-project)
 
@@ -182,6 +182,8 @@ npm run build
 ```
 
 ### Chrome Extension
+
+> We are currently distributing the Beta version to the Chrome Web Store.<br> There may be bugs or errors during this process, and we are accepting reports via GitHub Issues or email.
 
 Before Chrome Web Store distribution, install the extension in developer mode.
 

@@ -3,7 +3,7 @@
 YouTube向けのコミュニティ字幕プラットフォーム、ブラウザ拡張機能、Desktop補助アプリのプロジェクトです。
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://www.google.com/chrome/)
+[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green.svg)](https://chromewebstore.google.com/detail/nbjghecapdnggdklamlmebflgajpgeeb?utm_source=item-share-cb)
 [![Platform](https://img.shields.io/badge/Platform-Live-brightgreen.svg)](https://lst-pj.soiv-studio.xyz)
 [![Crowdin](https://badges.crowdin.net/lst-project/localized.svg)](https://crowdin.com/project/lst-project)
 
@@ -182,6 +182,8 @@ npm run build
 ```
 
 ### Chrome拡張機能
+
+> 現在、ベータ版でChromeウェブストアを展開しています。<br> このプロセスではバグやエラーが発生する可能性があり、情報提供はFitHub問題またはEメールで受信されます。
 
 Chromeウェブストア配布前は、開発者モードでインストールします。
 
