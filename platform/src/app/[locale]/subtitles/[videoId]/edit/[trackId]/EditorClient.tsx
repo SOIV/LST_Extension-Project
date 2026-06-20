@@ -580,7 +580,7 @@ export default function EditorClient({
                 </div>
               ) : (
                 <>
-                  {cues.flatMap((cue, i) => [
+                  {cues.map((cue, i) => (
                     <CueRow
                       key={cue.id}
                       index={i}
@@ -588,26 +588,16 @@ export default function EditorClient({
                       format={format}
                       onUpdate={updateCue}
                       onDelete={deleteCue}
+                      onInsert={insertCueAt}
                       onSeek={seekTo}
                       seekLabel={t("seekToTime")}
                       ariaStartTime={t("ariaStartTime")}
                       ariaEndTime={t("ariaEndTime")}
                       ariaSubtitleText={t("ariaSubtitleText")}
                       ariaDeleteCue={t("ariaDeleteCue")}
-                    />,
-                    <button
-                      key={`ins-${cue.id}`}
-                      onClick={() => insertCueAt(i)}
-                      className="group flex w-full items-center gap-2 py-0.5"
-                      aria-label={t("ariaInsertCue")}
-                    >
-                      <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800 group-hover:bg-zinc-300 dark:group-hover:bg-zinc-600 transition-colors" />
-                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[11px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
-                        {t("addCue")}
-                      </span>
-                      <div className="flex-1 h-px bg-zinc-100 dark:bg-zinc-800 group-hover:bg-zinc-300 dark:group-hover:bg-zinc-600 transition-colors" />
-                    </button>,
-                  ])}
+                      ariaInsertCue={t("ariaInsertCue")}
+                    />
+                  ))}
                   <button
                     onClick={addCue}
                     className="w-full py-3 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 text-sm text-zinc-400 dark:text-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors"
@@ -655,17 +645,19 @@ interface CueRowProps {
     value: string | number
   ) => void;
   onDelete: (index: number) => void;
+  onInsert: (index: number) => void;
   onSeek: (ms: number) => void;
   seekLabel: string;
   ariaStartTime: string;
   ariaEndTime: string;
   ariaSubtitleText: string;
   ariaDeleteCue: string;
+  ariaInsertCue: string;
 }
 
 function CueRow({
-  index, cue, format, onUpdate, onDelete, onSeek,
-  seekLabel, ariaStartTime, ariaEndTime, ariaSubtitleText, ariaDeleteCue,
+  index, cue, format, onUpdate, onDelete, onInsert, onSeek,
+  seekLabel, ariaStartTime, ariaEndTime, ariaSubtitleText, ariaDeleteCue, ariaInsertCue,
 }: CueRowProps) {
   const [startStr, setStartStr] = useState(() => msToTime(cue.start, format));
   const [endStr, setEndStr] = useState(() => msToTime(cue.end, format));
@@ -719,13 +711,22 @@ function CueRow({
         className="flex-1 min-w-0 px-2 py-1 rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 resize-y focus:outline-none focus:ring-1 focus:ring-zinc-400"
       />
 
-      <button
-        onClick={() => onDelete(index)}
-        aria-label={ariaDeleteCue}
-        className="shrink-0 mt-1 w-6 h-6 flex items-center justify-center rounded text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors opacity-0 group-hover:opacity-100 text-sm"
-      >
-        ✕
-      </button>
+      <div className="flex flex-col justify-between self-stretch shrink-0">
+        <button
+          onClick={() => onDelete(index)}
+          aria-label={ariaDeleteCue}
+          className="w-6 h-6 flex items-center justify-center rounded text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors opacity-0 group-hover:opacity-100 text-sm"
+        >
+          ✕
+        </button>
+        <button
+          onClick={() => onInsert(index)}
+          aria-label={ariaInsertCue}
+          className="w-6 h-6 flex items-center justify-center rounded text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-base leading-none"
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
