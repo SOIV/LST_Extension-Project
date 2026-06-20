@@ -661,6 +661,7 @@ function CueRow({
 }: CueRowProps) {
   const [startStr, setStartStr] = useState(() => msToTime(cue.start, format));
   const [endStr, setEndStr] = useState(() => msToTime(cue.end, format));
+  const [focused, setFocused] = useState(false);
 
   function commitStart(val: string) {
     const ms = timeToMs(val);
@@ -675,7 +676,11 @@ function CueRow({
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 flex gap-2 items-start group">
+    <div
+      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 flex gap-2 items-start group"
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false); }}
+    >
       <button
         onClick={() => onSeek(cue.start)}
         title={seekLabel}
@@ -715,14 +720,14 @@ function CueRow({
         <button
           onClick={() => onDelete(index)}
           aria-label={ariaDeleteCue}
-          className="w-6 h-6 flex items-center justify-center rounded text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors opacity-0 group-hover:opacity-100 text-sm"
+          className={`w-6 h-6 flex items-center justify-center rounded text-zinc-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition-colors text-sm ${focused ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
         >
           ✕
         </button>
         <button
           onClick={() => onInsert(index)}
           aria-label={ariaInsertCue}
-          className="w-6 h-6 flex items-center justify-center rounded text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-base leading-none"
+          className={`w-6 h-6 flex items-center justify-center rounded text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-base leading-none ${focused ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
         >
           +
         </button>
