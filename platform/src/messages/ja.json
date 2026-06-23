@@ -44,6 +44,8 @@
   "UploadPage": {
     "title": "字幕アップロード",
     "description": "SRTまたはVTT形式の字幕ファイルをアップロードしてください。",
+    "langGroupMain": "主要言語",
+    "langGroupOther": "その他の言語",
     "labelYoutubeUrl": "YouTube URLまたは動画ID",
     "labelLanguage": "字幕言語",
     "labelFile": "字幕ファイル",
@@ -203,6 +205,8 @@
     "subtitleFormatVttDesc": "Web標準、位置情報サポート",
     "subtitleFormatSmiDesc": "韓国メディアプレイヤー対応",
     "subtitleFormatTtmlDesc": "XMLベースの高度なスタイリング",
+    "langGroupMain": "主要言語",
+    "langGroupOther": "その他の言語",
     "errorCreate": "字幕の作成中にエラーが発生しました。",
     "creating": "作成中...",
     "create": "エディターへ →",

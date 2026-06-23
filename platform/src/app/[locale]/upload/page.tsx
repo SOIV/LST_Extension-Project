@@ -3,24 +3,26 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter, Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
-const LANGUAGES = [
-  { code: "ko", label: "한국어" },
-  { code: "en", label: "English" },
-  { code: "ja", label: "日本語" },
-  { code: "zh-CN", label: "中文 (简体)" },
-  { code: "zh-TW", label: "中文 (繁體)" },
-  { code: "es", label: "Español" },
-  { code: "fr", label: "Français" },
-  { code: "de", label: "Deutsch" },
-  { code: "ru", label: "Русский" },
+const LANG_GROUPS = [
+  { groupKey: "langGroupMain", codes: ["ko", "en", "ja", "zh-Hans", "zh-Hant"] },
+  { groupKey: "langGroupOther", codes: ["es", "fr", "de", "pt", "it", "ru", "ar", "hi", "th", "vi", "id", "tr"] },
 ];
 
 export default function UploadPage() {
   const router = useRouter();
   const t = useTranslations("UploadPage");
+  const locale = useLocale();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  function getLangDisplayName(code: string): string {
+    try {
+      return new Intl.DisplayNames([locale], { type: "language" }).of(code) ?? code;
+    } catch {
+      return code;
+    }
+  }
 
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [languageCode, setLanguageCode] = useState("ko");
@@ -143,10 +145,14 @@ export default function UploadPage() {
               onChange={(e) => setLanguageCode(e.target.value)}
               className="px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
             >
-              {LANGUAGES.map((l) => (
-                <option key={l.code} value={l.code}>
-                  {l.label}
-                </option>
+              {LANG_GROUPS.map(({ groupKey, codes }) => (
+                <optgroup key={groupKey} label={t(groupKey)}>
+                  {codes.map((code) => (
+                    <option key={code} value={code}>
+                      {getLangDisplayName(code)}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>

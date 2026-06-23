@@ -44,6 +44,8 @@
   "UploadPage": {
     "title": "Upload Subtitle",
     "description": "Upload a subtitle file in SRT or VTT format.",
+    "langGroupMain": "Main languages",
+    "langGroupOther": "Other languages",
     "labelYoutubeUrl": "YouTube URL or Video ID",
     "labelLanguage": "Subtitle Language",
     "labelFile": "Subtitle File",
@@ -203,6 +205,8 @@
     "subtitleFormatVttDesc": "Web standard, supports positioning",
     "subtitleFormatSmiDesc": "Korean media player support",
     "subtitleFormatTtmlDesc": "XML-based advanced styling",
+    "langGroupMain": "Main languages",
+    "langGroupOther": "Other languages",
     "errorCreate": "An error occurred while creating the subtitle.",
     "creating": "Creating...",
     "create": "Open in Editor →",

@@ -44,6 +44,8 @@
   "UploadPage": {
     "title": "자막 업로드",
     "description": "SRT 또는 VTT 형식의 자막 파일을 업로드하세요.",
+    "langGroupMain": "주요 언어",
+    "langGroupOther": "기타 언어",
     "labelYoutubeUrl": "YouTube URL 또는 동영상 ID",
     "labelLanguage": "자막 언어",
     "labelFile": "자막 파일",
@@ -203,6 +205,8 @@
     "subtitleFormatVttDesc": "웹 표준, 위치 정보 지원",
     "subtitleFormatSmiDesc": "한국 미디어 플레이어 지원",
     "subtitleFormatTtmlDesc": "XML 기반 고급 스타일링",
+    "langGroupMain": "주요 언어",
+    "langGroupOther": "기타 언어",
     "errorCreate": "자막 생성 중 오류가 발생했습니다.",
     "creating": "생성 중...",
     "create": "에디터로 이동 →",
