@@ -102,7 +102,7 @@ Status: `in_progress`
 - [x] SMI/SAMI, TTML 편집 지원 (파싱·직렬화·스크립트 뷰)
 - [x] 자막 줄 사이 삽입 (타임라인 뷰)
 - [ ] 자막 만들기 (플랫폼 내 신규 작성 플로우)
-- [ ] Scripting View (고급 편집기, 베타)
+- [x] Scripting View (고급 편집기, 베타) - 스크립트 뷰로 통일되어 완료 처리
 
 ### P4. 플랫폼 MVP 크리에이터
 
