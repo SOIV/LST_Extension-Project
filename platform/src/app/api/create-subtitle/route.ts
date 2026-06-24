@@ -149,13 +149,13 @@ export async function POST(request: NextRequest) {
         video_id: videoRow.id,
         language_code: languageCode,
         creator_id: user.id,
-        status: "draft",
+        status: "pending",
       })
       .select("id, status")
       .single();
 
     if (trackError || !newTrack) {
-      return Response.json({ error: "자막 트랙 생성 실패" }, { status: 500 });
+      return Response.json({ error: "자막 트랙 생성 실패", detail: trackError?.message }, { status: 500 });
     }
     trackRow = newTrack;
   }
@@ -204,7 +204,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (revisionError?.code !== "23505" || attempt === 4) {
-      return Response.json({ error: "리비전 저장 실패" }, { status: 500 });
+      return Response.json({
+        error: "리비전 저장 실패",
+        detail: revisionError?.message,
+        code: revisionError?.code,
+      }, { status: 500 });
     }
   }
 
