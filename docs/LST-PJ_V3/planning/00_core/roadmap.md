@@ -1,6 +1,6 @@
 # LST 프로젝트 로드맵
 
-Last updated: 2026-06-11
+Last updated: 2026-06-24
 
 ## 1) 프로젝트 방향
 
@@ -101,7 +101,7 @@ Status: `in_progress`
 - [x] 미리보기 영상 크기 조정 UX
 - [x] SMI/SAMI, TTML 편집 지원 (파싱·직렬화·스크립트 뷰)
 - [x] 자막 줄 사이 삽입 (타임라인 뷰)
-- [ ] 자막 만들기 (플랫폼 내 신규 작성 플로우)
+- [x] 자막 만들기 (플랫폼 내 신규 작성 플로우)
 - [x] Scripting View (고급 편집기, 베타) - 스크립트 뷰로 통일되어 완료 처리
 
 ### P4. 플랫폼 MVP 크리에이터
@@ -139,7 +139,7 @@ Status: `planned`
 
 Status: `in_progress`
 
-Last updated: 2026-06-11
+Last updated: 2026-06-24
 
 #### 파이프라인 — 탭 오디오 캡처(OpenAI Realtime API, OpenAI Transcription API)
 - [x] 탭 오디오 캡처 (offscreen document, Chrome tabCapture)
@@ -266,9 +266,9 @@ Status: `planned`
 ## 6) 현재 주간 집중 항목
 
 - [x] **P4 완료** — YouTube 자막 업로드 대기열 시스템 구현
-- [x] 자막 편집기 편의성 업데이트 (SMI/TTML 지원, 줄 삽입) — 자막 만들기 기능 미완
+- [x] 자막 편집기 편의성 업데이트 (SMI/TTML 지원, 줄 삽입)
+- [x] 플랫폼 내 자막 만들기 (신규 작성 플로우)
 - [ ] P5 데모 영상 녹화 준비 (youtube.force-ssl 스코프 데모)
-- [ ] 플랫폼 내 자막 만들기 (신규 작성 플로우)
 
 ## 7) 업데이트 규칙
 
