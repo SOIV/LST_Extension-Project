@@ -46,7 +46,7 @@ YouTube 영상/라이브를 대상으로 한 **커뮤니티 자막 플랫폼 + C
 Status: `in_progress`
 
 - [x] Status API 확장 (DB/Storage)
-- [ ] Uptime Kuma 알림 채널 표준화
+- [x] Uptime Kuma 알림 채널 표준화
 - [ ] 운영 환경 점검 체크리스트 문서화
 - [ ] 장애 시 복구 시나리오 1차 정리
 
