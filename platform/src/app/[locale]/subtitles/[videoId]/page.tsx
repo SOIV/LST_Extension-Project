@@ -74,6 +74,7 @@ export default async function SubtitlePage({
           id,
           language_code,
           status,
+          creator_id,
           created_at,
           subtitle_revisions (
             id,
@@ -209,8 +210,10 @@ export default async function SubtitlePage({
                         )}
                         {revisions.length > 0 && (
                           <RevisionHistoryModal
+                            trackId={track.id}
                             languageName={getLanguageName(locale, track.language_code)}
                             revisions={revisions}
+                            canRestore={user !== null && user.id === track.creator_id}
                           />
                         )}
                         <Link
