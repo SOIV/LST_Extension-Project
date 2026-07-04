@@ -74,6 +74,7 @@ export default async function SubtitlePage({
           id,
           language_code,
           status,
+          creator_id,
           created_at,
           subtitle_revisions (
             id,
@@ -140,25 +141,42 @@ export default async function SubtitlePage({
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
               {t("communitySubtitles")}
             </h2>
-            <Link
-              href={`/upload?v=${videoId}`}
-              className="text-sm px-3 py-1.5 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
-            >
-              {t("uploadSubtitle")}
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/create?v=${videoId}`}
+                className="text-sm px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                {t("createSubtitle")}
+              </Link>
+              <Link
+                href={`/upload?v=${videoId}`}
+                className="text-sm px-3 py-1.5 rounded-lg bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-medium hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+              >
+                {t("uploadSubtitle")}
+              </Link>
+            </div>
           </div>
 
           {!tracks || tracks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800">
+            <div className="flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 gap-3">
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 {t("noSubtitles")}
               </p>
-              <Link
-                href={`/upload?v=${videoId}`}
-                className="mt-3 text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-2"
-              >
-                {t("uploadFirst")}
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link
+                  href={`/create?v=${videoId}`}
+                  className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-2"
+                >
+                  {t("createFirst")}
+                </Link>
+                <span className="text-zinc-300 dark:text-zinc-600">|</span>
+                <Link
+                  href={`/upload?v=${videoId}`}
+                  className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-2"
+                >
+                  {t("uploadFirst")}
+                </Link>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
@@ -192,8 +210,10 @@ export default async function SubtitlePage({
                         )}
                         {revisions.length > 0 && (
                           <RevisionHistoryModal
+                            trackId={track.id}
                             languageName={getLanguageName(locale, track.language_code)}
                             revisions={revisions}
+                            canRestore={user !== null && user.id === track.creator_id}
                           />
                         )}
                         <Link

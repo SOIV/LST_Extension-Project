@@ -1,6 +1,6 @@
 # LST 프로젝트 로드맵
 
-Last updated: 2026-06-11
+Last updated: 2026-06-24
 
 ## 1) 프로젝트 방향
 
@@ -30,7 +30,7 @@ YouTube 영상/라이브를 대상으로 한 **커뮤니티 자막 플랫폼 + C
 |---|---|---|---:|---|
 | P1 | 기반 구축 | in_progress | 25% | 상태 모니터링/기본 운영 점검 체계 완료 |
 | P2 | Extension MVP | in_progress | 53% | YouTube 영상에서 안정적으로 자막 조회/렌더링 |
-| P3 | 플랫폼 MVP 코어 | in_progress | 60% | 로그인, 업로드/조회, 버전관리, 기본 편집기 동작 |
+| P3 | 플랫폼 MVP 코어 | completed | 100% | 로그인, 업로드/조회, 버전관리, 기본 편집기 동작 |
 | P4 | 플랫폼 MVP 크리에이터 | completed | 100% | 채널 연동 + 승인/공개 워크플로우 완료 |
 | P5 | 통합 & 안정화 | planned | 0% | 장애 대응/회귀 방지/성능 기준 충족 |
 | P6 | 실시간 STT | in_progress | 67% | 전체 STT 파이프라인 안정화 + 렌더러/설정 UI 완성 |
@@ -46,7 +46,7 @@ YouTube 영상/라이브를 대상으로 한 **커뮤니티 자막 플랫폼 + C
 Status: `in_progress`
 
 - [x] Status API 확장 (DB/Storage)
-- [ ] Uptime Kuma 알림 채널 표준화
+- [x] Uptime Kuma 알림 채널 표준화
 - [ ] 운영 환경 점검 체크리스트 문서화
 - [ ] 장애 시 복구 시나리오 1차 정리
 
@@ -79,10 +79,10 @@ Status: `in_progress`
 
 ### P3. 플랫폼 MVP 코어
 
-Status: `in_progress`
+Status: `completed`
 
 #### 계정/프로필
-- [ ] 핸들 정책 확정 (다국어 허용 범위 포함)
+- [x] 핸들 정책 확정 (다국어 허용 범위 포함) - 차후 변경 가능성이 존제
 - [x] 핸들 대소문자 처리
 
 #### 플랫폼 UI
@@ -91,9 +91,9 @@ Status: `in_progress`
 #### 자막 관리
 - [x] 자막 최신 버전 고정 버그 수정
 - [x] 업로드/조회 기본 플로우 검증
-- [ ] diff 비교 (버전 간 변경 내역)
-- [ ] 이전 버전 복원
-- [ ] 리비전/롤백 정책 문서화
+- [x] diff 비교 (버전 간 변경 내역)
+- [x] 이전 버전 복원
+- [x] 리비전/롤백 정책 문서화
 
 #### 편집기
 - [x] 편집 중 실시간 미리보기
@@ -101,8 +101,8 @@ Status: `in_progress`
 - [x] 미리보기 영상 크기 조정 UX
 - [x] SMI/SAMI, TTML 편집 지원 (파싱·직렬화·스크립트 뷰)
 - [x] 자막 줄 사이 삽입 (타임라인 뷰)
-- [ ] 자막 만들기 (플랫폼 내 신규 작성 플로우)
-- [ ] Scripting View (고급 편집기, 베타)
+- [x] 자막 만들기 (플랫폼 내 신규 작성 플로우)
+- [x] Scripting View (고급 편집기, 베타) - 스크립트 뷰로 통일되어 완료 처리
 
 ### P4. 플랫폼 MVP 크리에이터
 
@@ -139,7 +139,7 @@ Status: `planned`
 
 Status: `in_progress`
 
-Last updated: 2026-06-11
+Last updated: 2026-06-24
 
 #### 파이프라인 — 탭 오디오 캡처(OpenAI Realtime API, OpenAI Transcription API)
 - [x] 탭 오디오 캡처 (offscreen document, Chrome tabCapture)
@@ -266,9 +266,9 @@ Status: `planned`
 ## 6) 현재 주간 집중 항목
 
 - [x] **P4 완료** — YouTube 자막 업로드 대기열 시스템 구현
-- [x] 자막 편집기 편의성 업데이트 (SMI/TTML 지원, 줄 삽입) — 자막 만들기 기능 미완
+- [x] 자막 편집기 편의성 업데이트 (SMI/TTML 지원, 줄 삽입)
+- [x] 플랫폼 내 자막 만들기 (신규 작성 플로우)
 - [ ] P5 데모 영상 녹화 준비 (youtube.force-ssl 스코프 데모)
-- [ ] 플랫폼 내 자막 만들기 (신규 작성 플로우)
 
 ## 7) 업데이트 규칙
 
