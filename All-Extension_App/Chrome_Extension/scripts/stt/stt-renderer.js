@@ -20,6 +20,9 @@ const SttRenderer = (() => {
   const FOCUS_RECT_STORAGE_KEY = 'lstFocusOverlayRect';
   const FOCUS_HISTORY_LIMIT = 80;
   const FOCUS_IDLE_MS = 2500;
+  const FOCUS_SPLITTER_HEIGHT = 8;
+  const FOCUS_CURRENT_MIN_HEIGHT = 70;
+  const FOCUS_HISTORY_MIN_HEIGHT = 56;
 
   // ─── 스타일 맵 (subtitle-renderer.js 와 동일) ──────────────
 
@@ -182,6 +185,13 @@ const SttRenderer = (() => {
     return Number.isFinite(numeric) ? numeric : fallback;
   }
 
+  function maxCurrentHeightFor(panelHeight) {
+    return Math.max(
+      FOCUS_CURRENT_MIN_HEIGHT,
+      panelHeight - FOCUS_SPLITTER_HEIGHT - FOCUS_HISTORY_MIN_HEIGHT
+    );
+  }
+
   function defaultFocusRect() {
     const viewport = getViewportBounds();
     const availableWidth = Math.max(1, viewport.width - 24);
@@ -192,11 +202,17 @@ const SttRenderer = (() => {
     const maxHeight = Math.min(360, availableHeight);
     const width = clamp(Math.round(viewport.width * 0.72), minWidth, maxWidth);
     const height = clamp(Math.round(viewport.height * 0.34), minHeight, maxHeight);
+    const currentHeight = clamp(
+      Math.round(height * 0.4),
+      FOCUS_CURRENT_MIN_HEIGHT,
+      maxCurrentHeightFor(height)
+    );
     return {
       left: Math.round((viewport.width - width) / 2),
       top: Math.min(24, Math.max(0, viewport.height - height)),
       width,
       height,
+      currentHeight,
     };
   }
 
@@ -207,11 +223,17 @@ const SttRenderer = (() => {
     const minHeight = Math.min(140, viewport.height);
     const width = clamp(numberOr(rect?.width, fallback.width), minWidth, Math.max(minWidth, viewport.width));
     const height = clamp(numberOr(rect?.height, fallback.height), minHeight, Math.max(minHeight, viewport.height));
+    const currentHeight = clamp(
+      numberOr(rect?.currentHeight, fallback.currentHeight),
+      FOCUS_CURRENT_MIN_HEIGHT,
+      maxCurrentHeightFor(height)
+    );
     return {
       left: clamp(numberOr(rect?.left, fallback.left), 0, Math.max(0, viewport.width - width)),
       top: clamp(numberOr(rect?.top, fallback.top), 0, Math.max(0, viewport.height - height)),
       width,
       height,
+      currentHeight,
     };
   }
 
@@ -222,14 +244,20 @@ const SttRenderer = (() => {
       width: `${Math.round(rect.width)}px`,
       height: `${Math.round(rect.height)}px`,
     });
+    const current = panel.querySelector('.lst-stt-focus-current');
+    if (current) current.style.height = `${Math.round(rect.currentHeight)}px`;
   }
 
   function getCurrentFocusRect(panel) {
+    const current = panel.querySelector('.lst-stt-focus-current');
+    const currentHeight = current ? parseFloat(current.style.height) : NaN;
+
     const styledRect = {
       left: parseFloat(panel.style.left),
       top: parseFloat(panel.style.top),
       width: parseFloat(panel.style.width),
       height: parseFloat(panel.style.height),
+      currentHeight,
     };
 
     if (
@@ -247,6 +275,7 @@ const SttRenderer = (() => {
       top: bounds.top,
       width: bounds.width,
       height: bounds.height,
+      currentHeight,
     };
   }
 
@@ -334,10 +363,20 @@ const SttRenderer = (() => {
         ">×</button>
       </div>
       <div class="lst-stt-focus-current" style="
-        flex:0 0 auto;min-height:88px;max-height:52%;overflow-y:auto;overscroll-behavior:contain;
+        flex:0 0 auto;overflow-y:auto;overscroll-behavior:contain;
         padding:24px 28px 6px;box-sizing:border-box;
         scrollbar-width:thin;
       "></div>
+      <div class="lst-stt-focus-splitter" title="영역 크기 조정" style="
+        flex:0 0 auto;height:${FOCUS_SPLITTER_HEIGHT}px;cursor:row-resize;
+        display:flex;align-items:center;justify-content:center;
+        position:relative;z-index:2;
+      ">
+        <div class="lst-stt-focus-splitter-grip" style="
+          width:36px;height:3px;border-radius:999px;
+          background:rgba(255,255,255,.38);transition:background .15s ease;
+        "></div>
+      </div>
       <div class="lst-stt-focus-history" style="
         flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;
         padding:8px 28px 22px;box-sizing:border-box;
@@ -386,6 +425,8 @@ const SttRenderer = (() => {
     const drag = panel.querySelector('.lst-stt-focus-drag');
     const resize = panel.querySelector('.lst-stt-focus-resize');
     const close = panel.querySelector('.lst-stt-focus-close');
+    const splitter = panel.querySelector('.lst-stt-focus-splitter');
+    const splitterGrip = panel.querySelector('.lst-stt-focus-splitter-grip');
 
     const showControls = () => {
       panel.classList.remove('lst-stt-focus-idle');
@@ -415,6 +456,7 @@ const SttRenderer = (() => {
         top: startRect.top,
         width: startRect.width,
         height: startRect.height,
+        currentHeight: getCurrentFocusRect(panel).currentHeight,
       };
 
       const onMove = (moveEvent) => {
@@ -423,6 +465,7 @@ const SttRenderer = (() => {
           top: start.top + (moveEvent.clientY - start.y),
           width: start.width,
           height: start.height,
+          currentHeight: start.currentHeight,
         });
         applyFocusRect(panel, next);
         focusRect = next;
@@ -449,6 +492,7 @@ const SttRenderer = (() => {
         top: startRect.top,
         width: startRect.width,
         height: startRect.height,
+        currentHeight: getCurrentFocusRect(panel).currentHeight,
       };
 
       const onMove = (moveEvent) => {
@@ -457,6 +501,7 @@ const SttRenderer = (() => {
           top: start.top,
           width: start.width + (moveEvent.clientX - start.x),
           height: start.height + (moveEvent.clientY - start.y),
+          currentHeight: start.currentHeight,
         });
         applyFocusRect(panel, next);
         focusRect = next;
@@ -465,6 +510,51 @@ const SttRenderer = (() => {
       const onUp = () => {
         document.removeEventListener('pointermove', onMove);
         document.removeEventListener('pointerup', onUp);
+        if (focusRect) saveFocusRect(focusRect);
+      };
+
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp, { once: true });
+    });
+
+    const setSplitterActive = (active) => {
+      if (splitterGrip) {
+        splitterGrip.style.background = active ? 'rgba(255,255,255,.85)' : 'rgba(255,255,255,.38)';
+      }
+    };
+    splitter?.addEventListener('mouseenter', () => setSplitterActive(true));
+    splitter?.addEventListener('mouseleave', () => setSplitterActive(false));
+
+    splitter?.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      splitter.setPointerCapture?.(event.pointerId);
+      setSplitterActive(true);
+      const startRect = panel.getBoundingClientRect();
+      const start = {
+        y: event.clientY,
+        left: startRect.left,
+        top: startRect.top,
+        width: startRect.width,
+        height: startRect.height,
+        currentHeight: getCurrentFocusRect(panel).currentHeight,
+      };
+
+      const onMove = (moveEvent) => {
+        const next = normalizeFocusRect({
+          left: start.left,
+          top: start.top,
+          width: start.width,
+          height: start.height,
+          currentHeight: start.currentHeight + (moveEvent.clientY - start.y),
+        });
+        applyFocusRect(panel, next);
+        focusRect = next;
+      };
+
+      const onUp = () => {
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        setSplitterActive(false);
         if (focusRect) saveFocusRect(focusRect);
       };
 
