@@ -4,8 +4,6 @@
  */
 
 const SubtitleLoader = (() => {
-  const API_BASE = 'https://lst-pj.soiv-studio.xyz/api';
-
   let currentVideoId = null;
   let settings       = {};
   let statusCallback = null;
@@ -30,18 +28,13 @@ const SubtitleLoader = (() => {
 
   /* ─── API 호출 ─────────────────────────────────────────── */
 
+  // content script에서 직접 fetch하면 youtube.com 출처로 취급돼 차단되므로 background를 경유
   async function fetchSubtitle(videoId, lang) {
-    const params = new URLSearchParams({ videoId });
-    if (lang && lang !== 'auto') params.set('lang', lang);
-
     try {
-      const res = await fetch(`${API_BASE}/subtitles?${params}`, {
-        signal: AbortSignal.timeout(5000)
-      });
-      if (!res.ok) return null;
-      return await res.json();
+      const res = await chrome.runtime.sendMessage({ action: 'fetchSubtitle', videoId, lang });
+      return res?.success ? res.data : null;
     } catch {
-      // 서버 무응답 / 네트워크 오류 → 조용히 실패
+      // 서버 무응답 / 네트워크 오류 / 확장 컨텍스트 무효화 → 조용히 실패
       return null;
     }
   }

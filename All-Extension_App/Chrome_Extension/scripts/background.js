@@ -99,6 +99,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  // 커뮤니티 자막 조회 (content script → background → 플랫폼 API)
+  if (message.action === 'fetchSubtitle') {
+    if (!message.videoId) { sendResponse({ success: false, error: 'No videoId' }); return; }
+    fetchSubtitleFromApi(message.videoId, message.lang)
+      .then(data => sendResponse({ success: true, data }))
+      .catch(e => sendResponse({ success: false, error: e.message }));
+    return true;
+  }
+
   if (message.action === 'translateText') {
     translateForContentScript(message)
       .then(translated => sendResponse({ success: true, translated }))
@@ -281,6 +290,21 @@ async function stopSttForTab(tabId) {
     sttState = { active: false, tabId: null, source: null };
     updateBadge(tabId, tabSubtitleStatus.get(tabId) || 'not_youtube');
   }
+}
+
+// ─── 자막 API 프록시 (content script cross-origin 차단 회피) ──────────────────
+
+const SUBTITLE_API_BASE = 'https://lst-pj.soiv-studio.xyz/api';
+
+async function fetchSubtitleFromApi(videoId, lang) {
+  const params = new URLSearchParams({ videoId });
+  if (lang && lang !== 'auto') params.set('lang', lang);
+
+  const res = await fetch(`${SUBTITLE_API_BASE}/subtitles?${params}`, {
+    signal: AbortSignal.timeout(5000)
+  });
+  if (!res.ok) return null;
+  return await res.json();
 }
 
 // ─── 번역 프록시 (content script CORS 회피) ───────────────────────────────────
