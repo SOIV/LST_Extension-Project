@@ -1,0 +1,13 @@
+# 가상환경 / 캐시
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+
+# API 키
+.env
+
+# 벤치마크 데이터와 결과 (저작권 있는 음성이 들어갈 수 있으므로 커밋하지 않음)
+datasets/*
+!datasets/.gitkeep
+results/
