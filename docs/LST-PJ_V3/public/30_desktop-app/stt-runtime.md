@@ -29,6 +29,18 @@ Desktop 계열 앱에서 STT 처리를 보조하거나 직접 수행하는 실�
 | Lite Helper | 보조 처리/오프로딩 | Extension의 지연/렉 감소, 브라우저 밖 오디오/처리 보조 |
 | Full Desktop App | 독립 처리 | 로컬 STT, 장치 설정, CPU/GPU 실행 옵션, Extension 연동을 세밀하게 관리 |
 
+## STT Backends
+
+STT 백엔드는 엔진 안에서 교체 가능한 모듈로 둔다.
+
+| OS | 기본 백엔드 | GPU 가속 | 비고 |
+|---|---|---|---|
+| Windows | faster-whisper (Python) | NVIDIA CUDA (CUDA 12용 cuBLAS, cuDNN 9 필요) | GPU를 쓸 수 없으면 CPU로 실행 |
+| macOS (후순위) | whisper.cpp 또는 mlx-whisper | Metal | faster-whisper는 Mac GPU를 지원하지 않음 |
+
+- 엔진/모델 선택은 `tools/stt-benchmark`로 정확도·지연·RTF를 실측해서 결정한다.
+- 3초 청크처럼 잘게 잘라 처리하면 통째로 처리할 때보다 정확도가 크게 떨어지고, 무음 구간에서 환각(없는 말 생성)이 생길 수 있다. 청크 길이와 VAD 전략도 측정 대상이다.
+
 ## Whisper Position
 
 Whisper는 Desktop App의 중요한 선택지지만 Desktop App의 정의 자체는 아니다.

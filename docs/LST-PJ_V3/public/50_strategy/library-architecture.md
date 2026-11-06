@@ -2,6 +2,11 @@
 
 이 문서는 **프로젝트의 코드 복잡도 관리를 위한 라이브러리 분리 전략**을 정리한 문서입니다.
 
+> **Desktop 방향 변경 (2026-11-06)**: Desktop App은 Electron이 아니라 **Tauri(Rust) + React(TypeScript) 화면 + Python 엔진**으로 만든다.
+> 이 문서의 Desktop용 TS 예시(`audio-capture` 패키지와 native 모듈, `apps/desktop-app/src/main.ts`, Desktop용 Whisper 구현)는 이 방향 이전에 쓴 것이다.
+> 오디오 캡처와 로컬 STT는 Python 엔진에서 처리하며, TS 패키지는 Desktop 앱 화면(React)에서만 재사용한다.
+> → [Desktop App Overview](../30_desktop-app/overview.md)
+
 ---
 
 ## 📌 1. 왜 라이브러리 분리가 필요한가?
@@ -41,7 +46,7 @@
 
 **동일한 자막 처리 로직이 필요한 곳:**
 1. Chrome Extension (브라우저)
-2. Desktop App (Electron)
+2. Desktop App (Tauri 화면, React)
 3. Web Platform (자막 업로드/편집)
 4. CLI 도구 (자막 변환)
 5. API 서버 (자막 검증)
@@ -75,11 +80,11 @@ livestream-translator/
 │   ├── platform-detector/        # 플랫폼 감지
 │   ├── translation-client/       # 번역 API 통합
 │   ├── stt-engine/               # STT 엔진 통합
-│   └── audio-capture/            # 오디오 캡처 (Desktop용)
+│   └── audio-capture/            # 오디오 캡처 (Desktop용) — 폐기: Python 엔진에서 처리
 │
 ├── apps/
 │   ├── chrome-extension/         # Chrome Extension
-│   ├── desktop-app/              # Desktop App (Electron)
+│   ├── desktop-app/              # Desktop App (Tauri + React 화면, Python 엔진)
 │   ├── web-platform/             # 웹 플랫폼
 │   └── api-server/               # API 서버
 │
@@ -529,6 +534,8 @@ stt.start();
 ### 3-5. @livestream-translator/audio-capture
 
 **목적:** 오디오 캡처 추상화 (Desktop App 전용)
+
+> 폐기 (2026-11-06): Desktop 오디오 캡처는 Python 엔진에서 처리하므로 이 TS 패키지와 native 모듈은 만들지 않는다. → [Audio Capture](../30_desktop-app/audio-capture.md)
 
 #### 디렉토리 구조
 

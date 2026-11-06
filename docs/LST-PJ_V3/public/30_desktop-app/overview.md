@@ -3,6 +3,14 @@
 이 문서는 **Live Stream Translator – Desktop App 구성 요소, 아키텍처, 구현 상세, 기술 스택, 성능 기준**을 다루는 개발 문서입니다.
 Chrome Extension과는 독립적으로 동작하지만, 필요 시 WebSocket을 통해 연동할 수 있습니다.
 
+> **기술 방향 (2026-11-06 결정)**
+>
+> - 지원 OS는 **Windows 우선**이다. macOS는 오디오 캡처·GPU 가속·서명/공증 문제로 후순위로 둔다.
+> - 화면은 **Tauri(Rust 껍데기) + React(TypeScript)**, 실제 처리는 **Python 엔진**(별도 프로세스)으로 나눈다.
+> - Lite Helper와 Full Desktop App은 **같은 엔진**을 쓰고 화면과 실행 방식만 다르다. → [Desktop App Modes](app-modes.md)
+> - C/C++/C# 코드는 직접 작성하지 않는다. C/C++로 만든 라이브러리를 Python/Rust에서 가져다 쓰는 것은 괜찮다.
+> - 이전의 Electron 기반 설계는 폐기했다.
+
 ---
 
 # 📌 1. Desktop App 목적
@@ -19,7 +27,7 @@ Whisper 자체가 Desktop App의 정의는 아니며, 지연/렉 감소, 안정�
 
 ### 주요 목적
 
-* 시스템 전체 오디오 캡처(WASAPI Loopback / CoreAudio)
+* 시스템 전체 오디오 캡처(Windows WASAPI Loopback, macOS는 후순위)
 * Extension 단독 처리보다 안정적인 실시간 처리
 * 필요 시 Whisper 기반 온/오프라인 STT 모델 사용
 * Chrome Extension보다 더 높은 정확도 또는 낮은 부하
@@ -32,50 +40,61 @@ Whisper 자체가 Desktop App의 정의는 아니며, 지연/렉 감소, 안정�
 # 🏗️ 2. 아키텍처 개요
 
 ```
-[ELECTRON APP]
-   ├── Audio Engine (WASAPI)
-   ├── STT Engine (Web Speech API/Whisper)
-   ├── Translation Engine (Papago/DeepL/Google)
-   ├── WebSocket Server
-   ├── Settings & Profiles
-   └── IPC (Renderer <-> Main)
+[Tauri 앱 — Lite Helper / Full Desktop App]
+   ├── 껍데기 (Rust): 창, 트레이, 자동 실행, 업데이트, 엔진 실행·감시
+   └── 화면 (React + TypeScript, WebView2)
+              │
+              │  ws://127.0.0.1:48000
+              ▼
+[LST Engine — Python, sidecar 프로세스]
+   ├── Audio Capture (WASAPI Loopback)
+   ├── STT (faster-whisper)
+   ├── Translation (Papago/DeepL/Google)
+   ├── Local LLM (Ollama/LM Studio)
+   ├── Cache / Queue / Settings & Profiles
+   └── WebSocket Server  ◀──── Chrome Extension (JS)
 ```
+
+* 엔진은 화면이 없는 별도 프로세스다. 앱 화면과 Chrome Extension은 **같은 WebSocket 메시지 규칙**으로 엔진과 통신한다.
+* Lite Helper와 Full Desktop App은 같은 엔진을 각각 `lite` / `full` 프로필로 실행한다.
+* Rust 쪽은 Tauri 공식 플러그인(트레이, 자동 실행, 업데이트, sidecar 실행, 중복 실행 방지)을 연결하는 정도로 최소화한다.
+* Windows의 WebView2는 Chromium 기반이라 화면은 Electron과 같은 엔진으로 그려지고, 설치 용량과 메모리는 더 적다.
 
 ---
 
 # 🧩 3. 주요 모듈 구성
 
-## ✔ 3-1. Main Process
+## ✔ 3-1. 앱 껍데기 (Tauri / Rust)
 
-* Window 생성
-* Whisper 엔진 로딩
-* 오디오 캡처 시작/중지 제어
-* 번역 API 호출 요청 처리
-* WebSocket 서버 운영
-* 설정 저장/불러오기
+* 창, 트레이 아이콘 생성
+* 엔진(sidecar) 실행·종료, 비정상 종료 시 재시작
+* 자동 실행, 자동 업데이트
+* 앱 중복 실행 방지
+* 트레이로 내릴 때 창을 숨기지 않고 닫아서 WebView 메모리를 반납하고, 다시 열 때 새로 만든다
 
-## ✔ 3-2. Renderer(UI)
+## ✔ 3-2. 화면 (React + TypeScript)
 
-* React/Tailwind 기반 UI
+* React/Tailwind 기반 UI (Tauri WebView2 위에서 실행)
 * 실시간 로그 표시(STT, 번역 결과)
 * 모델 선택
 * 오디오 장치 선택
-* WebSocket 연결 상태 표시
+* 엔진 / Extension 연결 상태 표시
+* 엔진과는 WebSocket으로만 통신한다. Tauri IPC는 창·앱 제어에만 쓴다
 
-## ✔ 3-3. Audio Capture Engine
+## ✔ 3-3. Audio Capture (엔진)
 
 지원 방식:
 
-* Windows: WASAPI Loopback
-* macOS: CoreAudio + 가상 장치 필요(BlackHole 권장)
+* Windows: WASAPI Loopback (Python 라이브러리로 처리)
+* macOS: 후순위. 네이티브 API가 필요하다 → [Audio Capture](audio-capture.md)
 
 출력:
 
-* 16-bit PCM / 48kHz / mono 변환
+* 16-bit PCM / 48kHz / mono 변환 → STT 백엔드가 요구하는 샘플레이트로 리샘플링
 
-## ✔ 3-4. Whisper Engine
+## ✔ 3-4. STT (엔진)
 
-Whisper.cpp 또는 faster-whisper 선택 가능.
+Windows 기본 백엔드는 faster-whisper. 백엔드는 엔진 안에서 교체 가능한 모듈로 둔다. → [Desktop STT Runtime](stt-runtime.md)
 
 지원 모델:
 
@@ -86,8 +105,8 @@ Whisper.cpp 또는 faster-whisper 선택 가능.
 
 GPU 가속 지원:
 
-* NVIDIA CUDA
-* AMD ROCm(선택)
+* NVIDIA CUDA (CUDA 12용 cuBLAS, cuDNN 9 필요. 없으면 CPU로 실행)
+* AMD GPU는 faster-whisper가 지원하지 않아 CPU로 실행
 * CPU only 모드
 
 ## ✔ 3-5. Translator
@@ -101,27 +120,30 @@ GPU 가속 지원:
 
 * 동일 문장 단위 반복 시 1초 미만 응답
 
-## ✔ 3-6. WebSocket Server
+## ✔ 3-6. WebSocket Server (엔진)
 
-Chrome Extension 또는 로컬 앱과 연결
+Chrome Extension 및 Desktop 앱 화면과 연결. `127.0.0.1`에만 연다. → [Extension Bridge](extension-bridge.md)
 
 이벤트 흐름:
 
 ```
-client → ws://localhost:48000 → server
-server → "translated-text" 이벤트로 전송
+client → ws://127.0.0.1:48000 → engine
+engine → "translated-text" 이벤트로 전송
 ```
 
 ---
 
 # ⚙️ 4. 개발 스택
 
-* **Electron 30+ (Chrome 128, Node 20)**
-* **React + Vite**
-* **TypeScript**
-* **Whisper.cpp / Faster-Whisper**
-* **WASAPI Loopback**
-* **Electron-Builder 패키징**
+| 부분 | 언어 / 도구 |
+|---|---|
+| 화면 | **Tauri 2 + React + Vite + TypeScript** |
+| 앱 껍데기 | **Rust** (Tauri 공식 플러그인 위주) |
+| 엔진 | **Python** |
+| STT | **faster-whisper** (CTranslate2) |
+| 오디오 캡처 | **WASAPI Loopback** (Python 라이브러리) |
+| 패키징 | **Tauri bundler (NSIS)**, 엔진은 실행 파일로 묶어 sidecar로 포함 |
+| 검증 도구 | **Python** — STT 정확도/지연 측정 `tools/stt-benchmark` |
 
 ---
 
@@ -153,10 +175,12 @@ server → "translated-text" 이벤트로 전송
 
 # 📁 6. 설정 구조
 
-`config.json` 저장:
+공용 데이터 폴더 `%LOCALAPPDATA%\LST\config.json`에 저장한다.
+모델(`%LOCALAPPDATA%\LST\models\`), API 키, Extension 연결 정보도 같은 폴더에 두어 Lite Helper ↔ Full Desktop App 전환이나 재설치 시에도 유지한다.
 
 ```json
 {
+  "profile": "lite",
   "audioDevice": "default",
   "whisperModel": "small",
   "translateEngine": "papago",
@@ -170,12 +194,14 @@ server → "translated-text" 이벤트로 전송
 
 # 🧪 7. 성능 기준
 
+아래 수치는 초기 목표(예상)값이다. 실제 정확도/지연은 `tools/stt-benchmark`로 측정해 갱신한다.
+
 | 환경       | 모델           | 평균 지연      | CPU 사용률 |
 | -------- | ------------ | ---------- | ------- |
 | i5-12400 | tiny         | 300~500ms  | 25%     |
 | i5-12400 | small        | 900~1400ms | 60%     |
 | RTX 3060 | small (CUDA) | 300~500ms  | 10%     |
-| M1 Pro   | small        | 500~800ms  | 25%     |
+| M1 Pro (macOS 후순위) | small        | 500~800ms  | 25%     |
 
 권장:
 
@@ -222,6 +248,8 @@ Extension과 WebSocket 연결 시 데이터 전달 구조:
 
 Extension은 Overlay에 바로 렌더링.
 
+> 위 메시지는 초안이다. 메시지 규칙 확정이 Desktop 구현의 첫 단계다. → [Extension Bridge](extension-bridge.md)
+
 ---
 
 # 🧷 10. 예외 처리
@@ -235,9 +263,10 @@ Extension은 Overlay에 바로 렌더링.
 
 # 🔐 11. 보안
 
-* API 키는 OS Keychain 또는 로컬 암호화 저장
-* WebSocket은 로컬 호스트에서만 실행
-* Electron에서 remote module 금지
+* API 키는 OS 자격 증명 저장소(Windows 자격 증명 관리자) 또는 로컬 암호화 저장
+* WebSocket은 `127.0.0.1`에만 열고, `Origin` 확인 + 연결 토큰으로 LST Extension과 앱 화면만 받는다
+  (일반 웹페이지도 localhost WebSocket 접속을 시도할 수 있기 때문)
+* Tauri capabilities로 화면에 허용하는 API를 최소화
 
 ---
 
@@ -245,13 +274,16 @@ Extension은 Overlay에 바로 렌더링.
 
 ### Windows
 
-* NSIS 설치 파일
+* NSIS 설치 파일 (Tauri bundler)
 * portable zip
+* WebView2 런타임이 없는 PC(일부 Windows 10)에서는 설치 중 자동 설치
+* Lite Helper와 Full Desktop App은 둘 중 하나만 설치된다. 다른 쪽이 있으면 전환을 안내한다 → [Desktop App Modes](app-modes.md)
 
-### macOS
+### macOS (후순위)
 
 * dmg
-* notarization 필요
+* 코드 서명 + 공증(notarization) 필요 (Apple Developer Program)
+* 앱 안에 들어가는 엔진 실행 파일과 라이브러리까지 모두 서명해야 한다
 
 ---
 
@@ -261,6 +293,7 @@ Extension은 Overlay에 바로 렌더링.
 * 번역 품질 평가 기능
 * 사전 기반 커스텀 번역
 * Extension 자동 연동 모드
+* macOS 지원 (네이티브 오디오 캡처, Metal 가속 STT 백엔드, 서명·공증)
 
 ---
 
@@ -390,8 +423,8 @@ Desktop App이 로컬에서 STT 또는 추가 번역을 수행할 때 사용되�
 
 ### WS 연결 정보
 
-* 기본 포트: `ws://localhost:48000` (설정 가능)
-* 인증: 로컬이므로 기본적으로 인증 생략하되, 필요 시 토큰 기반 간단 인증 가능
+* 기본 포트: `ws://127.0.0.1:48000` (설정 가능)
+* 인증: `Origin` 확인 + 연결 토큰 필수. 로컬이라도 일반 웹페이지가 접속을 시도할 수 있으므로 생략하지 않는다
 
 ### WS 메시지 포맷
 
